@@ -1,4 +1,4 @@
-package bigsky.notch;
+package bigsky.notch.runtime;
 
 import java.util.*;
 
@@ -32,7 +32,7 @@ public class NotchRuntime {
         }
     }
 
-    public void write(String sym, Object value) {
+    public void setOrInsert(String sym, Object value) {
         if (isUndefined(value)) {
             unsetSymbol(sym);
         }
@@ -61,6 +61,17 @@ public class NotchRuntime {
             this.frame = frame;
         }
 
+        public void define(String name, Object value) {
+            this.frame.put(name, value);
+        }
+
+        public Object getSymbol(String name) {
+            if (frame.containsKey(name)) {
+                return frame.get(name);
+            }
+            return UNDEFINED;
+        }
+
         @Override
         public void close() {
             var f = values.removeLast();
@@ -80,5 +91,17 @@ public class NotchRuntime {
 
     public boolean isFalsy(Object value) {
         return !isTruthy(value);
+    }
+
+    public Iterable<?> asIterable(Object iterableValue) {
+        if (iterableValue instanceof Object[] oa) {
+            return List.of(oa);
+        }
+
+        if (iterableValue instanceof Iterable<?> it) {
+            return it;
+        }
+
+        throw new NotchRuntimeException("conversion error, cannot convert " + iterableValue.getClass() + " as an iterable");
     }
 }

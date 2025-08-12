@@ -1,6 +1,6 @@
 package bigsky.notch.expr;
 
-import bigsky.notch.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.NotchToken;
 
 public class BooleanNotchExpression extends NotchExpression {

@@ -1,6 +1,6 @@
 package bigsky.notch.expr;
 
-import bigsky.notch.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntime;
 
 public class ConditionalExpression extends NotchExpression {
     public final NotchExpression value, condition, fallback;

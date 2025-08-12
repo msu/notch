@@ -1,7 +1,7 @@
 package bigsky.notch.expr;
 
 import bigsky.notch.Location;
-import bigsky.notch.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntime;
 
 import java.util.Collections;
 import java.util.LinkedList;

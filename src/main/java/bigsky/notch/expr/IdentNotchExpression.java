@@ -1,6 +1,6 @@
 package bigsky.notch.expr;
 
-import bigsky.notch.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.NotchToken;
 import bigsky.notch.NotchUtils;
 
@@ -22,6 +22,7 @@ public class IdentNotchExpression extends NotchExpression {
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        return runtime.getSymbol(name());
+        var val = runtime.getSymbol(name());
+        return val;
     }
 }

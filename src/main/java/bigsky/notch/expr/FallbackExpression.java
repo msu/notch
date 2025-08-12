@@ -1,6 +1,6 @@
 package bigsky.notch.expr;
 
-import bigsky.notch.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntime;
 
 public class FallbackExpression extends NotchExpression {
     public final NotchExpression value, fallback;
