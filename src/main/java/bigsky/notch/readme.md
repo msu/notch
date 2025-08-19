@@ -18,7 +18,36 @@ yes, I did name this after another horse, sue me
 
 ### Custom Operators
 
-| Name        | Syntax                                    |
-|-------------|-------------------------------------------|
-| fallback    | `expr(89) '?:' expr(90)`                  |
-| conditional | `expr(99) 'if' expr(99) [else expr(100)]` |
+| Name        | Syntax                                        |
+|-------------|-----------------------------------------------|
+| fallback    | `expr(89) '?:' expr(90)`                      |
+| conditional | `expr(99) 'when' expr(99) ['else' expr(100)]` |
+
+### Destructuring
+
+### Statements
+
+| Name          | Syntax                                                 | Notes                    |
+|---------------|--------------------------------------------------------|--------------------------|
+| stmt-fallback | `'else' block 'end' \| 'otherwise' expr`               | Block vs Expression else |
+| stmt-then     | `block \| 'then' expr`                                 |                          |
+| if-statement  | `'if' expr if-then [stmt-fallback]`                    |                          |
+| for-statement | `'for' destruct 'in' expr [stmt-then] [stmt-fallback]` |                          |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
