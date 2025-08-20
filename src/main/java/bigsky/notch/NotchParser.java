@@ -1,6 +1,10 @@
 package bigsky.notch;
 
 import bigsky.notch.expr.*;
+import bigsky.notch.stmt.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static bigsky.notch.NotchUtils.repr;
 
@@ -81,6 +85,12 @@ public class NotchParser {
         return true;
     }
 
+    public void require(char c) {
+        if(!take(c)){
+            throw new ParseException(location, "Expected " + c);
+        }
+    }
+
     public boolean take(char c) {
         if (peek(c)) {
             advance();
@@ -97,7 +107,7 @@ public class NotchParser {
         return false;
     }
 
-    public NotchToken parseWord() {
+    public NotchToken takeWord() {
         if (atEnd()) return null;
 
         var start = location;
@@ -124,7 +134,7 @@ public class NotchParser {
     }
 
     public NotchToken takeWordT(String word) {
-        var token = parseWord();
+        var token = takeWord();
         if (token == null) return null;
         if (!token.lex.equals(word)) {
             location = token.start;
@@ -138,7 +148,14 @@ public class NotchParser {
         return takeWordT(word) != null;
     }
 
-    public void expectWord(String word, String contextMessage) {
+    public boolean peekWord(String word) {
+        var token = takeWordT(word);
+        if (token == null) return false;
+        location = token.start;
+        return true;
+    }
+
+    public void requireWord(String word, String contextMessage) {
         if (!takeWord(word)) {
             throw new ParseException(location, location, "expected " + repr(word) + ", " + contextMessage);
         }
@@ -205,7 +222,7 @@ public class NotchParser {
     }
 
     private NotchExpression parsePrimaryExpr() {
-        NotchToken word = parseWord();
+        NotchToken word = takeWord();
         if (word != null) {
             if (word.lex.equals("true") || word.lex.equals("false")) {
                 return new BooleanNotchExpression(word);
@@ -213,12 +230,12 @@ public class NotchParser {
             return new IdentNotchExpression(word);
         }
 
-        NotchToken intToken = parseInteger();
+        NotchToken intToken = takeInteger();
         if (intToken != null) {
             return new IntegerNotchExpression(intToken);
         }
 
-        NotchToken stringToken = parseString();
+        NotchToken stringToken = takeString();
         if (stringToken != null) {
             return new StringNotchExpression(stringToken);
         }
@@ -226,7 +243,7 @@ public class NotchParser {
         return null;
     }
 
-    public NotchToken parseString() {
+    public NotchToken takeString() {
         if (atEnd()) return null;
 
         var start = location;
@@ -298,7 +315,7 @@ public class NotchParser {
         }
     }
 
-    public NotchToken parseInteger() {
+    public NotchToken takeInteger() {
         if (atEnd()) return null;
         var start = location;
 
@@ -326,5 +343,125 @@ public class NotchParser {
 
     public Location getLocation() {
         return location;
+    }
+
+    public NotchStatement parse() {
+        var stmts = new ArrayList<NotchStatement>();
+        var start = location;
+        while (!atEnd()) {
+            stmts.add(parseStatement());
+        }
+        if(stmts.size() == 1) {
+            return stmts.getFirst();
+        } else {
+            StatementList statementList = new StatementList(start, location);
+            stmts.forEach(statementList::addStatement);
+            return statementList;
+        }
+    }
+
+    private NotchStatement parseStatement() {
+        var print = parsePrintStatement();
+        if(print != null) {
+            return print;
+        }
+        var ifStmt = parseIfStatement();
+        if(ifStmt != null) {
+            return ifStmt;
+        }
+        var forStmt = parseForStatement();
+        if(forStmt != null) {
+            return forStmt;
+        }
+        throw new ParseException(location, "expected statement");
+    }
+
+    private ForStatement parseForStatement() {
+        Location start = location;
+        if (takeWord("for")) {
+
+            NotchToken loopIdentifier = takeWord();
+            if (loopIdentifier == null) {
+                throw new ParseException(location, "expected loop identifier");
+            }
+
+            requireWord("in", "expected 'in'");
+
+            NotchExpression loopExpression = parseExpression();
+            if (loopExpression == null) {
+                throw new ParseException(location, "expected loop expression");
+            }
+
+            NotchToken indexIdentifier = null;
+            if (takeWord("index")) {
+                indexIdentifier = takeWord();
+                if (indexIdentifier == null) {
+                    throw new ParseException(location, "expected index identifier");
+                }
+            }
+
+            List<NotchStatement> loopBodyStatements = new ArrayList<>();
+
+            while(!atEnd() && !peekWord("end")) {
+                loopBodyStatements.add(parseStatement());
+            }
+
+            requireWord("end", "Unterminated for statement");
+
+            ForStatement forStatement = new ForStatement(start, location);
+            forStatement.setLoopVariable(loopIdentifier);
+            forStatement.setIndexVariable(indexIdentifier);
+            forStatement.setExpression(loopExpression);
+            loopBodyStatements.forEach(forStatement::addLoopBodyStatement);
+            return forStatement;
+        }
+        return null;
+    }
+
+    private IfStatement parseIfStatement() {
+        Location start = location;
+        if (takeWord("if")) {
+
+            NotchExpression conditional = parseExpression();
+            if(conditional == null) {
+                throw new ParseException(start, location, "Expected a conditional expression");
+            }
+
+            var ifTrue = new ArrayList<NotchStatement>();
+            while(!atEnd() && !(peekWord("end") || peekWord("else"))) {
+                ifTrue.add(parseStatement());
+            }
+
+            var ifFalse = new ArrayList<NotchStatement>();
+            if(takeWord("else")) {
+                // TODO if the next token is 'if' and on the same line, it is a continuation of
+                //      the current if and should be treated as syntactically bound to it
+                while(!atEnd() && !peekWord("end")) {
+                    ifFalse.add(parseStatement());
+                }
+            }
+
+            requireWord("end", "Unterminated if statement");
+
+            IfStatement ifStatement = new IfStatement(start, location);
+            ifStatement.setExpression(conditional);
+            ifTrue.forEach(ifStatement::addTrueStatement);
+            ifFalse.forEach(ifStatement::addFalseStatement);
+            return ifStatement;
+        }
+        return null;
+    }
+
+    private PrintStatement parsePrintStatement() {
+        Location start = location;
+        if (takeWord("print")) {
+            require('(');
+            NotchExpression expr = parseExpression();
+            require(')');
+            PrintStatement printStatement = new PrintStatement(start, location);
+            printStatement.setExpression(expr);
+            return printStatement;
+        }
+        return null;
     }
 }

@@ -1,12 +1,23 @@
 package bigsky.notch.runtime;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class NotchRuntime {
-    public static final Object UNDEFINED = new Object();
+    public static final Object UNDEFINED = new Object() {
+        @Override
+        public String toString() {
+            return "<undefined>";
+        }
+    };
 
     private final Vector<LinkedHashMap<String, Object>> values = new Vector<>();
 
+    Consumer<Object> out = System.out::println;
+
+    public NotchRuntime() {
+        this(Map.of());
+    }
     public NotchRuntime(Map<String, Object> entry) {
         Objects.requireNonNull(entry);
 
@@ -52,6 +63,14 @@ public class NotchRuntime {
         values.addLast(entry);
         var lock = new ScopeLock(entry);
         return lock;
+    }
+
+    public void setOut(Consumer<Object> out) {
+        this.out = out;
+    }
+
+    public void println(Object result) {
+        out.accept(result);
     }
 
     public class ScopeLock implements AutoCloseable {
