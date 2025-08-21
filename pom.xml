@@ -21,6 +21,11 @@
             <version>5.12.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>bigsky</groupId>
+            <artifactId>utils</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 </project>
