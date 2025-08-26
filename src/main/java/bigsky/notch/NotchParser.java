@@ -6,7 +6,7 @@ import bigsky.notch.stmt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static bigsky.utils.BigSkyUtils.repr;
+import static bigsky.utils.Text.repr;
 
 public class NotchParser {
     private Location location = new Location(0, 1, 1);
