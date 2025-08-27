@@ -7,13 +7,13 @@ import bigsky.notch.runtime.NotchRuntime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IfStatement extends NotchStatement {
+public class NotchIf extends NotchStatement {
 
     NotchExpression expr;
     List<NotchStatement> ifTrue = new ArrayList<>();
     List<NotchStatement> ifFalse = new ArrayList<>();
 
-    public IfStatement(Location start, Location end) {
+    public NotchIf(Location start, Location end) {
         super(start, end);
     }
 

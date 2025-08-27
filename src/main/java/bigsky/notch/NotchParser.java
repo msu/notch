@@ -354,7 +354,7 @@ public class NotchParser {
         if(stmts.size() == 1) {
             return stmts.getFirst();
         } else {
-            StatementList statementList = new StatementList(start, location);
+            NotchStatements statementList = new NotchStatements(start, location);
             stmts.forEach(statementList::addStatement);
             return statementList;
         }
@@ -376,7 +376,7 @@ public class NotchParser {
         throw new ParseException(location, "expected statement");
     }
 
-    private ForStatement parseForStatement() {
+    private NotchForLoop parseForStatement() {
         Location start = location;
         if (takeWord("for")) {
 
@@ -408,7 +408,7 @@ public class NotchParser {
 
             requireWord("end", "Unterminated for statement");
 
-            ForStatement forStatement = new ForStatement(start, location);
+            NotchForLoop forStatement = new NotchForLoop(start, location);
             forStatement.setLoopVariable(loopIdentifier);
             forStatement.setIndexVariable(indexIdentifier);
             forStatement.setExpression(loopExpression);
@@ -418,7 +418,7 @@ public class NotchParser {
         return null;
     }
 
-    private IfStatement parseIfStatement() {
+    private NotchIf parseIfStatement() {
         Location start = location;
         if (takeWord("if")) {
 
@@ -443,7 +443,7 @@ public class NotchParser {
 
             requireWord("end", "Unterminated if statement");
 
-            IfStatement ifStatement = new IfStatement(start, location);
+            NotchIf ifStatement = new NotchIf(start, location);
             ifStatement.setExpression(conditional);
             ifTrue.forEach(ifStatement::addTrueStatement);
             ifFalse.forEach(ifStatement::addFalseStatement);
@@ -452,13 +452,13 @@ public class NotchParser {
         return null;
     }
 
-    private PrintStatement parsePrintStatement() {
+    private NotchPrint parsePrintStatement() {
         Location start = location;
         if (takeWord("print")) {
             require('(');
             NotchExpression expr = parseExpression();
             require(')');
-            PrintStatement printStatement = new PrintStatement(start, location);
+            NotchPrint printStatement = new NotchPrint(start, location);
             printStatement.setExpression(expr);
             return printStatement;
         }

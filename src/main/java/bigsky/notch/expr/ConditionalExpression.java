@@ -9,7 +9,7 @@ public class ConditionalExpression extends NotchExpression {
         super(value.start, fallback == null ? condition.end : fallback.end);
         this.value = addChild(value);
         this.condition = addChild(condition);
-        this.fallback = addChild(fallback);
+        this.fallback = fallback == null  ? null : addChild(fallback);
     }
 
     @Override

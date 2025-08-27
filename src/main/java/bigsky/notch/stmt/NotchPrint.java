@@ -4,11 +4,11 @@ import bigsky.notch.Location;
 import bigsky.notch.expr.NotchExpression;
 import bigsky.notch.runtime.NotchRuntime;
 
-public class PrintStatement extends NotchStatement {
+public class NotchPrint extends NotchStatement {
 
     NotchExpression expr;
 
-    public PrintStatement(Location start, Location end) {
+    public NotchPrint(Location start, Location end) {
         super(start, end);
     }
 

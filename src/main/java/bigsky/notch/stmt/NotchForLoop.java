@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ForStatement extends NotchStatement {
+public class NotchForLoop extends NotchStatement {
 
     private NotchToken loopVariable;
     private NotchToken indexVariable;
     NotchExpression expr;
     List<NotchStatement> loopBody = new ArrayList<>();
 
-    public ForStatement(Location start, Location end) {
+    public NotchForLoop(Location start, Location end) {
         super(start, end);
     }
 
