@@ -1,18 +1,18 @@
 package bigsky.notch.expr;
 
 import bigsky.notch.runtime.NotchRuntime;
-import bigsky.notch.NotchToken;
+import bigsky.utils.chisel.Token;
 
 public class StringNotchExpression extends NotchExpression {
-    public final NotchToken token;
+    public final Token token;
 
-    public StringNotchExpression(NotchToken token) {
+    public StringNotchExpression(Token token) {
         super(token.start, token.end);
         this.token = token;
     }
 
     public String value() {
-        return token.lex;
+        return token.str();
     }
 
     @Override

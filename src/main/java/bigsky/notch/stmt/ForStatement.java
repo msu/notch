@@ -1,30 +1,30 @@
 package bigsky.notch.stmt;
 
-import bigsky.notch.Location;
-import bigsky.notch.NotchToken;
 import bigsky.notch.expr.NotchExpression;
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.utils.chisel.Location;
+import bigsky.utils.chisel.Token;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class NotchForLoop extends NotchStatement {
+public class ForStatement extends NotchStatement {
 
-    private NotchToken loopVariable;
-    private NotchToken indexVariable;
+    private Token loopVariable;
+    private Token indexVariable;
     NotchExpression expr;
     List<NotchStatement> loopBody = new ArrayList<>();
 
-    public NotchForLoop(Location start, Location end) {
+    public ForStatement(Location start, Location end) {
         super(start, end);
     }
 
-    public void setLoopVariable(NotchToken name) {
+    public void setLoopVariable(Token name) {
         this.loopVariable = name;
     }
 
-    public void setIndexVariable(NotchToken indexVariable) {
+    public void setIndexVariable(Token indexVariable) {
         this.indexVariable = indexVariable;
     }
 
@@ -44,9 +44,9 @@ public class NotchForLoop extends NotchStatement {
             result = convertResult(result);
             if (result instanceof Iterable i) {
                 for (Object o : i) {
-                    runtime.setOrInsert(loopVariable.lex, o);
+                    runtime.setOrInsert(((String) loopVariable.data), o);
                     if (indexVariable != null) {
-                        runtime.setOrInsert(indexVariable.lex, index++);
+                        runtime.setOrInsert(((String) indexVariable.data), index++);
                     }
                     for (NotchStatement notchStatement : loopBody) {
                         notchStatement.execute(runtime);

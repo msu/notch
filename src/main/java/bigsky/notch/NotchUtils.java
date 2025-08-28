@@ -1,6 +1,6 @@
 package bigsky.notch;
 
-import static bigsky.utils.Text.repr;
+import static bigsky.utils.BigSkyUtils.repr;
 
 public class NotchUtils {
     public static boolean isIdentifierStartChar(char first) {

@@ -1,7 +1,7 @@
 package bigsky.notch;
 
 import bigsky.notch.expr.NotchErrorExpression;
-import bigsky.notch.expr.NotchExpression;
+import bigsky.utils.chisel.Location;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -18,7 +18,7 @@ public class NotchElement {
     }
 
     protected <T extends NotchElement> T addChild(T child) {
-        children.add(Objects.requireNonNull(child, "child must not be null"));
+        if (child != null) children.add(child);
         return child;
     }
 

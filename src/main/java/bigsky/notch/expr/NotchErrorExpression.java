@@ -1,6 +1,6 @@
 package bigsky.notch.expr;
 
-import bigsky.notch.Location;
+import bigsky.utils.chisel.Location;
 
 public abstract class NotchErrorExpression extends NotchExpression {
     public final String message;

@@ -1,10 +1,9 @@
 package bigsky.notch.expr;
 
-import bigsky.notch.Location;
 import bigsky.notch.NotchElement;
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.utils.chisel.Location;
 
-import java.beans.Expression;
 import java.util.*;
 
 public abstract class NotchExpression extends NotchElement {

@@ -1,8 +1,8 @@
 package bigsky.notch.stmt;
 
-import bigsky.notch.Location;
 import bigsky.notch.NotchElement;
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.utils.chisel.Location;
 
 public abstract class NotchStatement extends NotchElement {
 

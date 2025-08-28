@@ -1,12 +1,12 @@
 package bigsky.notch.expr;
 
 import bigsky.notch.runtime.NotchRuntime;
-import bigsky.notch.NotchToken;
+import bigsky.utils.chisel.Token;
 
 public class IntegerNotchExpression extends NotchExpression {
-    public final NotchToken token;
+    public final Token token;
 
-    public IntegerNotchExpression(NotchToken token) {
+    public IntegerNotchExpression(Token token) {
         super(token.start, token.end);
         this.token = token;
     }
@@ -14,7 +14,7 @@ public class IntegerNotchExpression extends NotchExpression {
     private Integer value;
     public int value() {
         if (value == null) {
-            value = Integer.parseInt(token.lex);
+            value = token.integer();
         }
         return value;
     }
