@@ -7,7 +7,7 @@ import bigsky.utils.chisel.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static bigsky.utils.BigSkyUtils.repr;
+import static bigsky.utils.Text.repr;
 
 public class NotchParser extends BasicParser {
     public NotchParser(TokenStream tokens) {
@@ -134,11 +134,11 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchExpression parseEqualityExpr() {
-        var expr = parsePrimaryExpr();
+        var expr = parseIndirectExpression();
         if (expr == null) return null;
 
         while (take("==")) {
-            var rhs = parsePrimaryExpr();
+            var rhs = parseIndirectExpression();
             if (rhs == null) {
                 throw new ParseException(location(), "expected expression after '==' operator");
             }
@@ -149,7 +149,30 @@ public class NotchParser extends BasicParser {
         return expr;
     }
 
-    private NotchExpression parsePrimaryExpr() {
+    private NotchExpression parseIndirectExpression() {
+        NotchExpression notchExpression = parsePrimaryExpression();
+        if(notchExpression != null) {
+            while (true) {
+                if (peek('.')) {
+                    notchExpression = parsePropertyAccessExpression(notchExpression);
+                } else if (peek('(')) {
+//                    notchExpression = parseMethodInvocation(notchExpression);
+                } else {
+                    break;
+                }
+            }
+        }
+        return notchExpression;
+    }
+
+    private NotchExpression parsePropertyAccessExpression(NotchExpression root) {
+        Location start = root.start;
+
+
+        return null;
+    }
+
+    private NotchExpression parsePrimaryExpression() {
         Token bool = consume("bool");
         if (bool != null) {
             return new BooleanNotchExpression(bool);
