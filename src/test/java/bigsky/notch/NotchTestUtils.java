@@ -1,8 +1,8 @@
 package bigsky.notch;
 
-import bigsky.notch.expr.NotchExpression;
+import bigsky.notch.expressions.NotchExpression;
 import bigsky.notch.runtime.NotchRuntime;
-import bigsky.notch.stmt.NotchStatement;
+import bigsky.notch.statements.NotchStatement;
 import bigsky.utils.chisel.TokenStream;
 import bigsky.utils.chisel.TokenizeException;
 

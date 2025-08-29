@@ -7,9 +7,8 @@ public class TypeSystem {
     private static final ConcurrentHashMap<String, NotchType> TYPESYSTEM_CACHE = new ConcurrentHashMap<>();
 
     public static NotchType getRuntimeType(Object rootVal) {
-        if (rootVal instanceof HasCustomNotchType) {
-            HasCustomNotchType hasChillType = (HasCustomNotchType) rootVal;
-            return hasChillType.getChillType();
+        if (rootVal instanceof HasCustomNotchType hasNotchType) {
+            return hasNotchType.getNotchType();
         } else {
             Class<?> aClass = rootVal.getClass();
             return getType(aClass);

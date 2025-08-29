@@ -1,4 +1,4 @@
-package bigsky.notch.expr;
+package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchBoundMethod;
 import bigsky.notch.runtime.NotchRuntime;

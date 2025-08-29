@@ -1,4 +1,4 @@
-package bigsky.notch.stmt;
+package bigsky.notch.statements;
 
 import bigsky.notch.NotchElement;
 import bigsky.notch.runtime.NotchRuntime;

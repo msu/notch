@@ -1,6 +1,6 @@
-package bigsky.notch.stmt;
+package bigsky.notch.statements;
 
-import bigsky.notch.expr.NotchExpression;
+import bigsky.notch.expressions.NotchExpression;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.utils.chisel.Location;
 import bigsky.utils.chisel.Token;
@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ForStatement extends NotchStatement {
+public class NotchForLoop extends NotchStatement {
 
     private Token loopVariable;
     private Token indexVariable;
     NotchExpression expr;
     List<NotchStatement> loopBody = new ArrayList<>();
 
-    public ForStatement(Location start, Location end) {
+    public NotchForLoop(Location start, Location end) {
         super(start, end);
     }
 

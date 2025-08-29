@@ -1,8 +1,7 @@
 package bigsky.notch;
 
-import bigsky.notch.expr.*;
-import bigsky.notch.stmt.*;
-import bigsky.utils.Text;
+import bigsky.notch.expressions.*;
+import bigsky.notch.statements.*;
 import bigsky.utils.chisel.*;
 
 import java.util.ArrayList;
@@ -112,7 +111,7 @@ public class NotchParser extends BasicParser {
                 }
             }
 
-            expr = new ConditionalExpression(expr, condition, fallback);
+            expr = new NotchConditional(expr, condition, fallback);
         }
 
         return expr;
@@ -128,7 +127,7 @@ public class NotchParser extends BasicParser {
                 throw new ParseException(location(), "expected expression after '?:' operator");
             }
 
-            expr = new FallbackExpression(expr, fallback);
+            expr = new NotchFallback(expr, fallback);
         }
 
         return expr;
@@ -144,7 +143,7 @@ public class NotchParser extends BasicParser {
                 throw new ParseException(location(), "expected expression after '==' operator");
             }
 
-            expr = new EqualityNotchExpression(expr, rhs);
+            expr = new NotchEquality(expr, rhs);
         }
 
         return expr;
@@ -205,22 +204,22 @@ public class NotchParser extends BasicParser {
     private NotchExpression parsePrimaryExpression() {
         Token bool = consume("bool");
         if (bool != null) {
-            return new BooleanNotchExpression(bool);
+            return new NotchBoolean(bool);
         }
 
         Token word = consume("ident");
         if (word != null) {
-            return new IdentNotchExpression(word);
+            return new NotchIdentifier(word);
         }
 
         Token intToken = consume("integer");
         if (intToken != null) {
-            return new IntegerNotchExpression(intToken);
+            return new NotchInteger(intToken);
         }
 
         Token stringToken = consume("string");
         if (stringToken != null) {
-            return new StringNotchExpression(stringToken);
+            return new NotchString(stringToken);
         }
 
         return null;
@@ -235,9 +234,9 @@ public class NotchParser extends BasicParser {
         if (stmts.size() == 1) {
             return stmts.getFirst();
         } else {
-            StatementList statementList = new StatementList(start, tokens.location());
-            stmts.forEach(statementList::addStatement);
-            return statementList;
+            NotchStatements notchStatements = new NotchStatements(start, tokens.location());
+            stmts.forEach(notchStatements::addStatement);
+            return notchStatements;
         }
     }
 
@@ -257,7 +256,7 @@ public class NotchParser extends BasicParser {
         throw new ParseException(tokens.location(), "expected statement");
     }
 
-    private ForStatement parseForStatement() {
+    private NotchForLoop parseForStatement() {
         var start = tokens.location();
         if (takeKeyword("for")) {
 
@@ -279,17 +278,17 @@ public class NotchParser extends BasicParser {
 
             requireKeyword("end", "Unterminated for statement");
 
-            ForStatement forStatement = new ForStatement(start, tokens.location());
-            forStatement.setLoopVariable(loopIdentifier);
-            forStatement.setIndexVariable(indexIdentifier);
-            forStatement.setExpression(loopExpression);
-            loopBodyStatements.forEach(forStatement::addLoopBodyStatement);
-            return forStatement;
+            NotchForLoop notchForLoop = new NotchForLoop(start, tokens.location());
+            notchForLoop.setLoopVariable(loopIdentifier);
+            notchForLoop.setIndexVariable(indexIdentifier);
+            notchForLoop.setExpression(loopExpression);
+            loopBodyStatements.forEach(notchForLoop::addLoopBodyStatement);
+            return notchForLoop;
         }
         return null;
     }
 
-    private IfStatement parseIfStatement() {
+    private NotchIf parseIfStatement() {
         var start = tokens.location();
         if (takeKeyword("if")) {
 
@@ -314,24 +313,24 @@ public class NotchParser extends BasicParser {
 
             requireKeyword("end", "Unterminated if statement");
 
-            IfStatement ifStatement = new IfStatement(start, tokens.location());
-            ifStatement.setExpression(conditional);
-            ifTrue.forEach(ifStatement::addTrueStatement);
-            ifFalse.forEach(ifStatement::addFalseStatement);
-            return ifStatement;
+            NotchIf notchIf = new NotchIf(start, tokens.location());
+            notchIf.setExpression(conditional);
+            ifTrue.forEach(notchIf::addTrueStatement);
+            ifFalse.forEach(notchIf::addFalseStatement);
+            return notchIf;
         }
         return null;
     }
 
-    private PrintStatement parsePrintStatement() {
+    private NotchPrint parsePrintStatement() {
         var start = tokens.location();
         if (takeIdent("print")) {
             require("(", "arguments expected after 'print' keyword");
             NotchExpression expr = parseExpression();
             require(")", "missing argument terminator after 'print' arguments");
-            PrintStatement printStatement = new PrintStatement(start, tokens.location());
-            printStatement.setExpression(expr);
-            return printStatement;
+            NotchPrint notchPrint = new NotchPrint(start, tokens.location());
+            notchPrint.setExpression(expr);
+            return notchPrint;
         }
         return null;
     }

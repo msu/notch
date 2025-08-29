@@ -1,4 +1,4 @@
-package bigsky.notch.expr;
+package bigsky.notch.expressions;
 
 import bigsky.utils.chisel.Location;
 

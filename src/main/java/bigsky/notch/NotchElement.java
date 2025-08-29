@@ -1,6 +1,6 @@
 package bigsky.notch;
 
-import bigsky.notch.expr.NotchErrorExpression;
+import bigsky.notch.expressions.NotchErrorExpression;
 import bigsky.utils.chisel.Location;
 
 import java.util.Collections;

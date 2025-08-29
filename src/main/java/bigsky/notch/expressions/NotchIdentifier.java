@@ -1,12 +1,12 @@
-package bigsky.notch.expr;
+package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.utils.chisel.Token;
 
-public class IdentNotchExpression extends NotchExpression {
+public class NotchIdentifier extends NotchExpression {
     public final Token token;
 
-    public IdentNotchExpression(Token token) {
+    public NotchIdentifier(Token token) {
         super(token.start, token.end);
         this.token = token;
     }

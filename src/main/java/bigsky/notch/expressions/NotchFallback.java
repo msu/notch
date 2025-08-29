@@ -1,11 +1,11 @@
-package bigsky.notch.expr;
+package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
 
-public class FallbackExpression extends NotchExpression {
+public class NotchFallback extends NotchExpression {
     public final NotchExpression value, fallback;
 
-    public FallbackExpression(NotchExpression value, NotchExpression fallback) {
+    public NotchFallback(NotchExpression value, NotchExpression fallback) {
         super(value.start, fallback.end);
         this.value = addChild(value);
         this.fallback = addChild(fallback);

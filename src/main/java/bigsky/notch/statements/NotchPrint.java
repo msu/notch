@@ -1,14 +1,14 @@
-package bigsky.notch.stmt;
+package bigsky.notch.statements;
 
-import bigsky.notch.expr.NotchExpression;
+import bigsky.notch.expressions.NotchExpression;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.utils.chisel.Location;
 
-public class PrintStatement extends NotchStatement {
+public class NotchPrint extends NotchStatement {
 
     NotchExpression expr;
 
-    public PrintStatement(Location start, Location end) {
+    public NotchPrint(Location start, Location end) {
         super(start, end);
     }
 

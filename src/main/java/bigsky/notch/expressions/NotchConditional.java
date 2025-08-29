@@ -1,11 +1,11 @@
-package bigsky.notch.expr;
+package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
 
-public class ConditionalExpression extends NotchExpression {
+public class NotchConditional extends NotchExpression {
     public final NotchExpression value, condition, fallback;
 
-    public ConditionalExpression(NotchExpression value, NotchExpression condition, NotchExpression fallback) {
+    public NotchConditional(NotchExpression value, NotchExpression condition, NotchExpression fallback) {
         super(value.start, fallback == null ? condition.end : fallback.end);
         this.value = addChild(value);
         this.condition = addChild(condition);

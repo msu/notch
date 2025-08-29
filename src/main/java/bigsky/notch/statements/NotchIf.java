@@ -1,19 +1,19 @@
-package bigsky.notch.stmt;
+package bigsky.notch.statements;
 
-import bigsky.notch.expr.NotchExpression;
+import bigsky.notch.expressions.NotchExpression;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.utils.chisel.Location;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class IfStatement extends NotchStatement {
+public class NotchIf extends NotchStatement {
 
     NotchExpression expr;
     List<NotchStatement> ifTrue = new ArrayList<>();
     List<NotchStatement> ifFalse = new ArrayList<>();
 
-    public IfStatement(Location start, Location end) {
+    public NotchIf(Location start, Location end) {
         super(start, end);
     }
 

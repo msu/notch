@@ -1,13 +1,13 @@
-package bigsky.notch.expr;
+package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
 
 import java.util.Objects;
 
-public class EqualityNotchExpression extends NotchExpression {
+public class NotchEquality extends NotchExpression {
     public final NotchExpression lhs, rhs;
 
-    public EqualityNotchExpression(NotchExpression lhs, NotchExpression rhs) {
+    public NotchEquality(NotchExpression lhs, NotchExpression rhs) {
         super(lhs.start, rhs.end);
         this.lhs = addChild(lhs);
         this.rhs = addChild(rhs);

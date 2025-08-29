@@ -74,8 +74,8 @@ public class NotchJavaType implements NotchType, PropertyMissing {
                 .map(method -> getProperty(propertyNameFor(method)));
 
         BetterList<Field> fields = new BetterList<>(backingClass.getDeclaredFields());
-        BetterList<NotchProperty> chillProperties = fields.map(field -> getProperty(field.getName()));
-        BetterList<NotchProperty> fieldProperties = chillProperties.filter(Objects::nonNull);
+        BetterList<NotchProperty> notchProperties = fields.map(field -> getProperty(field.getName()));
+        BetterList<NotchProperty> fieldProperties = notchProperties.filter(Objects::nonNull);
 
         return methodProperties.concat(fieldProperties);
     }
@@ -91,9 +91,9 @@ public class NotchJavaType implements NotchType, PropertyMissing {
     }
 
     public NotchJavaProperty resolveProperty(String propName) {
-        var chillJavaProperty = new NotchJavaProperty(backingClass, propName);
-        if (chillJavaProperty.isValid()) {
-            return chillJavaProperty;
+        var notchJavaProperty = new NotchJavaProperty(backingClass, propName);
+        if (notchJavaProperty.isValid()) {
+            return notchJavaProperty;
         } else {
             return null;
         }
@@ -110,7 +110,7 @@ public class NotchJavaType implements NotchType, PropertyMissing {
 
     @Override
     public String toString() {
-        return "JavaChillType: " + backingClass.getName();
+        return "NotchJavaType: " + backingClass.getName();
     }
 
     @Override
