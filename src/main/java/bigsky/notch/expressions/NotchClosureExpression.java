@@ -28,10 +28,11 @@ public class NotchClosureExpression extends NotchExpression {
     }
 
     public void setExpression(NotchExpression expression) {
-        this.expression = expression;
+        this.expression = addChild(expression);
     }
 
     public void setStatements(List<NotchStatement> statements) {
         this.statements = statements;
+        this.statements.forEach(this::addChild);
     }
 }

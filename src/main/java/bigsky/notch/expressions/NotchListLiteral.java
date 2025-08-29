@@ -24,5 +24,6 @@ public class NotchListLiteral extends NotchExpression {
 
     public void setValues(List<NotchExpression> listValues) {
         this.values = listValues;
+        this.values.forEach(this::addChild);
     }
 }

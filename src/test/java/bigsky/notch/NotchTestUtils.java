@@ -12,7 +12,7 @@ import java.util.Map;
 import static bigsky.utils.Exceptions.rethrow;
 
 public class NotchTestUtils {
-    static Object eval(String source, Object... vars) {
+    public static Object eval(String source, Object... vars) {
         NotchTokenizer tokenizer = new NotchTokenizer(source);
         TokenStream tokens;
         try {
@@ -26,7 +26,7 @@ public class NotchTestUtils {
         return result;
     }
 
-    static String exec(String source, Object... vars) {
+    public static String exec(String source, Object... vars) {
         NotchTokenizer tokenizer = new NotchTokenizer(source);
         TokenStream tokens;
         try {

@@ -135,11 +135,11 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchExpression parseEqualityExpr() {
-        var expr = parseIndirectExpression();
+        var expr = parseAdditiveExpression();
         if (expr == null) return null;
 
         while (take("==")) {
-            var rhs = parseIndirectExpression();
+            var rhs = parseAdditiveExpression();
             if (rhs == null) {
                 throw new ParseException(location(), "expected expression after '==' operator");
             }
@@ -147,6 +147,18 @@ public class NotchParser extends BasicParser {
             expr = new NotchEquality(expr, rhs);
         }
 
+        return expr;
+    }
+
+    private NotchExpression parseAdditiveExpression() {
+        NotchExpression expr = parsePrimaryExpression();
+        while (take("+") && expr != null) {
+            var rhs = parsePrimaryExpression();
+            if (rhs == null) {
+                throw new ParseException(location(), "expected expression after '+' operator");
+            }
+            expr = new NotchAdditiveExpression(expr, rhs);
+        }
         return expr;
     }
 
@@ -321,7 +333,28 @@ public class NotchParser extends BasicParser {
         if (forStmt != null) {
             return forStmt;
         }
+
+        var assignmentStmt = parseAssignmentStatement();
+        if (assignmentStmt != null) {
+            return assignmentStmt;
+        }
+
+
         throw new ParseException(tokens.location(), "expected statement");
+    }
+
+    private NotchStatement parseAssignmentStatement() {
+        var start = tokens.location();
+        if (peek("ident")) {
+            Token varName = requireIdent("expected a variable name");
+            require("=", "expected '='");
+            NotchExpression valueExpression = requireExpression("expected expression for the loop iterable");
+            NotchAssignment assignment = new NotchAssignment(start, tokens.location());
+            assignment.setVariableName(varName);
+            assignment.setExpression(valueExpression);
+            return assignment;
+        }
+        return null;
     }
 
     private NotchForLoop parseForStatement() {
