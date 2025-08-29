@@ -8,7 +8,7 @@ import java.lang.reflect.Modifier;
 
 import static bigsky.utils.Exceptions.rethrow;
 
-public class ChillJavaProperty implements ChillProperty {
+public class NotchJavaProperty implements NotchProperty {
 
     public static final String GET_PREFIX = "get";
     public static final String SET_PREFIX = "set";
@@ -55,11 +55,11 @@ public class ChillJavaProperty implements ChillProperty {
     }
 
     @Override
-    public ChillType getType() {
+    public NotchType getType() {
         return TypeSystem.getType(getter.getType());
     }
 
-    public ChillJavaProperty(Class aClass, String propName) {
+    public NotchJavaProperty(Class aClass, String propName) {
         this.getter = resolveGetter(aClass, propName);
         this.setter = getter == null ? null : getter.resolveSetter();
         this.parentClass = aClass;

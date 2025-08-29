@@ -1,6 +1,12 @@
 package bigsky.notch;
 
+import bigsky.notch.types.NotchMethod;
+import bigsky.notch.types.NotchType;
+import bigsky.notch.types.TypeSystem;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static bigsky.notch.NotchTestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,6 +57,32 @@ public class BootstrapTest {
 
         result = exec("for x in 'foo' index i print(i) print(x) end print(x)");
         assertEquals("0\nf\n1\no\n2\no\n<undefined>\n", result);
+    }
+
+    @Test
+    public void bootstrapPropertyAccess() {
+        ArrayList<Integer> list = new ArrayList<>(List.of(1, 2, 3));
+        Object result = eval("x.size", "x", list);
+        assertEquals(3, result);
+    }
+
+    @Test
+    public void bootstrapMethodInvocation() {
+        ArrayList<Integer> list = new ArrayList<>(List.of(1, 2, 3));
+        Object result = eval("x.size()", "x", list);
+        assertEquals(3, result);
+    }
+
+    @Test
+    public void bootstrapTopLevelMethodInvocation() {
+        NotchType testType = TypeSystem.getType(BootstrapTest.class);
+        NotchMethod method = testType.getMethod("foo");
+        Object result = eval("foo(10)", "foo", method);
+        assertEquals(10, result);
+    }
+
+    public static int foo(int i) {
+        return i;
     }
 
 }

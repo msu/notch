@@ -2,7 +2,7 @@ package bigsky.notch.types;
 
 import java.util.List;
 
-public interface ChillMethod {
+public interface NotchMethod {
     Object invoke(Object rootVal, List<Object> args);
     String getName();
     String getDisplayName();

@@ -10,21 +10,21 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static bigsky.notch.runtime.NotchRuntime.UNDEFINED;
-import static bigsky.notch.types.ChillJavaProperty.propertyNameFor;
+import static bigsky.notch.types.NotchJavaProperty.propertyNameFor;
 
 
-public class JavaChillType implements ChillType, PropertyMissing {
+public class NotchJavaType implements NotchType, PropertyMissing {
 
     private final Class backingClass;
-    private final ConcurrentHashMap<String, ChillJavaProperty> properties = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, ChillMethod> methods = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NotchJavaProperty> properties = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NotchMethod> methods = new ConcurrentHashMap<>();
 
-    public JavaChillType(Class backingClass) {
+    public NotchJavaType(Class backingClass) {
         this.backingClass = backingClass;
     }
 
     @Override
-    public ChillProperty getProperty(String propName) {
+    public NotchProperty getProperty(String propName) {
         return properties.computeIfAbsent(propName, this::resolveProperty);
     }
 
@@ -34,7 +34,7 @@ public class JavaChillType implements ChillType, PropertyMissing {
     }
 
     @Override
-    public List<ChillMethod> getMethods() {
+    public List<NotchMethod> getMethods() {
 
         BetterList<Method> methods = new BetterList<>(backingClass.getMethods());
 
@@ -44,20 +44,20 @@ public class JavaChillType implements ChillType, PropertyMissing {
     }
 
     @Override
-    public List<ChillProperty> getProperties() {
+    public List<NotchProperty> getProperties() {
 
         BetterList<Method> methods = new BetterList<>(backingClass.getMethods());
-        BetterList<ChillProperty> methodProperties = methods.filter(ChillJavaProperty::isPropertyMethod)
+        BetterList<NotchProperty> methodProperties = methods.filter(NotchJavaProperty::isPropertyMethod)
                 .map(method -> getProperty(propertyNameFor(method)));
 
         BetterList<Field> fields = new BetterList<>(backingClass.getFields());
-        BetterList<ChillProperty> fieldProperties = fields.map(field -> getProperty(field.getName()));
+        BetterList<NotchProperty> fieldProperties = fields.map(field -> getProperty(field.getName()));
 
         return methodProperties.concat(fieldProperties);
     }
 
     @Override
-    public List<ChillMethod> getDeclaredMethods() {
+    public List<NotchMethod> getDeclaredMethods() {
 
         BetterList<Method> methods = new BetterList<>(backingClass.getDeclaredMethods());
 
@@ -67,15 +67,15 @@ public class JavaChillType implements ChillType, PropertyMissing {
     }
 
     @Override
-    public List<ChillProperty> getDeclaredProperties() {
+    public List<NotchProperty> getDeclaredProperties() {
 
         BetterList<Method> methods = new BetterList<>(backingClass.getDeclaredMethods());
-        BetterList<ChillProperty> methodProperties = methods.filter(ChillJavaProperty::isPropertyMethod)
+        BetterList<NotchProperty> methodProperties = methods.filter(NotchJavaProperty::isPropertyMethod)
                 .map(method -> getProperty(propertyNameFor(method)));
 
         BetterList<Field> fields = new BetterList<>(backingClass.getDeclaredFields());
-        BetterList<ChillProperty> chillProperties = fields.map(field -> getProperty(field.getName()));
-        BetterList<ChillProperty> fieldProperties = chillProperties.filter(Objects::nonNull);
+        BetterList<NotchProperty> chillProperties = fields.map(field -> getProperty(field.getName()));
+        BetterList<NotchProperty> fieldProperties = chillProperties.filter(Objects::nonNull);
 
         return methodProperties.concat(fieldProperties);
     }
@@ -86,12 +86,12 @@ public class JavaChillType implements ChillType, PropertyMissing {
     }
 
     @Override
-    public ChillMethod getMethod(String methodName) {
+    public NotchMethod getMethod(String methodName) {
         return methods.computeIfAbsent(methodName, this::resolveMethod);
     }
 
-    public ChillJavaProperty resolveProperty(String propName) {
-        var chillJavaProperty = new ChillJavaProperty(backingClass, propName);
+    public NotchJavaProperty resolveProperty(String propName) {
+        var chillJavaProperty = new NotchJavaProperty(backingClass, propName);
         if (chillJavaProperty.isValid()) {
             return chillJavaProperty;
         } else {
@@ -99,8 +99,8 @@ public class JavaChillType implements ChillType, PropertyMissing {
         }
     }
 
-    public ChillMethod resolveMethod(String methodName) {
-        var javaMethod = new ChillJavaMethod(methodName, backingClass);
+    public NotchMethod resolveMethod(String methodName) {
+        var javaMethod = new NotchJavaMethod(methodName, backingClass);
         if (javaMethod.isValid()) {
             return javaMethod;
         } else {
@@ -115,7 +115,7 @@ public class JavaChillType implements ChillType, PropertyMissing {
 
     @Override
     public Object propertyMissing(String propName) {
-        ChillProperty property = getProperty(propName);
+        NotchProperty property = getProperty(propName);
         if (property != null && property.isStatic()) {
             return property.get(null);
         } else {

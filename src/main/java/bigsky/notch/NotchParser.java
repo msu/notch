@@ -2,6 +2,7 @@ package bigsky.notch;
 
 import bigsky.notch.expr.*;
 import bigsky.notch.stmt.*;
+import bigsky.utils.Text;
 import bigsky.utils.chisel.*;
 
 import java.util.ArrayList;
@@ -156,7 +157,7 @@ public class NotchParser extends BasicParser {
                 if (peek('.')) {
                     notchExpression = parsePropertyAccessExpression(notchExpression);
                 } else if (peek('(')) {
-//                    notchExpression = parseMethodInvocation(notchExpression);
+                    notchExpression = parseMethodInvocation(notchExpression);
                 } else {
                     break;
                 }
@@ -165,10 +166,39 @@ public class NotchParser extends BasicParser {
         return notchExpression;
     }
 
+    private NotchExpression parseMethodInvocation(NotchExpression root) {
+        if (take('(')) {
+            Location start = root.start;
+            var args = new ArrayList<NotchExpression>();
+            while (!atEnd() && !take(')')) {
+                NotchExpression arg = parseExpression();
+                args.add(arg);
+                if (!peek(')')) {
+                    if (!take(',')) {
+                        throw new ParseException(location(), "Expected ','");
+                    }
+                }
+            }
+            NotchMethodInvocation methodInvocation = new NotchMethodInvocation(start, location());
+            if (root instanceof NotchPropertyAccess pa) {
+                pa.setFavorMethods(true);
+            }
+            methodInvocation.setRoot(root);
+            methodInvocation.setArgs(args);
+            return methodInvocation;
+        }
+        return null;
+    }
+
     private NotchExpression parsePropertyAccessExpression(NotchExpression root) {
-        Location start = root.start;
-
-
+        if (take('.')) {
+            Location start = root.start;
+            Token propName = requireIdent("Expected a property name");
+            NotchPropertyAccess propAccess = new NotchPropertyAccess(start, location());
+            propAccess.setRoot(root);
+            propAccess.setProperty(propName);
+            return propAccess;
+        }
         return null;
     }
 
@@ -183,7 +213,7 @@ public class NotchParser extends BasicParser {
             return new IdentNotchExpression(word);
         }
 
-        Token intToken = consume("int");
+        Token intToken = consume("integer");
         if (intToken != null) {
             return new IntegerNotchExpression(intToken);
         }
@@ -237,17 +267,17 @@ public class NotchParser extends BasicParser {
             NotchExpression loopExpression = requireExpression("expected expression for the loop iterable");
 
             Token indexIdentifier = null;
-            if (takeKeyword("index")) {
+            if (takeIdent("index")) {
                 indexIdentifier = requireIdent("expected a variable name for the ");
             }
 
             List<NotchStatement> loopBodyStatements = new ArrayList<>();
 
-            while (!atEnd() && !peekIdent("end")) {
+            while (!atEnd() && !peekKeyword("end")) {
                 loopBodyStatements.add(parseStatement());
             }
 
-            requireIdent("end", "Unterminated for statement");
+            requireKeyword("end", "Unterminated for statement");
 
             ForStatement forStatement = new ForStatement(start, tokens.location());
             forStatement.setLoopVariable(loopIdentifier);
@@ -269,7 +299,7 @@ public class NotchParser extends BasicParser {
             }
 
             var ifTrue = new ArrayList<NotchStatement>();
-            while (!atEnd() && !(peekIdent("end") || peekIdent("else"))) {
+            while (!atEnd() && !(peekKeyword("end") || peekKeyword("else"))) {
                 ifTrue.add(parseStatement());
             }
 
@@ -277,7 +307,7 @@ public class NotchParser extends BasicParser {
             if (takeKeyword("else")) {
                 // TODO if the next token is 'if' and on the same line, it is a continuation of
                 //      the current if and should be treated as syntactically bound to it
-                while (!atEnd() && !peekIdent("end")) {
+                while (!atEnd() && !peekKeyword("end")) {
                     ifFalse.add(parseStatement());
                 }
             }

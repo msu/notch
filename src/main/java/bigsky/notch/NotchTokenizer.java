@@ -106,6 +106,6 @@ public class NotchTokenizer extends Tokenizer {
     }
 
     public NotchTokenizer(CharSequence src) {
-        super(src, new Location());
+        this(src, new Location());
     }
 }

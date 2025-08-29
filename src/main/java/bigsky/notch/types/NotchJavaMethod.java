@@ -2,7 +2,6 @@ package bigsky.notch.types;
 
 import bigsky.notch.types.coercions.Coercion;
 import bigsky.utils.BetterList;
-import bigsky.utils.Exceptions;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -12,13 +11,13 @@ import java.util.List;
 import static bigsky.utils.Exceptions.rethrow;
 import static java.lang.Integer.MAX_VALUE;
 
-public class ChillJavaMethod implements ChillMethod {
+public class NotchJavaMethod implements NotchMethod {
 
     private final BetterList<Method> javaMethods;
     private final String name;
     private final Class backingClass;
 
-    public ChillJavaMethod(String methodName, Class backingClass) {
+    public NotchJavaMethod(String methodName, Class backingClass) {
         this.name = methodName;
         this.backingClass = backingClass;
         this.javaMethods = new BetterList<>();
