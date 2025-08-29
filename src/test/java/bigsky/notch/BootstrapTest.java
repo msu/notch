@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 import static bigsky.notch.NotchTestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -104,6 +106,20 @@ public class BootstrapTest {
     public void bootstrapClosureAsArgument() {
         String result = exec("print( ['a', 'ab', 'abc'].map(\\ s -> s.length) )");
         assertEquals("[1, 2, 3]\n", result);
+    }
+
+    @Test
+    public void bootstrapClosureAsBiFunction() {
+        BiFunction result = (BiFunction) eval("(\\ x, y -> x == y).toBiFunction()");
+        assertEquals(true, result.apply(1, 1));
+        assertEquals(false, result.apply(1, 2));
+    }
+
+    @Test
+    public void bootstrapClosureAsBiPredicate() {
+        BiPredicate result = (BiPredicate) eval("(\\ x, y -> x == y).toBiPredicate()");
+        assertTrue(result.test(1, 1));
+        assertFalse(result.test(1, 2));
     }
 
 }

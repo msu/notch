@@ -203,6 +203,15 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchExpression parsePrimaryExpression() {
+        Token paren = consume("(");
+        if (paren != null) {
+            NotchExpression expr = parseExpression();
+            require(")", "Expected a closing parenthesis");
+            NotchParenthesizedExpression parenExpr = new NotchParenthesizedExpression(paren.start, location());
+            parenExpr.setExpression(expr);
+            return parenExpr;
+        }
+
         Token bool = consume("bool");
         if (bool != null) {
             return new NotchBoolean(bool);
