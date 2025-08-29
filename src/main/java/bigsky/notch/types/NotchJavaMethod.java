@@ -37,7 +37,7 @@ public class NotchJavaMethod implements NotchMethod {
             }
             Method method = bestMatch(args);
             if (method == null) {
-                String argTypes = BetterList.of(args).map(o -> o.getClass().getName()).join(",");
+                String argTypes = BetterList.better(args).map(o -> o.getClass().getName()).join(",");
                 throw new IllegalArgumentException("Could not find compatible method with args (" + argTypes + ")");
             }
             for (int i = 0; i < args.size(); i++) {
