@@ -5,6 +5,7 @@ import bigsky.notch.statements.*;
 import bigsky.utils.chisel.*;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static bigsky.utils.Text.repr;
@@ -222,6 +223,64 @@ public class NotchParser extends BasicParser {
             return new NotchString(stringToken);
         }
 
+        if (peek('\\')) {
+            return parseClosureExpression();
+        }
+
+        if (peek('[')) {
+            return parseListLiteral();
+        }
+
+        return null;
+    }
+
+    private NotchExpression parseListLiteral() {
+        Location start = location();
+        if (take('[')) {
+            List<NotchExpression> listValues = new LinkedList<>();
+            while (!atEnd() && !peek(']')) {
+                NotchExpression notchExpression = parseExpression();
+                listValues.add(notchExpression);
+                if (!peek(']')) {
+                    require(",", "Expected a comma to separate elements in the list");
+                }
+            }
+            require("]", "Expected a ']' to close the list");
+            NotchListLiteral notchListLiteral = new NotchListLiteral(start, location());
+            notchListLiteral.setValues(listValues);
+            return notchListLiteral;
+        }
+        return null;
+    }
+
+    private NotchExpression parseClosureExpression() {
+        Location start = location();
+        if (take('\\')) {
+            List<Token> params = new ArrayList<>();
+            while (!atEnd() && !peek("->")) {
+                Token param = require("ident", "Expected a parameter name");
+                params.add(param);
+                if (!peek("->")) {
+                    require(",", "Expected a comma to separate parameters");
+                }
+            }
+            require("->", "Expected a '->' after the parameters");
+            List<NotchStatement> statements = null;
+            NotchExpression expression = null;
+            if (take('{')) {
+                while(!atEnd() && !peek('}')) {
+                    NotchStatement stmt = parseStatement();
+                }
+                require("}", "Require a '}' to close the body of the closure");
+            } else {
+                expression = parseExpression();
+            }
+            NotchClosureExpression closureExpr = new NotchClosureExpression(start, location());
+            closureExpr.setParameters(params);
+            closureExpr.setExpression(expression);
+            closureExpr.setStatements(statements);
+            return closureExpr;
+        }
         return null;
     }
 

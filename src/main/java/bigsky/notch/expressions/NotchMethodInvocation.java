@@ -1,6 +1,7 @@
 package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchBoundMethod;
+import bigsky.notch.runtime.NotchClosure;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.types.NotchJavaMethod;
 import bigsky.utils.chisel.Location;
@@ -37,6 +38,7 @@ public class NotchMethodInvocation extends NotchExpression {
             }
             return switch (functionObj) {
                 case NotchBoundMethod bm -> bm.invoke(argValues);
+                case NotchClosure nc -> nc.call(argValues);
                 case NotchJavaMethod jm -> jm.invoke(null, argValues);
                 case Callable<?> c -> safelyEval(c);
                 case Runnable r -> run(r);

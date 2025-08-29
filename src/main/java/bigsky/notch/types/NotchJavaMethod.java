@@ -24,6 +24,7 @@ public class NotchJavaMethod implements NotchMethod {
         Method[] allMethods = backingClass.getMethods();
         for (Method m : allMethods) {
             if (m.getName().equals(methodName)) {
+                m.setAccessible(true);
                 javaMethods.add(m);
             }
         }

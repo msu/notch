@@ -75,6 +75,7 @@ public class NotchTokenizer extends Tokenizer {
 
             // Member access / misc
             ".",
+            "\\",
             "->",
             "#",
             "?",

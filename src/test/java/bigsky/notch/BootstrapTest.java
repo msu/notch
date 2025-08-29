@@ -1,8 +1,10 @@
 package bigsky.notch;
 
+import bigsky.notch.runtime.NotchClosure;
 import bigsky.notch.types.NotchMethod;
 import bigsky.notch.types.NotchType;
 import bigsky.notch.types.TypeSystem;
+import bigsky.utils.BetterList;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -83,6 +85,25 @@ public class BootstrapTest {
 
     public static int foo(int i) {
         return i;
+    }
+
+    @Test
+    public void bootstrapListLiteral() {
+        Object result = eval("[1, 2, 3]");
+        assertEquals(List.of(1, 2, 3), result);
+        assertTrue(result instanceof BetterList<?>);
+    }
+
+    @Test
+    public void bootstrapClosure() {
+        NotchClosure result = (NotchClosure) eval("\\-> 1");
+        assertEquals(1, result.call());
+    }
+
+    @Test
+    public void bootstrapClosureAsArgument() {
+        String result = exec("print( ['a', 'ab', 'abc'].map(\\ s -> s.length) )");
+        assertEquals("[1, 2, 3]\n", result);
     }
 
 }

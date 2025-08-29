@@ -11,7 +11,7 @@ public class NotchRuntime {
         }
     };
 
-    private final Vector<LinkedHashMap<String, Object>> values = new Vector<>();
+    private Vector<LinkedHashMap<String, Object>> values = new Vector<>();
 
     Consumer<Object> out = System.out::println;
 
@@ -43,6 +43,11 @@ public class NotchRuntime {
         }
     }
 
+    public void setHard(String sym, Object value) {
+        var frame = values.getLast();
+        frame.put(sym, value);
+    }
+
     public void setOrInsert(String sym, Object value) {
         if (isUndefined(value)) {
             unsetSymbol(sym);
@@ -71,6 +76,12 @@ public class NotchRuntime {
 
     public void println(Object result) {
         out.accept(result);
+    }
+
+    public NotchRuntime captureClosure() {
+        NotchRuntime closure = new NotchRuntime();
+        closure.values = values;
+        return closure;
     }
 
     public class ScopeLock implements AutoCloseable {
