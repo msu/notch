@@ -59,9 +59,9 @@ public class NotchForLoop extends NotchStatement {
     private static Object convertResult(Object result) {
         if(result instanceof String s) {
             char[] charArray = s.toCharArray();
-            ArrayList<Character> charList = new ArrayList<>(charArray.length);
+            ArrayList<String> charList = new ArrayList<>(charArray.length);
             for (char c : charArray) {
-                charList.add(c);
+                charList.add(String.valueOf(c));
             }
             result = charList;
         } else if (result instanceof Object[] arr) {

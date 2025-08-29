@@ -98,14 +98,15 @@ public class NotchParser extends BasicParser {
         var expr = parseFallbackExpr();
         if (expr == null) return null;
 
-        if (takeKeyword("if")) {
+        // if the next keyword is an 'if' on the same line, it applies to the expressions
+        if (takeKeywordOnSameLine("if", expr)) {
             var condition = parseFallbackExpr();
             if (condition == null) {
                 throw new ParseException(location(), "expected condition after 'if' operator");
             }
 
             NotchExpression fallback = null;
-            if (takeKeyword("else")) {
+            if (takeKeywordOnSameLine("else", expr)) {
                 fallback = parseConditionalExpr();
                 if (fallback == null) {
                     throw new ParseException(location(), "expected value after 'else' in 'if' expression");
@@ -116,6 +117,13 @@ public class NotchParser extends BasicParser {
         }
 
         return expr;
+    }
+
+    private boolean takeKeywordOnSameLine(String keyword, NotchExpression expr) {
+        Token nextToken = tokens.peek();
+        return nextToken.type.label().equals("keyword") &&
+                nextToken.str().equals(keyword) &&
+                nextToken.start.line == expr.end.line;
     }
 
     private NotchExpression parseFallbackExpr() {
