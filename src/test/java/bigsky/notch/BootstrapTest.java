@@ -152,7 +152,6 @@ public class BootstrapTest {
         assertTrue(result instanceof BetterMap<?, ?>);
     }
 
-
     @Test
     public void bootstrapIndexingTest() {
         // lists
@@ -187,6 +186,21 @@ public class BootstrapTest {
         public String getBar() {
             return "bar";
         }
+    }
+
+    @Test
+    public void bootstrapStupidMapTricks() {
+        String result = exec("""
+                x = { foo = \\-> "bar" }
+                print(x.foo())
+                """);
+        assertEquals("bar\n", result);
+
+        result = exec("""
+                x = { foo = \\-> "bar" }
+                print(x[:foo]())
+                """);
+        assertEquals("bar\n", result);
     }
 
 
