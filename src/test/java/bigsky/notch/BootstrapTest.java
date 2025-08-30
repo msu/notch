@@ -5,10 +5,12 @@ import bigsky.notch.types.NotchMethod;
 import bigsky.notch.types.NotchType;
 import bigsky.notch.types.TypeSystem;
 import bigsky.utils.BetterList;
+import bigsky.utils.BetterMap;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
@@ -97,6 +99,13 @@ public class BootstrapTest {
     }
 
     @Test
+    public void bootstrapListLiteralCanHaveTrailingComma() {
+        Object result = eval("[1, 2, 3,]");
+        assertEquals(List.of(1, 2, 3), result);
+        assertTrue(result instanceof BetterList<?>);
+    }
+
+    @Test
     public void bootstrapClosure() {
         NotchClosure result = (NotchClosure) eval("\\-> 1");
         assertEquals(1, result.call());
@@ -121,5 +130,27 @@ public class BootstrapTest {
         assertTrue(result.test(1, 1));
         assertFalse(result.test(1, 2));
     }
+
+    @Test
+    public void bootstrapMapLiteral() {
+        Map result = (Map) eval("{foo=1, bar=2}");
+        assertEquals(Map.of("foo", 1, "bar", 2), result);
+        assertTrue(result instanceof BetterMap<?, ?>);
+    }
+
+    @Test
+    public void bootstrapMapLiteralWithStringKeys() {
+        Map result = (Map) eval("{'foo foo'=1, bar=2}");
+        assertEquals(Map.of("foo foo", 1, "bar", 2), result);
+        assertTrue(result instanceof BetterMap<?, ?>);
+    }
+
+    @Test
+    public void bootstrapMapLiteralWithTerseStringKeys() {
+        Map result = (Map) eval("{:foo123=1, bar=2}");
+        assertEquals(Map.of("foo123", 1, "bar", 2), result);
+        assertTrue(result instanceof BetterMap<?, ?>);
+    }
+
 
 }
