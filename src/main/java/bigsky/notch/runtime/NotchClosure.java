@@ -23,7 +23,7 @@ public record NotchClosure(NotchRuntime closure, List<Token> parameters, NotchEx
             for (int i = 0; i < args.size(); i++) {
                 Object arg = args.get(i);
                 String param = parameters.get(i).str();
-                closure.setHard(param, arg);
+                scopeLock.define(param, arg);
             }
             if (expression != null) {
                 return expression.evaluate(closure);

@@ -43,11 +43,6 @@ public class NotchRuntime {
         }
     }
 
-    public void setHard(String sym, Object value) {
-        var frame = values.getLast();
-        frame.put(sym, value);
-    }
-
     public void setOrInsert(String sym, Object value) {
         if (isUndefined(value)) {
             unsetSymbol(sym);
