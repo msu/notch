@@ -1,14 +1,17 @@
 package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.utils.chisel.Token;
 
 import java.util.Objects;
 
 public class NotchEquality extends NotchExpression {
     public final NotchExpression lhs, rhs;
+    private final Token op;
 
-    public NotchEquality(NotchExpression lhs, NotchExpression rhs) {
+    public NotchEquality(Token op, NotchExpression lhs, NotchExpression rhs) {
         super(lhs.start, rhs.end);
+        this.op = op;
         this.lhs = addChild(lhs);
         this.rhs = addChild(rhs);
     }
@@ -17,6 +20,10 @@ public class NotchEquality extends NotchExpression {
     public Object evaluate(NotchRuntime runtime) {
         var lv = lhs.evaluate(runtime);
         var rv = rhs.evaluate(runtime);
-        return Objects.equals(lv, rv);
+        if (op.str().equals("==")) {
+            return Objects.equals(lv, rv);
+        } else {
+            return !Objects.equals(lv, rv);
+        }
     }
 }

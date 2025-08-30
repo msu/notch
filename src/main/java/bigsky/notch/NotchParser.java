@@ -127,11 +127,11 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchExpression parseFallbackExpr() {
-        var expr = parseEqualityExpr();
+        var expr = parseLogicalExpression();
         if (expr == null) return null;
 
         while (take("?:")) {
-            var fallback = parseEqualityExpr();
+            var fallback = parseLogicalExpression();
             if (fallback == null) {
                 throw new ParseException(location(), "expected expression after '?:' operator");
             }
@@ -142,32 +142,72 @@ public class NotchParser extends BasicParser {
         return expr;
     }
 
+    private NotchExpression parseLogicalExpression() {
+        NotchExpression expr = parseEqualityExpr();
+        while ((peek("&&", "||") || peekIdent("and") || peekIdent("or") ) &&
+                expr != null) {
+            Token op = take();
+            var rhs = parseEqualityExpr();
+            if (rhs == null) {
+                throw new ParseException(location(), "expected expression after '+' operator");
+            }
+            expr = new NotchLogicalExpression(op, expr, rhs);
+        }
+        return expr;
+    }
+
     private NotchExpression parseEqualityExpr() {
-        var expr = parseAdditiveExpression();
+        var expr = parseComparisonExpression();
         if (expr == null) return null;
 
-        while (take("==")) {
-            var rhs = parseAdditiveExpression();
+        while (peek("==", "!=")) {
+            Token op = take();
+            var rhs = parseComparisonExpression();
             if (rhs == null) {
-                throw new ParseException(location(), "expected expression after '==' operator");
+                throw new ParseException(location(), "expected expression after '" + op.str() + "' operator");
             }
 
-            expr = new NotchEquality(expr, rhs);
+            expr = new NotchEquality(op, expr, rhs);
         }
 
         return expr;
     }
 
+    private NotchExpression parseComparisonExpression() {
+        NotchExpression expr = parseAdditiveExpression();
+        while (peek("<", "<=", ">", ">=") && expr != null) {
+            Token op = take();
+            var rhs = parseAdditiveExpression();
+            if (rhs == null) {
+                throw new ParseException(location(), "expected expression after '+' operator");
+            }
+            expr = new NotchComparisonExpression(op, expr, rhs);
+        }
+        return expr;
+    }
+
     private NotchExpression parseAdditiveExpression() {
-        NotchExpression expr = parsePrimaryExpression();
+        NotchExpression expr = parseUnaryExpression();
         while (take("+") && expr != null) {
-            var rhs = parsePrimaryExpression();
+            var rhs = parseUnaryExpression();
             if (rhs == null) {
                 throw new ParseException(location(), "expected expression after '+' operator");
             }
             expr = new NotchAdditiveExpression(expr, rhs);
         }
         return expr;
+    }
+
+    private NotchExpression parseUnaryExpression() {
+        Location start = location();
+        if (takeIdent("not") || take("!")) {
+            NotchExpression expr = parseUnaryExpression();
+            NotchNotExpression notExpr = new NotchNotExpression(start, location());
+            notExpr.setExpression(expr);
+            return notExpr;
+        } else {
+            return parseIndirectExpression();
+        }
     }
 
     private NotchExpression parseIndirectExpression() {
