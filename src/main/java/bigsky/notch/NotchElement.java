@@ -22,6 +22,15 @@ public class NotchElement {
         return child;
     }
 
+    protected <T extends NotchElement> List<T> addChildren(List<T> children) {
+        if(children != null) {
+            for (T child : children) {
+                addChild(child);
+            }
+        }
+        return children;
+    }
+
     public List<NotchElement> getChildren() {
         return Collections.unmodifiableList(children);
     }

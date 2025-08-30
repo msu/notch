@@ -10,23 +10,23 @@ import java.util.List;
 public class NotchIf extends NotchStatement {
 
     NotchExpression expr;
-    List<NotchStatement> ifTrue = new ArrayList<>();
-    List<NotchStatement> ifFalse = new ArrayList<>();
+    List<NotchStatement> ifTrue;
+    List<NotchStatement> ifFalse;
 
     public NotchIf(Location start, Location end) {
         super(start, end);
     }
 
     public void setExpression(NotchExpression expr) {
-        this.expr = expr;
+        this.expr = addChild(expr);
     }
 
-    public void addTrueStatement(NotchStatement statement) {
-        ifTrue.add(addChild(statement));
+    public void setIfTrue(List<NotchStatement> ifTrue) {
+        this.ifTrue = addChildren(ifTrue);
     }
 
-    public void addFalseStatement(NotchStatement statement) {
-        ifFalse.add(addChild(statement));
+    public void setIfFalse(List<NotchStatement> ifFalse) {
+        this.ifFalse = addChildren(ifFalse);
     }
 
     @Override

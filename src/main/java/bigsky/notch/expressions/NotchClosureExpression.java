@@ -32,9 +32,6 @@ public class NotchClosureExpression extends NotchExpression {
     }
 
     public void setStatements(List<NotchStatement> statements) {
-        this.statements = statements;
-        if(this.statements != null) {
-            this.statements.forEach(this::addChild);
-        }
+        this.statements = addChildren(statements);
     }
 }

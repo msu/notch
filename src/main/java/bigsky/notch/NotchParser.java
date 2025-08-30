@@ -363,7 +363,7 @@ public class NotchParser extends BasicParser {
             return stmts.getFirst();
         } else {
             NotchStatements notchStatements = new NotchStatements(start, tokens.location());
-            stmts.forEach(notchStatements::addStatement);
+            notchStatements.addChildren(stmts);
             return notchStatements;
         }
     }
@@ -431,7 +431,7 @@ public class NotchParser extends BasicParser {
             notchForLoop.setLoopVariable(loopIdentifier);
             notchForLoop.setIndexVariable(indexIdentifier);
             notchForLoop.setExpression(loopExpression);
-            loopBodyStatements.forEach(notchForLoop::addLoopBodyStatement);
+            notchForLoop.setLoopBody(loopBodyStatements);
             return notchForLoop;
         }
         return null;
@@ -464,8 +464,8 @@ public class NotchParser extends BasicParser {
 
             NotchIf notchIf = new NotchIf(start, tokens.location());
             notchIf.setExpression(conditional);
-            ifTrue.forEach(notchIf::addTrueStatement);
-            ifFalse.forEach(notchIf::addFalseStatement);
+            notchIf.setIfTrue(ifTrue);
+            notchIf.setIfFalse(ifFalse);
             return notchIf;
         }
         return null;
