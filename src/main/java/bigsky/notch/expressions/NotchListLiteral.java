@@ -1,5 +1,6 @@
 package bigsky.notch.expressions;
 
+import bigsky.notch.NotchElement;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.utils.BetterList;
 import bigsky.utils.chisel.Location;
@@ -23,7 +24,7 @@ public class NotchListLiteral extends NotchExpression {
     }
 
     public void setValues(List<NotchExpression> listValues) {
-        this.values = listValues;
-        this.values.forEach(this::addChild);
+        this.values = addChildren(listValues);
     }
+
 }

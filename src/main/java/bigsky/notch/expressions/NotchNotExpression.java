@@ -17,6 +17,6 @@ public class NotchNotExpression extends NotchExpression {
     }
 
     public void setExpression(NotchExpression expr) {
-        this.expression = expr;
+        this.expression = addChild(expr);
     }
 }

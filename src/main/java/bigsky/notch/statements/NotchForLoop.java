@@ -29,11 +29,11 @@ public class NotchForLoop extends NotchStatement {
     }
 
     public void setExpression(NotchExpression expr) {
-        this.expr = expr;
+        this.expr = addChild(expr);
     }
 
-    public void addLoopBodyStatement(NotchStatement statement) {
-        loopBody.add(addChild(statement));
+    public void setLoopBody(List<NotchStatement> statements) {
+        this.loopBody = addChildren(statements);
     }
 
     @Override

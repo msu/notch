@@ -65,7 +65,7 @@ public class NotchPropertyAccess extends NotchExpression {
     }
 
     public void setRoot(NotchExpression root) {
-        this.root = root;
+        this.root = addChild(root);
     }
 
     public NotchExpression getRoot() {

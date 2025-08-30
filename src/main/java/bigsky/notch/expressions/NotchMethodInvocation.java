@@ -55,10 +55,10 @@ public class NotchMethodInvocation extends NotchExpression {
     }
 
     public void setRoot(NotchExpression root) {
-        this.root = root;
+        this.root = addChild(root);
     }
 
     public void setArgs(List<NotchExpression> args) {
-        this.args = args;
+        this.args = addChildren(args);
     }
 }
