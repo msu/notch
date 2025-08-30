@@ -153,4 +153,41 @@ public class BootstrapTest {
     }
 
 
+    @Test
+    public void bootstrapIndexingTest() {
+        // lists
+        String result = exec("""
+                x = [1, 2, 3]
+                print(x[1])
+                """);
+        assertEquals("2\n", result);
+
+        // maps
+        result = exec("""
+                x = {foo=1, bar=2}
+                print(x[:foo])
+                """);
+        assertEquals("1\n", result);
+
+        // strings
+        result = exec("""
+                x = "asdf"
+                print(x[1])
+                """);
+        assertEquals("s\n", result);
+
+        // reflection
+        result = exec("""
+                print(x[:bar])
+                """, "x", new Foo());
+        assertEquals("bar\n", result);
+    }
+
+    public static class Foo {
+        public String getBar() {
+            return "bar";
+        }
+    }
+
+
 }

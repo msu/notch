@@ -228,12 +228,27 @@ public class NotchParser extends BasicParser {
                     notchExpression = parsePropertyAccessExpression(notchExpression);
                 } else if (peek(LPAREN)) {
                     notchExpression = parseMethodInvocation(notchExpression);
+                } else if (peek(LBRACKET)) {
+                    notchExpression = parseIndexOperation(notchExpression);
                 } else {
                     break;
                 }
             }
         }
         return notchExpression;
+    }
+
+    private NotchExpression parseIndexOperation(NotchExpression root) {
+        if (take(LBRACKET)) {
+            Location start = root.start;
+            NotchExpression value = requireExpression("An expression is required");
+            require(RBRACKET, "Index expressions must be closed with a ']'");
+            NotchIndexExpression indexExpression = new NotchIndexExpression(start, location());
+            indexExpression.setRoot(root);
+            indexExpression.setValue(value);
+            return indexExpression;
+        }
+        return null;
     }
 
     private NotchExpression parseMethodInvocation(NotchExpression root) {
