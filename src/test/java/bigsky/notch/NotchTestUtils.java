@@ -13,7 +13,7 @@ import static bigsky.utils.Exceptions.rethrow;
 
 public class NotchTestUtils {
     public static Object eval(String source, Object... vars) {
-        NotchTokenizer tokenizer = new NotchTokenizer(source);
+        var tokenizer = Notch.tokenizer(source);
         TokenStream tokens;
         try {
             tokens = tokenizer.tokenize();
@@ -27,7 +27,7 @@ public class NotchTestUtils {
     }
 
     public static String exec(String source, Object... vars) {
-        NotchTokenizer tokenizer = new NotchTokenizer(source);
+        var tokenizer = Notch.tokenizer(source);
         TokenStream tokens;
         try {
             tokens = tokenizer.tokenize();

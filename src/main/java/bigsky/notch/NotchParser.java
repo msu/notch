@@ -8,16 +8,24 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static bigsky.notch.token.NotchTokenTypeKeyword.NOTCH_KEYWORD;
+import static bigsky.notch.token.TokenTypeTerseString.TERSE_STRING;
 import static bigsky.utils.Text.repr;
+import static bigsky.utils.chisel.type.TokenTypeBoolean.BOOL;
+import static bigsky.utils.chisel.type.TokenTypeIdentifier.IDENT;
+import static bigsky.utils.chisel.type.TokenTypeInteger.INT;
+import static bigsky.utils.chisel.type.TokenTypePunct.*;
+import static bigsky.utils.chisel.type.TokenTypeString.STR;
+import static bigsky.utils.chisel.type.TokenTypeWhitespace.WHITESPACE;
 
 public class NotchParser extends BasicParser {
     public NotchParser(TokenStream tokens) {
         super(tokens);
-        ignoredTokenTypes.add("whitespace");
+        ignoredTokenTypes.add(WHITESPACE);
     }
 
     public boolean peekIdent(String word) {
-        if (!peek("ident")) return false;
+        if (!peek(IDENT)) return false;
         var token = tokens.peek();
         return token.str().equals(word);
     }
@@ -29,7 +37,7 @@ public class NotchParser extends BasicParser {
     }
 
     public Token requireIdent(String errMessage) {
-        if (!peek("ident")) {
+        if (!peek(IDENT)) {
             var loc = tokens.location();
             throw new ParseException(loc, errMessage + ": (expected identifier)");
         }
@@ -44,7 +52,7 @@ public class NotchParser extends BasicParser {
     }
 
     public boolean peekKeyword(String word) {
-        if (!peek("keyword")) return false;
+        if (!peek(NOTCH_KEYWORD)) return false;
         var token = tokens.peek();
         return token.str().equals(word);
     }
@@ -56,7 +64,7 @@ public class NotchParser extends BasicParser {
     }
 
     public Token requireKeyword(String errMessage) {
-        if (!peek("keyword")) {
+        if (!peek(NOTCH_KEYWORD)) {
             var loc = tokens.location();
             throw new ParseException(loc, errMessage + ": (expected identifier)");
         }
@@ -72,7 +80,7 @@ public class NotchParser extends BasicParser {
 
     public void requireEnd(String message) {
         if (!atEnd()) {
-            throw new ParseException(location(), message + ", found " + peek().type.label());
+            throw new ParseException(location(), message + ", found " + peek().type);
         }
     }
 
@@ -121,7 +129,7 @@ public class NotchParser extends BasicParser {
 
     private boolean takeKeywordOnSameLine(String keyword, NotchExpression expr) {
         Token nextToken = tokens.peek();
-        return nextToken.type.label().equals("keyword") &&
+        return tokens.match(nextToken, NOTCH_KEYWORD) &&
                 nextToken.str().equals(keyword) &&
                 nextToken.start.line == expr.end.line;
     }
@@ -130,7 +138,7 @@ public class NotchParser extends BasicParser {
         var expr = parseLogicalExpression();
         if (expr == null) return null;
 
-        while (take("?:")) {
+        while (take(QUESTION_COLON)) {
             var fallback = parseLogicalExpression();
             if (fallback == null) {
                 throw new ParseException(location(), "expected expression after '?:' operator");
@@ -144,8 +152,9 @@ public class NotchParser extends BasicParser {
 
     private NotchExpression parseLogicalExpression() {
         NotchExpression expr = parseEqualityExpr();
-        while ((peek("&&", "||") || peekIdent("and") || peekIdent("or") ) &&
-                expr != null) {
+        if (expr == null) return null;
+
+        while ((peek(AMPERSAND2, BAR2) || peekIdent("and") || peekIdent("or"))) {
             Token op = take();
             var rhs = parseEqualityExpr();
             if (rhs == null) {
@@ -160,7 +169,7 @@ public class NotchParser extends BasicParser {
         var expr = parseComparisonExpression();
         if (expr == null) return null;
 
-        while (peek("==", "!=")) {
+        while (peek(EQ2, BANG_EQ)) {
             Token op = take();
             var rhs = parseComparisonExpression();
             if (rhs == null) {
@@ -175,7 +184,9 @@ public class NotchParser extends BasicParser {
 
     private NotchExpression parseComparisonExpression() {
         NotchExpression expr = parseAdditiveExpression();
-        while (peek("<", "<=", ">", ">=") && expr != null) {
+        if (expr == null) return null;
+
+        while (peek(LEFT_ARROW, LEFT_ARROW_EQ, RIGHT_ARROW, RIGHT_ARROW_EQ)) {
             Token op = take();
             var rhs = parseAdditiveExpression();
             if (rhs == null) {
@@ -188,7 +199,7 @@ public class NotchParser extends BasicParser {
 
     private NotchExpression parseAdditiveExpression() {
         NotchExpression expr = parseUnaryExpression();
-        while (take("+") && expr != null) {
+        while (take(PLUS) && expr != null) {
             var rhs = parseUnaryExpression();
             if (rhs == null) {
                 throw new ParseException(location(), "expected expression after '+' operator");
@@ -200,7 +211,7 @@ public class NotchParser extends BasicParser {
 
     private NotchExpression parseUnaryExpression() {
         Location start = location();
-        if (takeIdent("not") || take("!")) {
+        if (takeIdent("not") || take(BANG)) {
             NotchExpression expr = parseUnaryExpression();
             NotchNotExpression notExpr = new NotchNotExpression(start, location());
             notExpr.setExpression(expr);
@@ -212,11 +223,11 @@ public class NotchParser extends BasicParser {
 
     private NotchExpression parseIndirectExpression() {
         NotchExpression notchExpression = parsePrimaryExpression();
-        if(notchExpression != null) {
+        if (notchExpression != null) {
             while (true) {
-                if (peek('.')) {
+                if (peek(DOT)) {
                     notchExpression = parsePropertyAccessExpression(notchExpression);
-                } else if (peek('(')) {
+                } else if (peek(LPAREN)) {
                     notchExpression = parseMethodInvocation(notchExpression);
                 } else {
                     break;
@@ -227,14 +238,14 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchExpression parseMethodInvocation(NotchExpression root) {
-        if (take('(')) {
+        if (take(LPAREN)) {
             Location start = root.start;
             var args = new ArrayList<NotchExpression>();
-            while (!atEnd() && !take(')')) {
+            while (!atEnd() && !take(RPAREN)) {
                 NotchExpression arg = parseExpression();
                 args.add(arg);
-                if (!peek(')')) {
-                    if (!take(',')) {
+                if (!peek(RPAREN)) {
+                    if (!take(COMMA)) {
                         throw new ParseException(location(), "Expected ','");
                     }
                 }
@@ -251,7 +262,7 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchExpression parsePropertyAccessExpression(NotchExpression root) {
-        if (take('.')) {
+        if (take(DOT)) {
             Location start = root.start;
             Token propName = requireIdent("Expected a property name");
             NotchPropertyAccess propAccess = new NotchPropertyAccess(start, location());
@@ -263,40 +274,40 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchExpression parsePrimaryExpression() {
-        Token paren = consume("(");
+        Token paren = consume(LPAREN);
         if (paren != null) {
             NotchExpression expr = parseExpression();
-            require(")", "Expected a closing parenthesis");
+            require(RPAREN, "Expected a closing parenthesis");
             NotchParenthesizedExpression parenExpr = new NotchParenthesizedExpression(paren.start, location());
             parenExpr.setExpression(expr);
             return parenExpr;
         }
 
-        Token bool = consume("bool");
+        Token bool = consume(BOOL);
         if (bool != null) {
             return new NotchBoolean(bool);
         }
 
-        Token word = consume("ident");
+        Token word = consume(IDENT);
         if (word != null) {
             return new NotchIdentifier(word);
         }
 
-        Token intToken = consume("integer");
+        Token intToken = consume(INT);
         if (intToken != null) {
             return new NotchInteger(intToken);
         }
 
-        Token stringToken = consume("string");
+        Token stringToken = consume(STR, TERSE_STRING);
         if (stringToken != null) {
             return new NotchString(stringToken);
         }
 
-        if (peek('\\')) {
+        if (peek(BACKSLASH)) {
             return parseClosureExpression();
         }
 
-        if (peek('[')) {
+        if (peek(LBRACKET)) {
             return parseListLiteral();
         }
 
@@ -305,16 +316,16 @@ public class NotchParser extends BasicParser {
 
     private NotchExpression parseListLiteral() {
         Location start = location();
-        if (take('[')) {
+        if (take(LBRACKET)) {
             List<NotchExpression> listValues = new LinkedList<>();
-            while (!atEnd() && !peek(']')) {
+            while (!atEnd() && !peek(RBRACKET)) {
                 NotchExpression notchExpression = parseExpression();
                 listValues.add(notchExpression);
-                if (!peek(']')) {
-                    require(",", "Expected a comma to separate elements in the list");
+                if (!peek(RBRACKET)) {
+                    require(COMMA, "Expected a comma to separate elements in the list");
                 }
             }
-            require("]", "Expected a ']' to close the list");
+            require(RBRACKET, "Expected a ']' to close the list");
             NotchListLiteral notchListLiteral = new NotchListLiteral(start, location());
             notchListLiteral.setValues(listValues);
             return notchListLiteral;
@@ -324,23 +335,25 @@ public class NotchParser extends BasicParser {
 
     private NotchExpression parseClosureExpression() {
         Location start = location();
-        if (take('\\')) {
+        if (take(BACKSLASH)) {
             List<Token> params = new ArrayList<>();
-            while (!atEnd() && !peek("->")) {
-                Token param = require("ident", "Expected a parameter name");
+            while (!atEnd() && !peek(DASH_RIGHT_ARROW)) {
+                Token param = require(IDENT, "Expected a parameter name");
                 params.add(param);
-                if (!peek("->")) {
-                    require(",", "Expected a comma to separate parameters");
+                if (!peek(DASH_RIGHT_ARROW)) {
+                    require(COMMA, "Expected a comma to separate parameters");
                 }
             }
-            require("->", "Expected a '->' after the parameters");
+            require(DASH_RIGHT_ARROW, "Expected a '->' after the parameters");
             List<NotchStatement> statements = null;
             NotchExpression expression = null;
-            if (take('{')) {
-                while(!atEnd() && !peek('}')) {
+            if (take(LBRACE)) {
+                statements = new LinkedList<>();
+                while (!atEnd() && !peek(RBRACE)) {
                     NotchStatement stmt = parseStatement();
+                    statements.add(stmt);
                 }
-                require("}", "Require a '}' to close the body of the closure");
+                require(RBRACE, "Require a '}' to close the body of the closure");
             } else {
                 expression = parseExpression();
             }
@@ -387,15 +400,14 @@ public class NotchParser extends BasicParser {
             return assignmentStmt;
         }
 
-
         throw new ParseException(tokens.location(), "expected statement");
     }
 
     private NotchStatement parseAssignmentStatement() {
         var start = tokens.location();
-        if (peek("ident")) {
+        if (peek(IDENT)) {
             Token varName = requireIdent("expected a variable name");
-            require("=", "expected '='");
+            require(EQ, "expected '='");
             NotchExpression valueExpression = requireExpression("expected expression for the loop iterable");
             NotchAssignment assignment = new NotchAssignment(start, tokens.location());
             assignment.setVariableName(varName);
@@ -474,9 +486,9 @@ public class NotchParser extends BasicParser {
     private NotchPrint parsePrintStatement() {
         var start = tokens.location();
         if (takeIdent("print")) {
-            require("(", "arguments expected after 'print' keyword");
+            require(LPAREN, "arguments expected after 'print' keyword");
             NotchExpression expr = parseExpression();
-            require(")", "missing argument terminator after 'print' arguments");
+            require(RPAREN, "missing argument terminator after 'print' arguments");
             NotchPrint notchPrint = new NotchPrint(start, tokens.location());
             notchPrint.setExpression(expr);
             return notchPrint;
