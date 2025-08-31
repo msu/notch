@@ -203,5 +203,13 @@ public class BootstrapTest {
         assertEquals("bar\n", result);
     }
 
+    @Test
+    public void bootstrapClassResolution() {
+        Object eval = eval("java.lang.String");
+        assertInstanceOf(NotchType.class, eval);
+        NotchType notchType = (NotchType) eval;
+        assertEquals("java.lang.String", notchType.getDisplayName());
+    }
+
 
 }

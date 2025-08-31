@@ -3,7 +3,9 @@ package bigsky.notch.expressions;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.utils.chisel.Token;
 
-public class NotchIdentifier extends NotchExpression {
+import java.beans.Expression;
+
+public class NotchIdentifier extends NotchExpression implements DotPathMember {
     public final Token token;
 
     public NotchIdentifier(Token token) {
@@ -19,5 +21,10 @@ public class NotchIdentifier extends NotchExpression {
     public Object evaluate(NotchRuntime runtime) {
         var val = runtime.getSymbol(name());
         return val;
+    }
+
+    @Override
+    public String getDotPath() {
+        return this.token.str();
     }
 }

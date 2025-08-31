@@ -280,8 +280,8 @@ public class NotchParser extends BasicParser {
             Location start = root.start;
             Token propName = requireIdent("Expected a property name");
             NotchPropertyAccess propAccess = new NotchPropertyAccess(start, location());
-            propAccess.setRoot(root);
             propAccess.setProperty(propName);
+            propAccess.setRoot(root);
             return propAccess;
         }
         return null;
