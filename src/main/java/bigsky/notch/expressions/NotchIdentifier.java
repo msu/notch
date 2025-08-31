@@ -1,9 +1,13 @@
 package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.notch.types.NotchType;
+import bigsky.notch.types.TypeSystem;
 import bigsky.utils.chisel.Token;
 
 import java.beans.Expression;
+
+import static bigsky.notch.runtime.NotchRuntime.UNDEFINED;
 
 public class NotchIdentifier extends NotchExpression implements DotPathMember {
     public final Token token;
@@ -20,6 +24,12 @@ public class NotchIdentifier extends NotchExpression implements DotPathMember {
     @Override
     public Object evaluate(NotchRuntime runtime) {
         var val = runtime.getSymbol(name());
+        if (val == UNDEFINED) {
+            NotchType type = TypeSystem.getType(token.str());
+            if(type != null) {
+                return type;
+            }
+        }
         return val;
     }
 

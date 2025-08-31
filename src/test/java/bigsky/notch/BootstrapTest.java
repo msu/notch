@@ -211,5 +211,13 @@ public class BootstrapTest {
         assertEquals("java.lang.String", notchType.getDisplayName());
     }
 
+    @Test
+    public void bootstrapPrimitiveResolution() {
+        Object eval = eval("int");
+        assertInstanceOf(NotchType.class, eval);
+        NotchType notchType = (NotchType) eval;
+        assertEquals("int", notchType.getDisplayName());
+    }
+
 
 }

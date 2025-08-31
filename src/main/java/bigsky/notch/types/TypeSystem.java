@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TypeSystem {
 
     private static final ConcurrentHashMap<String, NotchType> TYPESYSTEM_CACHE = new ConcurrentHashMap<>();
-    {
+    static {
         // put primitives into type system by name because they do not resolve normally
         TYPESYSTEM_CACHE.put("boolean", new NotchJavaType(Boolean.TYPE));
         TYPESYSTEM_CACHE.put("byte", new NotchJavaType(Byte.TYPE));
