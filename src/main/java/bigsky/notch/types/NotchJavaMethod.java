@@ -3,6 +3,7 @@ package bigsky.notch.types;
 import bigsky.notch.types.coercions.Coercion;
 import bigsky.utils.BetterList;
 
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -82,13 +83,13 @@ public class NotchJavaMethod implements NotchMethod {
         return bestMatch;
     }
 
-    public int distanceFromValues(Method javaMethod, List<Object> argValues) {
-        Class<?>[] parameterTypes = javaMethod.getParameterTypes();
-        if(argValues.size() == parameterTypes.length) {
+    public int distanceFromValues(Executable executable, List<Object> runtimeValues) {
+        Class<?>[] parameterTypes = executable.getParameterTypes();
+        if(runtimeValues.size() == parameterTypes.length) {
             int distance = 0;
             for (int i = 0; i < parameterTypes.length; i++) {
                 Class<?> parameterType = parameterTypes[i];
-                Object o = argValues.get(i);
+                Object o = runtimeValues.get(i);
                 if (o != null) {
                     Class<?> runtimeClass = o.getClass();
                     int paramDistance = distanceTo(runtimeClass, parameterType);
