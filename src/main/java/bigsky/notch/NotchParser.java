@@ -2,13 +2,13 @@ package bigsky.notch;
 
 import bigsky.notch.expressions.*;
 import bigsky.notch.statements.*;
-import bigsky.utils.Text;
 import bigsky.utils.chisel.*;
 
 import java.util.*;
 
 import static bigsky.notch.token.NotchTokenTypeKeyword.NOTCH_KEYWORD;
 import static bigsky.notch.token.TokenTypeTerseString.TERSE_STRING;
+import static bigsky.utils.Exceptions.rethrow;
 import static bigsky.utils.Text.repr;
 import static bigsky.utils.chisel.type.TokenTypeBoolean.BOOL;
 import static bigsky.utils.chisel.type.TokenTypeIdentifier.IDENT;
@@ -418,7 +418,43 @@ public class NotchParser extends BasicParser {
         return null;
     }
 
-    public NotchStatement parse() {
+    public NotchElement parse() {
+        NotchExpression notchExpression;
+        boolean tokensAfterExpr;
+        Exception expressionException = new RuntimeException("Cannot parse this input");
+        try {
+            notchExpression = parseExpression();
+            tokensAfterExpr = !tokens.atEnd();
+            if (notchExpression != null && !tokensAfterExpr) {
+                return notchExpression;
+            }
+        } catch (Exception e) {
+            expressionException = e;
+        }
+        tokens.reset();
+        NotchStatement notchStatement;
+        try {
+            notchStatement = parseAsStatement();
+            if (notchStatement != null) {
+                return notchStatement;
+            } else {
+                if(expressionException != null) {
+                    throw expressionException;
+                } else {
+                    // TODO better errors
+                    throw new RuntimeException("Cannot parse this input");
+                }
+            }
+        } catch (Exception e) {
+            if(expressionException != null) {
+                throw rethrow(expressionException);
+            } else {
+                throw rethrow(e);
+            }
+        }
+    }
+
+    public NotchStatement parseAsStatement() {
         var stmts = new ArrayList<NotchStatement>();
         var start = tokens.location();
         while (!atEnd()) {
