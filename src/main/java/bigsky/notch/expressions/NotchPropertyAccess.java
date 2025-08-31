@@ -26,12 +26,10 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
         if (rootValue == null) {
             return rootValue;
         } else if (rootValue == UNDEFINED) {
-            if(dotPath != null) {
-                try {
-                    Class<?> classForDotPath = Class.forName(dotPath);
-                    return TypeSystem.getType(classForDotPath);
-                } catch (ClassNotFoundException e) {
-                    // ignore
+            if(isADotPathComponent()) {
+                NotchType type = TypeSystem.getType(dotPath);
+                if(type != null) {
+                    return type;
                 }
             }
             return rootValue;
@@ -69,6 +67,10 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
 
         // TODO - better error handling
         throw new IllegalStateException("The expression " + root + " does not have a property " + property.str() + " on it");
+    }
+
+    private boolean isADotPathComponent() {
+        return dotPath != null;
     }
 
     public void setProperty(Token propName) {
