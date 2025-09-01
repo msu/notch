@@ -27,6 +27,7 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
             return rootValue;
         } else if (rootValue == UNDEFINED) {
             if(isADotPathComponent()) {
+                // TODO - move into runtime to support imports
                 NotchType type = TypeSystem.getType(dotPath);
                 if(type != null) {
                     return type;
