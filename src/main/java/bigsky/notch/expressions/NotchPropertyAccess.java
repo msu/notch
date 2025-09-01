@@ -35,18 +35,18 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
             return rootValue;
         }
 
-        if(rootValue instanceof NotchType notchType) {
-            NotchMethod staticMethod = notchType.getStaticMethod(property.str());
-            if(staticMethod != null) {
-                return new NotchBoundMethod(null, staticMethod);
+        NotchType runtimeType = TypeSystem.getRuntimeType(rootValue);
+        if (favorMethods) {
+            NotchBoundMethod method = resolveBoundMethod(rootValue, runtimeType);
+            if (method != null) {
+                return method;
             }
         }
 
-        NotchType runtimeType = TypeSystem.getRuntimeType(rootValue);
-        if (favorMethods) {
-            NotchMethod method = runtimeType.getMethod(property.str());
-            if (method != null) {
-                return new NotchBoundMethod(rootValue, method);
+        if(rootValue instanceof NotchType notchType) {
+            NotchProperty staticProperty = notchType.getStaticProperty(property.str());
+            if(staticProperty != null) {
+                return staticProperty.get(null);
             }
         }
 
@@ -67,14 +67,29 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
         }
 
         if (!favorMethods) {
-            NotchMethod method = runtimeType.getMethod(property.str());
-            if (method != null) {
-                return new NotchBoundMethod(rootValue, method);
+            NotchBoundMethod staticMethod = resolveBoundMethod(rootValue, runtimeType);
+            if (staticMethod != null) {
+                return staticMethod;
             }
         }
 
         // TODO - better error handling
         throw new IllegalStateException("The expression " + root + " does not have a property " + property.str() + " on it");
+    }
+
+    private NotchBoundMethod resolveBoundMethod(Object rootValue, NotchType runtimeType) {
+        if(rootValue instanceof NotchType notchType) {
+            NotchMethod staticMethod = notchType.getStaticMethod(property.str());
+            if(staticMethod != null) {
+                return new NotchBoundMethod(null, staticMethod);
+            }
+        }
+
+        NotchMethod method = runtimeType.getMethod(property.str());
+        if (method != null) {
+            return new NotchBoundMethod(rootValue, method);
+        }
+        return null;
     }
 
     private boolean isADotPathComponent() {

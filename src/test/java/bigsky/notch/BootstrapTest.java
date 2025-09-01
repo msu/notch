@@ -82,7 +82,7 @@ public class BootstrapTest {
     @Test
     public void bootstrapTopLevelMethodInvocation() {
         NotchType testType = TypeSystem.getType(BootstrapTest.class);
-        NotchMethod method = testType.getMethod("foo");
+        NotchMethod method = testType.getStaticMethod("foo");
         Object result = eval("foo(10)", "foo", method);
         assertEquals(10, result);
     }
@@ -217,6 +217,18 @@ public class BootstrapTest {
         assertInstanceOf(NotchType.class, eval);
         NotchType notchType = (NotchType) eval;
         assertEquals("int", notchType.getDisplayName());
+    }
+
+    @Test
+    public void bootstrapStaticMethodInvocation() {
+        Object val = eval("java.util.List.of(1, 2, 3)");
+        assertEquals(List.of(1, 2, 3), val);
+    }
+
+    @Test
+    public void bootstrapStaticPropertyResolution() {
+        Object val = eval("java.lang.Character.TYPE");
+        assertEquals(Character.TYPE, val);
     }
 
 
