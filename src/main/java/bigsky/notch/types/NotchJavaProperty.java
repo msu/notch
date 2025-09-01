@@ -29,9 +29,9 @@ public class NotchJavaProperty implements NotchProperty {
     public static String propertyNameFor(Method method) {
         String name = method.getName();
         if (name.startsWith("get")) {
-            return name.substring(3);
+            return Text.decapitalize(name.substring(3));
         } else if (method.getName().startsWith("is")) {
-            return name.substring(2);
+            return Text.decapitalize(name.substring(2));
         } else if (Text.isLowerCase(method.getName())) {
             return name;
         }
@@ -52,14 +52,14 @@ public class NotchJavaProperty implements NotchProperty {
     }
 
     private Getter resolveGetter(Class aClass, String propName) {
-        String lowercase = propName.toLowerCase();
+        String capitalizedName = Text.capitalize(propName);
         String[] methodPossibilities;
 
         // if the prop name is all lowercase, try to resolve a no prefix version of the getter last
-        if (lowercase.equals(propName)) {
-            methodPossibilities = new String[]{GET_PREFIX + propName, IS_PREFIX + propName, lowercase};
+        if (Text.isLowerCase(propName)) {
+            methodPossibilities = new String[]{GET_PREFIX + capitalizedName, IS_PREFIX + capitalizedName, propName};
         } else {
-            methodPossibilities = new String[]{GET_PREFIX + propName, IS_PREFIX + propName};
+            methodPossibilities = new String[]{GET_PREFIX + capitalizedName, IS_PREFIX + capitalizedName};
         }
 
         for (String methodName : methodPossibilities) {

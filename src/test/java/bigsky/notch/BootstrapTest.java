@@ -231,5 +231,14 @@ public class BootstrapTest {
         assertEquals(Character.TYPE, val);
     }
 
+    @Test
+    public void bootstrapTypePropertyResolution() {
+        assertEquals("java.lang.Object", eval("java.lang.Object.displayName"));
+    }
+
+    @Test
+    public void bootstrapTypeAltPropertyResolution() {
+        assertEquals("java.lang.Object", eval("java.lang.Object.display_name"));
+    }
 
 }
