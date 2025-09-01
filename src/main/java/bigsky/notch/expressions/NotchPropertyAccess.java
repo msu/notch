@@ -34,6 +34,14 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
             }
             return rootValue;
         }
+
+        if(rootValue instanceof NotchType notchType) {
+            NotchMethod staticMethod = notchType.getStaticMethod(property.str());
+            if(staticMethod != null) {
+                return new NotchBoundMethod(null, staticMethod);
+            }
+        }
+
         NotchType runtimeType = TypeSystem.getRuntimeType(rootValue);
         if (favorMethods) {
             NotchMethod method = runtimeType.getMethod(property.str());

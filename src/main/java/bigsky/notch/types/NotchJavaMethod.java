@@ -17,14 +17,16 @@ public class NotchJavaMethod implements NotchMethod {
     private final BetterList<Method> javaMethods;
     private final String name;
     private final Class backingClass;
+    private final boolean staticMethod;
 
-    public NotchJavaMethod(String methodName, Class backingClass) {
+    public NotchJavaMethod(String methodName, Class backingClass, boolean staticMethod) {
         this.name = methodName;
+        this.staticMethod = staticMethod;
         this.backingClass = backingClass;
         this.javaMethods = new BetterList<>();
         Method[] allMethods = backingClass.getMethods();
         for (Method m : allMethods) {
-            if (m.getName().equals(methodName)) {
+            if (m.getName().equals(methodName) &&  Modifier.isStatic(m.getModifiers()) == staticMethod) {
                 m.setAccessible(true);
                 javaMethods.add(m);
             }
@@ -116,7 +118,7 @@ public class NotchJavaMethod implements NotchMethod {
 
     @Override
     public boolean isStatic() {
-        return javaMethods.hasMatch((m) -> Modifier.isStatic(m.getModifiers()));
+        return staticMethod;
     }
 
     @Override
@@ -152,7 +154,4 @@ public class NotchJavaMethod implements NotchMethod {
         }
     }
 
-    public boolean isValid() {
-        return javaMethods.size() > 0;
-    }
 }
