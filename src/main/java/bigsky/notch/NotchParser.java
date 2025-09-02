@@ -129,9 +129,15 @@ public class NotchParser extends BasicParser {
 
     private boolean takeKeywordOnSameLine(String keyword, NotchExpression expr) {
         Token nextToken = tokens.peek();
-        return tokens.match(nextToken, NOTCH_KEYWORD) &&
+        boolean isMatch = tokens.match(nextToken, NOTCH_KEYWORD) &&
                 nextToken.str().equals(keyword) &&
                 nextToken.start.line == expr.end.line;
+        if (isMatch) {
+            tokens.take();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private NotchExpression parseFallbackExpr() {
