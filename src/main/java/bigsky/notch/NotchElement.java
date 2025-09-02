@@ -3,10 +3,7 @@ package bigsky.notch;
 import bigsky.notch.expressions.NotchErrorExpression;
 import bigsky.utils.chisel.Location;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class NotchElement {
     public final Location start, end;
@@ -22,9 +19,9 @@ public class NotchElement {
         return child;
     }
 
-    protected <T extends NotchElement> List<T> addChildren(List<T> children) {
+    protected <V extends NotchElement, T extends Collection<V>> T addChildren(T children) {
         if(children != null) {
-            for (T child : children) {
+            for (V child : children) {
                 addChild(child);
             }
         }

@@ -14,7 +14,7 @@ yes, I did name this after another horse, sue me
 | expr(70)   | logical and                                         |
 | expr(80)   | logical or                                          |
 | expr(90)   | fallback                                            | 
-| expr(100)  | conditional                                         | 
+| expr(100)  | conditional                                         |
 
 ### Custom Operators
 

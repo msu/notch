@@ -5,10 +5,12 @@ import bigsky.notch.types.NotchMethod;
 import bigsky.notch.types.NotchType;
 import bigsky.notch.types.TypeSystem;
 import bigsky.utils.BetterList;
+import bigsky.utils.BetterMap;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
@@ -80,7 +82,7 @@ public class BootstrapTest {
     @Test
     public void bootstrapTopLevelMethodInvocation() {
         NotchType testType = TypeSystem.getType(BootstrapTest.class);
-        NotchMethod method = testType.getMethod("foo");
+        NotchMethod method = testType.getStaticMethod("foo");
         Object result = eval("foo(10)", "foo", method);
         assertEquals(10, result);
     }
@@ -92,6 +94,13 @@ public class BootstrapTest {
     @Test
     public void bootstrapListLiteral() {
         Object result = eval("[1, 2, 3]");
+        assertEquals(List.of(1, 2, 3), result);
+        assertTrue(result instanceof BetterList<?>);
+    }
+
+    @Test
+    public void bootstrapListLiteralCanHaveTrailingComma() {
+        Object result = eval("[1, 2, 3,]");
         assertEquals(List.of(1, 2, 3), result);
         assertTrue(result instanceof BetterList<?>);
     }
@@ -120,6 +129,116 @@ public class BootstrapTest {
         BiPredicate result = (BiPredicate) eval("(\\ x, y -> x == y).toBiPredicate()");
         assertTrue(result.test(1, 1));
         assertFalse(result.test(1, 2));
+    }
+
+    @Test
+    public void bootstrapMapLiteral() {
+        Map result = (Map) eval("{foo=1, bar=2}");
+        assertEquals(Map.of("foo", 1, "bar", 2), result);
+        assertTrue(result instanceof BetterMap<?, ?>);
+    }
+
+    @Test
+    public void bootstrapMapLiteralWithStringKeys() {
+        Map result = (Map) eval("{'foo foo'=1, bar=2}");
+        assertEquals(Map.of("foo foo", 1, "bar", 2), result);
+        assertTrue(result instanceof BetterMap<?, ?>);
+    }
+
+    @Test
+    public void bootstrapMapLiteralWithTerseStringKeys() {
+        Map result = (Map) eval("{:foo123=1, bar=2}");
+        assertEquals(Map.of("foo123", 1, "bar", 2), result);
+        assertTrue(result instanceof BetterMap<?, ?>);
+    }
+
+    @Test
+    public void bootstrapIndexingTest() {
+        // lists
+        String result = exec("""
+                x = [1, 2, 3]
+                print(x[1])
+                """);
+        assertEquals("2\n", result);
+
+        // maps
+        result = exec("""
+                x = {foo=1, bar=2}
+                print(x[:foo])
+                """);
+        assertEquals("1\n", result);
+
+        // strings
+        result = exec("""
+                x = "asdf"
+                print(x[1])
+                """);
+        assertEquals("s\n", result);
+
+        // reflection
+        result = exec("""
+                print(x[:bar])
+                """, "x", new Foo());
+        assertEquals("bar\n", result);
+    }
+
+    public static class Foo {
+        public String getBar() {
+            return "bar";
+        }
+    }
+
+    @Test
+    public void bootstrapStupidMapTricks() {
+        String result = exec("""
+                x = { foo = \\-> "bar" }
+                print(x.foo())
+                """);
+        assertEquals("bar\n", result);
+
+        result = exec("""
+                x = { foo = \\-> "bar" }
+                print(x[:foo]())
+                """);
+        assertEquals("bar\n", result);
+    }
+
+    @Test
+    public void bootstrapClassResolution() {
+        Object eval = eval("java.lang.String");
+        assertInstanceOf(NotchType.class, eval);
+        NotchType notchType = (NotchType) eval;
+        assertEquals("java.lang.String", notchType.getDisplayName());
+    }
+
+    @Test
+    public void bootstrapPrimitiveResolution() {
+        Object eval = eval("int");
+        assertInstanceOf(NotchType.class, eval);
+        NotchType notchType = (NotchType) eval;
+        assertEquals("int", notchType.getDisplayName());
+    }
+
+    @Test
+    public void bootstrapStaticMethodInvocation() {
+        Object val = eval("java.util.List.of(1, 2, 3)");
+        assertEquals(List.of(1, 2, 3), val);
+    }
+
+    @Test
+    public void bootstrapStaticPropertyResolution() {
+        Object val = eval("java.lang.Character.TYPE");
+        assertEquals(Character.TYPE, val);
+    }
+
+    @Test
+    public void bootstrapTypePropertyResolution() {
+        assertEquals("java.lang.Object", eval("java.lang.Object.displayName"));
+    }
+
+    @Test
+    public void bootstrapTypeAltPropertyResolution() {
+        assertEquals("java.lang.Object", eval("java.lang.Object.display_name"));
     }
 
 }

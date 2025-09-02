@@ -2,9 +2,7 @@ package bigsky.notch.types;
 
 import bigsky.utils.Text;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 
 import static bigsky.utils.Exceptions.rethrow;
 
@@ -17,19 +15,13 @@ public class NotchJavaProperty implements NotchProperty {
     private final Getter getter;
     private final Setter setter;
 
+    private final boolean staticProperty;
     private final Class parentClass;
     private final String name;
 
     public static boolean isPropertyMethod(Method method) {
         if (method.getParameterTypes().length == 0) {
-            String name = method.getName();
-            if (name.startsWith("get")) {
-                return true;
-            } else if (name.startsWith("is")) {
-                return true;
-            } else if (Text.isLowerCase(name)) {
-                return true;
-            }
+            return propertyNameFor(method) != null;
         }
         return false;
     }
@@ -37,21 +29,13 @@ public class NotchJavaProperty implements NotchProperty {
     public static String propertyNameFor(Method method) {
         String name = method.getName();
         if (name.startsWith("get")) {
-            return name.substring(3);
+            return Text.decapitalize(name.substring(3));
         } else if (method.getName().startsWith("is")) {
-            return name.substring(2);
+            return Text.decapitalize(name.substring(2));
         } else if (Text.isLowerCase(method.getName())) {
             return name;
         }
         return null;
-    }
-
-    public boolean isValid() {
-        return getter != null;
-    }
-
-    public boolean isStatic() {
-        return getter != null && getter.isStatic();
     }
 
     @Override
@@ -59,7 +43,8 @@ public class NotchJavaProperty implements NotchProperty {
         return TypeSystem.getType(getter.getType());
     }
 
-    public NotchJavaProperty(Class aClass, String propName) {
+    public NotchJavaProperty(Class aClass, String propName, boolean staticProperty) {
+        this.staticProperty = staticProperty;
         this.getter = resolveGetter(aClass, propName);
         this.setter = getter == null ? null : getter.resolveSetter();
         this.parentClass = aClass;
@@ -67,38 +52,39 @@ public class NotchJavaProperty implements NotchProperty {
     }
 
     private Getter resolveGetter(Class aClass, String propName) {
-        String javaPropertyName = getJavaPropertyName(propName);
-        String lowercase = propName.toLowerCase();
+        String capitalizedName = Text.capitalize(propName);
         String[] methodPossibilities;
 
-        // if the prop name is all lowercase, try to resolve a no prefix version of the getter
-        if (lowercase.equals(propName)) {
-            methodPossibilities = new String[]{GET_PREFIX + javaPropertyName, IS_PREFIX + javaPropertyName, lowercase};
+        // if the prop name is all lowercase, try to resolve a no prefix version of the getter last
+        if (Text.isLowerCase(propName)) {
+            methodPossibilities = new String[]{GET_PREFIX + capitalizedName, IS_PREFIX + capitalizedName, propName};
         } else {
-            methodPossibilities = new String[]{GET_PREFIX + javaPropertyName, IS_PREFIX + javaPropertyName};
+            methodPossibilities = new String[]{GET_PREFIX + capitalizedName, IS_PREFIX + capitalizedName};
         }
 
         for (String methodName : methodPossibilities) {
             try {
-                return new MethodGetter(aClass.getMethod(methodName));
+                Method method = aClass.getMethod(methodName);
+                if (matchesStaticFlag(method)) {
+                    return new MethodGetter(method);
+                }
             } catch (NoSuchMethodException nsme) {
                 // ignore
             }
         }
-        String[] fieldPossibilites = {propName, javaPropertyName, Text.decapitalize(propName)};
-        for (String fieldName : fieldPossibilites) {
-            try {
-                return new FieldAccessor(aClass.getField(fieldName));
-            } catch (NoSuchFieldException nsfe) {
-                // ignore
+        try {
+            Field field = aClass.getField(propName);
+            if (matchesStaticFlag(field)) {
+                return new FieldAccessor(field);
             }
+        } catch (NoSuchFieldException nfe){
+            // ignore
         }
         return null;
     }
 
-    private String getJavaPropertyName(String propName) {
-        String desnaked = Text.deSnakeCase(propName);
-        return Text.capitalize(desnaked);
+    private boolean matchesStaticFlag(Member method) {
+        return Modifier.isStatic(method.getModifiers()) == staticProperty;
     }
 
     @Override
@@ -107,7 +93,7 @@ public class NotchJavaProperty implements NotchProperty {
     }
 
     @Override
-    public String getCanonicalName() {
+    public String getAlternateName() {
         return Text.snakeCase(getName());
     }
 
@@ -126,6 +112,11 @@ public class NotchJavaProperty implements NotchProperty {
     @Override
     public void set(Object owner, Object val) {
         setter.set(owner, val);
+    }
+
+    @Override
+    public boolean isStatic() {
+        return staticProperty;
     }
 
     private interface Getter {
@@ -239,6 +230,6 @@ public class NotchJavaProperty implements NotchProperty {
 
     @Override
     public String toString() {
-        return getCanonicalName();
+        return getAlternateName();
     }
 }

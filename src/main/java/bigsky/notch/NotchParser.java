@@ -4,12 +4,11 @@ import bigsky.notch.expressions.*;
 import bigsky.notch.statements.*;
 import bigsky.utils.chisel.*;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static bigsky.notch.token.NotchTokenTypeKeyword.NOTCH_KEYWORD;
 import static bigsky.notch.token.TokenTypeTerseString.TERSE_STRING;
+import static bigsky.utils.Exceptions.rethrow;
 import static bigsky.utils.Text.repr;
 import static bigsky.utils.chisel.type.TokenTypeBoolean.BOOL;
 import static bigsky.utils.chisel.type.TokenTypeIdentifier.IDENT;
@@ -235,12 +234,27 @@ public class NotchParser extends BasicParser {
                     notchExpression = parsePropertyAccessExpression(notchExpression);
                 } else if (peek(LPAREN)) {
                     notchExpression = parseMethodInvocation(notchExpression);
+                } else if (peek(LBRACKET)) {
+                    notchExpression = parseIndexOperation(notchExpression);
                 } else {
                     break;
                 }
             }
         }
         return notchExpression;
+    }
+
+    private NotchExpression parseIndexOperation(NotchExpression root) {
+        if (take(LBRACKET)) {
+            Location start = root.start;
+            NotchExpression value = requireExpression("An expression is required");
+            require(RBRACKET, "Index expressions must be closed with a ']'");
+            NotchIndexExpression indexExpression = new NotchIndexExpression(start, location());
+            indexExpression.setRoot(root);
+            indexExpression.setValue(value);
+            return indexExpression;
+        }
+        return null;
     }
 
     private NotchExpression parseMethodInvocation(NotchExpression root) {
@@ -272,8 +286,8 @@ public class NotchParser extends BasicParser {
             Location start = root.start;
             Token propName = requireIdent("Expected a property name");
             NotchPropertyAccess propAccess = new NotchPropertyAccess(start, location());
-            propAccess.setRoot(root);
             propAccess.setProperty(propName);
+            propAccess.setRoot(root);
             return propAccess;
         }
         return null;
@@ -317,6 +331,10 @@ public class NotchParser extends BasicParser {
             return parseListLiteral();
         }
 
+        if (peek(LBRACE)) {
+            return parseMapLiteral();
+        }
+
         return null;
     }
 
@@ -329,11 +347,45 @@ public class NotchParser extends BasicParser {
                 listValues.add(notchExpression);
                 if (!peek(RBRACKET)) {
                     require(COMMA, "Expected a comma to separate elements in the list");
+                } else {
+                    take(COMMA); // allow a trailing comma
                 }
             }
             require(RBRACKET, "Expected a ']' to close the list");
             NotchListLiteral notchListLiteral = new NotchListLiteral(start, location());
             notchListLiteral.setValues(listValues);
+            return notchListLiteral;
+        }
+        return null;
+    }
+
+    private NotchExpression parseMapLiteral() {
+        Location start = location();
+        if (take(LBRACE)) {
+            Map<String, NotchExpression> mapValues = new LinkedHashMap<>();
+            while (!atEnd() && !peek(RBRACE)) {
+                String key;
+                if (peek(IDENT)) {
+                    key = take().str();
+                } else if (peek(STR)) {
+                    key = String.valueOf(take().data);
+                } else if (peek(TERSE_STRING)) {
+                    key = String.valueOf(take().data);
+                } else {
+                    throw new ParseException(location(), "Expected a key");
+                }
+                require(EQ, "Expected a '=` to separate a key from a value in the map");
+                NotchExpression notchExpression = parseExpression();
+                mapValues.put(key, notchExpression);
+                if (!peek(RBRACE)) {
+                    require(COMMA, "Expected a comma to separate elements in the list");
+                } else {
+                    take(COMMA); // allow a trailing comma
+                }
+            }
+            require(RBRACE, "Expected a '}' to close the map");
+            NotchMapLiteral notchListLiteral = new NotchMapLiteral(start, location());
+            notchListLiteral.setValues(mapValues);
             return notchListLiteral;
         }
         return null;
@@ -372,7 +424,43 @@ public class NotchParser extends BasicParser {
         return null;
     }
 
-    public NotchStatement parse() {
+    public NotchElement parse() {
+        NotchExpression notchExpression;
+        boolean tokensAfterExpr;
+        Exception expressionException = new RuntimeException("Cannot parse this input");
+        try {
+            notchExpression = parseExpression();
+            tokensAfterExpr = !tokens.atEnd();
+            if (notchExpression != null && !tokensAfterExpr) {
+                return notchExpression;
+            }
+        } catch (Exception e) {
+            expressionException = e;
+        }
+        tokens.reset();
+        NotchStatement notchStatement;
+        try {
+            notchStatement = parseAsStatement();
+            if (notchStatement != null) {
+                return notchStatement;
+            } else {
+                if(expressionException != null) {
+                    throw expressionException;
+                } else {
+                    // TODO better errors
+                    throw new RuntimeException("Cannot parse this input");
+                }
+            }
+        } catch (Exception e) {
+            if(expressionException != null) {
+                throw rethrow(expressionException);
+            } else {
+                throw rethrow(e);
+            }
+        }
+    }
+
+    public NotchStatement parseAsStatement() {
         var stmts = new ArrayList<NotchStatement>();
         var start = tokens.location();
         while (!atEnd()) {

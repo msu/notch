@@ -35,7 +35,7 @@ public class NotchTestUtils {
             throw rethrow(e);
         }
         NotchParser notchParser = new NotchParser(tokens);
-        NotchStatement expr = notchParser.parse();
+        NotchStatement expr = notchParser.parseAsStatement();
         StringBuilder sb = new StringBuilder();
         NotchRuntime runtime = new NotchRuntime(map(vars));
         runtime.setOut(obj -> sb.append(obj).append("\n"));

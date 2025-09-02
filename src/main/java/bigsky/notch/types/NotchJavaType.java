@@ -5,27 +5,73 @@ import bigsky.utils.BetterList;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static bigsky.notch.runtime.NotchRuntime.UNDEFINED;
+import static bigsky.notch.types.NotchJavaProperty.isPropertyMethod;
 import static bigsky.notch.types.NotchJavaProperty.propertyNameFor;
 
 
-public class NotchJavaType implements NotchType, PropertyMissing {
+public class NotchJavaType implements NotchType {
 
     private final Class backingClass;
     private final ConcurrentHashMap<String, NotchJavaProperty> properties = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NotchJavaProperty> staticProperties = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, NotchMethod> methods = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NotchMethod> staticMethods = new ConcurrentHashMap<>();
 
     public NotchJavaType(Class backingClass) {
         this.backingClass = backingClass;
+        initProperties();
+        initMethods();
+    }
+
+    private void initProperties() {
+        for (Method method : backingClass.getMethods()) {
+            if(isPropertyMethod(method)){
+                String propName = propertyNameFor(method);
+                NotchJavaProperty property = new NotchJavaProperty(backingClass, propName, Modifier.isStatic(method.getModifiers()));
+                addProperty(property);
+            }
+        }
+        for(Field field : backingClass.getFields()) {
+            NotchJavaProperty value = new NotchJavaProperty(backingClass, field.getName(), Modifier.isStatic(field.getModifiers()));
+            addProperty(value);
+        }
+    }
+
+    private void initMethods() {
+        for (Method method : backingClass.getMethods()) {
+            boolean staticMethod = Modifier.isStatic(method.getModifiers());
+            if(staticMethod && !staticMethods.containsKey(method.getName())){
+                NotchJavaMethod notchMethod = new NotchJavaMethod(method.getName(), backingClass, true);
+                staticMethods.put(method.getName(), notchMethod);
+            } else if (!staticMethod && !methods.containsKey(method.getName())){
+                NotchJavaMethod notchMethod = new NotchJavaMethod(method.getName(), backingClass, false);
+                methods.put(method.getName(), notchMethod);
+            }
+        }
+    }
+
+    private void addProperty(NotchJavaProperty property) {
+        if(property.isStatic()){
+            staticProperties.putIfAbsent(property.getName(), property);
+            staticProperties.putIfAbsent(property.getAlternateName(), property);
+        } else {
+            properties.putIfAbsent(property.getName(), property);
+            properties.putIfAbsent(property.getAlternateName(), property);
+        }
     }
 
     @Override
     public NotchProperty getProperty(String propName) {
-        return properties.computeIfAbsent(propName, this::resolveProperty);
+        return properties.get(propName);
+    }
+
+    @Override
+    public NotchProperty getStaticProperty(String propName) {
+        return staticProperties.get(propName);
     }
 
     @Override
@@ -35,49 +81,22 @@ public class NotchJavaType implements NotchType, PropertyMissing {
 
     @Override
     public List<NotchMethod> getMethods() {
-
-        BetterList<Method> methods = new BetterList<>(backingClass.getMethods());
-
-        return methods.distinct(Method::getName)
-                .map(method -> getMethod(method.getName()));
-
+        return new BetterList<>(methods.values());
     }
 
     @Override
     public List<NotchProperty> getProperties() {
-
-        BetterList<Method> methods = new BetterList<>(backingClass.getMethods());
-        BetterList<NotchProperty> methodProperties = methods.filter(NotchJavaProperty::isPropertyMethod)
-                .map(method -> getProperty(propertyNameFor(method)));
-
-        BetterList<Field> fields = new BetterList<>(backingClass.getFields());
-        BetterList<NotchProperty> fieldProperties = fields.map(field -> getProperty(field.getName()));
-
-        return methodProperties.concat(fieldProperties);
+        return new BetterList<>(properties.values());
     }
 
     @Override
-    public List<NotchMethod> getDeclaredMethods() {
-
-        BetterList<Method> methods = new BetterList<>(backingClass.getDeclaredMethods());
-
-        return methods.distinct(Method::getName)
-                .map(method -> getMethod(method.getName())).filter(Objects::nonNull);
-
+    public List<NotchMethod> getStaticMethods() {
+        return new BetterList<>(staticMethods.values());
     }
 
     @Override
-    public List<NotchProperty> getDeclaredProperties() {
-
-        BetterList<Method> methods = new BetterList<>(backingClass.getDeclaredMethods());
-        BetterList<NotchProperty> methodProperties = methods.filter(NotchJavaProperty::isPropertyMethod)
-                .map(method -> getProperty(propertyNameFor(method)));
-
-        BetterList<Field> fields = new BetterList<>(backingClass.getDeclaredFields());
-        BetterList<NotchProperty> notchProperties = fields.map(field -> getProperty(field.getName()));
-        BetterList<NotchProperty> fieldProperties = notchProperties.filter(Objects::nonNull);
-
-        return methodProperties.concat(fieldProperties);
+    public List<NotchProperty> getStaticProperties() {
+        return new BetterList<>(staticProperties.values());
     }
 
     @Override
@@ -87,25 +106,12 @@ public class NotchJavaType implements NotchType, PropertyMissing {
 
     @Override
     public NotchMethod getMethod(String methodName) {
-        return methods.computeIfAbsent(methodName, this::resolveMethod);
+        return methods.get(methodName);
     }
 
-    public NotchJavaProperty resolveProperty(String propName) {
-        var notchJavaProperty = new NotchJavaProperty(backingClass, propName);
-        if (notchJavaProperty.isValid()) {
-            return notchJavaProperty;
-        } else {
-            return null;
-        }
-    }
-
-    public NotchMethod resolveMethod(String methodName) {
-        var javaMethod = new NotchJavaMethod(methodName, backingClass);
-        if (javaMethod.isValid()) {
-            return javaMethod;
-        } else {
-            return null;
-        }
+    @Override
+    public NotchMethod getStaticMethod(String propName) {
+        return staticMethods.get(propName);
     }
 
     @Override
@@ -113,13 +119,4 @@ public class NotchJavaType implements NotchType, PropertyMissing {
         return "NotchJavaType: " + backingClass.getName();
     }
 
-    @Override
-    public Object propertyMissing(String propName) {
-        NotchProperty property = getProperty(propName);
-        if (property != null && property.isStatic()) {
-            return property.get(null);
-        } else {
-            return UNDEFINED;
-        }
-    }
 }

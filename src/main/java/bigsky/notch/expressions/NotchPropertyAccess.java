@@ -10,10 +10,11 @@ import java.util.Map;
 
 import static bigsky.notch.runtime.NotchRuntime.UNDEFINED;
 
-public class NotchPropertyAccess extends NotchExpression {
+public class NotchPropertyAccess extends NotchExpression implements DotPathMember {
     private Token property;
     private NotchExpression root;
     private boolean favorMethods;
+    private String dotPath;
 
     public NotchPropertyAccess(Location start, Location end) {
         super(start, end);
@@ -22,14 +23,31 @@ public class NotchPropertyAccess extends NotchExpression {
     @Override
     public Object evaluate(NotchRuntime runtime) {
         Object rootValue = root.evaluate(runtime);
-        if(rootValue == null || rootValue == UNDEFINED) {
+        if (rootValue == null) {
+            return rootValue;
+        } else if (rootValue == UNDEFINED) {
+            if(isADotPathComponent()) {
+                // TODO - move into runtime to support imports
+                NotchType type = TypeSystem.getType(dotPath);
+                if(type != null) {
+                    return type;
+                }
+            }
             return rootValue;
         }
+
         NotchType runtimeType = TypeSystem.getRuntimeType(rootValue);
         if (favorMethods) {
-            NotchMethod method = runtimeType.getMethod(property.str());
+            NotchBoundMethod method = resolveBoundMethod(rootValue, runtimeType);
             if (method != null) {
-                return new NotchBoundMethod(rootValue, method);
+                return method;
+            }
+        }
+
+        if(rootValue instanceof NotchType notchType) {
+            NotchProperty staticProperty = notchType.getStaticProperty(property.str());
+            if(staticProperty != null) {
+                return staticProperty.get(null);
             }
         }
 
@@ -50,9 +68,9 @@ public class NotchPropertyAccess extends NotchExpression {
         }
 
         if (!favorMethods) {
-            NotchMethod method = runtimeType.getMethod(property.str());
-            if (method != null) {
-                return new NotchBoundMethod(rootValue, method);
+            NotchBoundMethod staticMethod = resolveBoundMethod(rootValue, runtimeType);
+            if (staticMethod != null) {
+                return staticMethod;
             }
         }
 
@@ -60,11 +78,36 @@ public class NotchPropertyAccess extends NotchExpression {
         throw new IllegalStateException("The expression " + root + " does not have a property " + property.str() + " on it");
     }
 
+    private NotchBoundMethod resolveBoundMethod(Object rootValue, NotchType runtimeType) {
+        if(rootValue instanceof NotchType notchType) {
+            NotchMethod staticMethod = notchType.getStaticMethod(property.str());
+            if(staticMethod != null) {
+                return new NotchBoundMethod(null, staticMethod);
+            }
+        }
+
+        NotchMethod method = runtimeType.getMethod(property.str());
+        if (method != null) {
+            return new NotchBoundMethod(rootValue, method);
+        }
+        return null;
+    }
+
+    private boolean isADotPathComponent() {
+        return dotPath != null;
+    }
+
     public void setProperty(Token propName) {
         this.property = propName;
     }
 
     public void setRoot(NotchExpression root) {
+        if(root instanceof DotPathMember dpm) {
+            String rootDotPath = dpm.getDotPath();
+            if (rootDotPath != null) {
+                this.dotPath = rootDotPath + DotPathMember.DOT + this.property.str();
+            }
+        }
         this.root = addChild(root);
     }
 
@@ -74,5 +117,10 @@ public class NotchPropertyAccess extends NotchExpression {
 
     public void setFavorMethods(boolean favorMethods) {
         this.favorMethods = favorMethods;
+    }
+
+    @Override
+    public String getDotPath() {
+        return this.dotPath;
     }
 }

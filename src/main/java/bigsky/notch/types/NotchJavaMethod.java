@@ -3,6 +3,7 @@ package bigsky.notch.types;
 import bigsky.notch.types.coercions.Coercion;
 import bigsky.utils.BetterList;
 
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -16,14 +17,16 @@ public class NotchJavaMethod implements NotchMethod {
     private final BetterList<Method> javaMethods;
     private final String name;
     private final Class backingClass;
+    private final boolean staticMethod;
 
-    public NotchJavaMethod(String methodName, Class backingClass) {
+    public NotchJavaMethod(String methodName, Class backingClass, boolean staticMethod) {
         this.name = methodName;
+        this.staticMethod = staticMethod;
         this.backingClass = backingClass;
         this.javaMethods = new BetterList<>();
         Method[] allMethods = backingClass.getMethods();
         for (Method m : allMethods) {
-            if (m.getName().equals(methodName)) {
+            if (m.getName().equals(methodName) &&  Modifier.isStatic(m.getModifiers()) == staticMethod) {
                 m.setAccessible(true);
                 javaMethods.add(m);
             }
@@ -82,13 +85,13 @@ public class NotchJavaMethod implements NotchMethod {
         return bestMatch;
     }
 
-    public int distanceFromValues(Method javaMethod, List<Object> argValues) {
-        Class<?>[] parameterTypes = javaMethod.getParameterTypes();
-        if(argValues.size() == parameterTypes.length) {
+    public int distanceFromValues(Executable executable, List<Object> runtimeValues) {
+        Class<?>[] parameterTypes = executable.getParameterTypes();
+        if(runtimeValues.size() == parameterTypes.length) {
             int distance = 0;
             for (int i = 0; i < parameterTypes.length; i++) {
                 Class<?> parameterType = parameterTypes[i];
-                Object o = argValues.get(i);
+                Object o = runtimeValues.get(i);
                 if (o != null) {
                     Class<?> runtimeClass = o.getClass();
                     int paramDistance = distanceTo(runtimeClass, parameterType);
@@ -115,7 +118,7 @@ public class NotchJavaMethod implements NotchMethod {
 
     @Override
     public boolean isStatic() {
-        return javaMethods.hasMatch((m) -> Modifier.isStatic(m.getModifiers()));
+        return staticMethod;
     }
 
     @Override
@@ -151,7 +154,4 @@ public class NotchJavaMethod implements NotchMethod {
         }
     }
 
-    public boolean isValid() {
-        return javaMethods.size() > 0;
-    }
 }
