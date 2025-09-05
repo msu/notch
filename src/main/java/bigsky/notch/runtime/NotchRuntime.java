@@ -1,5 +1,11 @@
 package bigsky.notch.runtime;
 
+import bigsky.utils.Numbers;
+import bigsky.utils.SafeAutoClosable;
+import bigsky.utils.chisel.Span;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -11,13 +17,14 @@ public class NotchRuntime {
         }
     };
 
-    private Vector<LinkedHashMap<String, Object>> values = new Vector<>();
+    private LinkedList<LinkedHashMap<String, Object>> values = new LinkedList<>();
 
     Consumer<Object> out = System.out::println;
 
     public NotchRuntime() {
         this(Map.of());
     }
+
     public NotchRuntime(Map<String, Object> entry) {
         Objects.requireNonNull(entry);
 
@@ -75,11 +82,40 @@ public class NotchRuntime {
 
     public NotchRuntime captureClosure() {
         NotchRuntime closure = new NotchRuntime();
-        closure.values = values;
+        closure.values = new LinkedList<>(values);
         return closure;
     }
 
-    public class ScopeLock implements AutoCloseable {
+    public boolean isUndefined(Object value) {
+        return UNDEFINED == value;
+    }
+
+    public boolean isTruthy(Object value) {
+        return Objects.equals(true, value);
+    }
+
+    public boolean isFalsy(Object value) {
+        return !isTruthy(value);
+    }
+
+    public Iterable<?> asIterable(Span span, Object iterableValue) {
+        if (iterableValue instanceof Object[] oa) {
+            return List.of(oa);
+        }
+
+        if (iterableValue instanceof Iterable<?> it) {
+            return it;
+        }
+
+        throw new NotchRuntimeException(span, "conversion error, cannot convert " + iterableValue.getClass() + " as an iterable");
+    }
+
+    public Number asNumber(Object value) {
+        if (value instanceof Number n) return n;
+        return 0;
+    }
+
+    public class ScopeLock implements SafeAutoClosable {
         private final LinkedHashMap<String, Object> frame;
 
         private ScopeLock(LinkedHashMap<String, Object> frame) {
@@ -104,29 +140,5 @@ public class NotchRuntime {
                 throw new IllegalStateException("popped different scope than was pushed!");
             }
         }
-    }
-
-    public boolean isUndefined(Object value) {
-        return UNDEFINED == value;
-    }
-
-    public boolean isTruthy(Object value) {
-        return Objects.equals(true, value);
-    }
-
-    public boolean isFalsy(Object value) {
-        return !isTruthy(value);
-    }
-
-    public Iterable<?> asIterable(Object iterableValue) {
-        if (iterableValue instanceof Object[] oa) {
-            return List.of(oa);
-        }
-
-        if (iterableValue instanceof Iterable<?> it) {
-            return it;
-        }
-
-        throw new NotchRuntimeException("conversion error, cannot convert " + iterableValue.getClass() + " as an iterable");
     }
 }

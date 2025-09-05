@@ -3,6 +3,7 @@ package bigsky.notch.expressions;
 import bigsky.notch.runtime.NotchBoundMethod;
 import bigsky.notch.runtime.NotchClosure;
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.notch.types.NotchJavaMethod;
 import bigsky.utils.chisel.Location;
 
@@ -44,7 +45,7 @@ public class NotchMethodInvocation extends NotchExpression {
                 case Runnable r -> run(r);
                 // TODO better error message
                 default ->
-                        throw new IllegalStateException("The expression " + root + " returned a " + functionObj.getClass().getSimpleName() + ", which I don't know how to invoke!");
+                        throw new NotchRuntimeException(span(), "The expression " + root + " returned a " + functionObj.getClass().getSimpleName() + ", which I don't know how to invoke!");
             };
         }
     }

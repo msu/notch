@@ -2,6 +2,7 @@ package bigsky.notch;
 
 import bigsky.notch.expressions.NotchErrorExpression;
 import bigsky.utils.chisel.Location;
+import bigsky.utils.chisel.Span;
 
 import java.util.*;
 
@@ -41,4 +42,7 @@ public class NotchElement {
         }
     }
 
+    public Span span() {
+        return new Span(start, end);
+    }
 }

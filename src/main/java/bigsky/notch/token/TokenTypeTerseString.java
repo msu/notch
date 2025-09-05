@@ -11,9 +11,7 @@ public class TokenTypeTerseString implements TokenType {
     protected TokenTypeTerseString() {}
 
     protected boolean isTerseCharacter(char c) {
-        if (Character.isLetterOrDigit(c)) return true;
-        if (c == '_' || c == '-') return true;
-        return false;
+        return c != ' ' && c != ')' && c != ',';
     }
 
     @Override

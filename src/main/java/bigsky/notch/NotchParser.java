@@ -79,7 +79,7 @@ public class NotchParser extends BasicParser {
 
     public void requireEnd(String message) {
         if (!atEnd()) {
-            throw new ParseException(location(), message + ", found " + peek().type);
+            throw new ParseException(location(), message + ", found " + peek());
         }
     }
 
@@ -203,20 +203,48 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchExpression parseAdditiveExpression() {
+        NotchExpression expr = parseMultiplicativeExpression();
+        while (peek(PLUS, DASH) && expr != null) {
+            var opToken = take();
+
+            var rhs = parseMultiplicativeExpression();
+            if (rhs == null) {
+                throw new ParseException(location(), "expected expression after '+' operator");
+            }
+
+            if (opToken.type.equals(PLUS)) {
+                expr = new NotchAdditiveExpression(expr, rhs);
+            } else {
+                expr = new NotchSubtractionExpression(expr, rhs);
+            }
+        }
+        return expr;
+    }
+
+    private NotchExpression parseMultiplicativeExpression() {
         NotchExpression expr = parseUnaryExpression();
-        while (take(PLUS) && expr != null) {
+        while (peek(STAR, SLASH, PERCENT) && expr != null) {
+            var opToken = take();
+
             var rhs = parseUnaryExpression();
             if (rhs == null) {
                 throw new ParseException(location(), "expected expression after '+' operator");
             }
-            expr = new NotchAdditiveExpression(expr, rhs);
+
+            if (opToken.type.equals(STAR)) {
+                expr = new NotchMultiplicationExpression(expr, rhs);
+            } else if (opToken.type.equals(SLASH)) {
+                expr = new NotchDivisionExpression(expr, rhs);
+            } else {
+                expr = new NotchRemainderExpression(expr, rhs);
+            }
         }
         return expr;
     }
 
     private NotchExpression parseUnaryExpression() {
         Location start = location();
-        if (takeIdent("not") || take(BANG)) {
+        if (takeKeyword("not") || take(BANG)) {
             NotchExpression expr = parseUnaryExpression();
             NotchNotExpression notExpr = new NotchNotExpression(start, location());
             notExpr.setExpression(expr);
@@ -236,12 +264,24 @@ public class NotchParser extends BasicParser {
                     notchExpression = parseMethodInvocation(notchExpression);
                 } else if (peek(LBRACKET)) {
                     notchExpression = parseIndexOperation(notchExpression);
+                } else if (takeKeyword("is")) {
+                    notchExpression = parseIsOperation(notchExpression);
                 } else {
                     break;
                 }
             }
         }
         return notchExpression;
+    }
+
+    private NotchExpression parseIsOperation(NotchExpression lhs) {
+        var isInverted = takeKeyword("not");
+
+        if (takeIdent("empty")) {
+            return new IsEmptyExpression(lhs, isInverted, tokens.prev());
+        } else {
+            throw new ParseException(location(), "expected property after " + (isInverted ? "'is not'" : "'is'"));
+        }
     }
 
     private NotchExpression parseIndexOperation(NotchExpression root) {
@@ -444,7 +484,7 @@ public class NotchParser extends BasicParser {
             if (notchStatement != null) {
                 return notchStatement;
             } else {
-                if(expressionException != null) {
+                if (expressionException != null) {
                     throw expressionException;
                 } else {
                     // TODO better errors
@@ -452,7 +492,7 @@ public class NotchParser extends BasicParser {
                 }
             }
         } catch (Exception e) {
-            if(expressionException != null) {
+            if (expressionException != null) {
                 throw rethrow(expressionException);
             } else {
                 throw rethrow(e);

@@ -2,6 +2,7 @@ package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchBoundMethod;
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.notch.types.*;
 import bigsky.utils.chisel.Location;
 import bigsky.utils.chisel.Token;
@@ -74,8 +75,7 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
             }
         }
 
-        // TODO - better error handling
-        throw new IllegalStateException("The expression " + root + " does not have a property " + property.str() + " on it");
+        return UNDEFINED;
     }
 
     private NotchBoundMethod resolveBoundMethod(Object rootValue, NotchType runtimeType) {

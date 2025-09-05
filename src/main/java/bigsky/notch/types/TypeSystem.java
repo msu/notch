@@ -1,20 +1,32 @@
 package bigsky.notch.types;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.WeakHashMap;
 
 public class TypeSystem {
+    public static final NotchJavaType BOOLEAN = new NotchJavaType(Boolean.TYPE);
+    public static final NotchJavaType BYTE = new NotchJavaType(Byte.TYPE);
+    public static final NotchJavaType CHAR = new NotchJavaType(Character.TYPE);
+    public static final NotchJavaType SHORT = new NotchJavaType(Short.TYPE);
+    public static final NotchJavaType INT = new NotchJavaType(Integer.TYPE);
+    public static final NotchJavaType LONG = new NotchJavaType(Long.TYPE);
+    public static final NotchJavaType FLOAT = new NotchJavaType(Float.TYPE);
+    public static final NotchJavaType DOUBLE = new NotchJavaType(Double.TYPE);
 
-    private static final ConcurrentHashMap<String, NotchType> TYPESYSTEM_CACHE = new ConcurrentHashMap<>();
+    private static final WeakHashMap<String, NotchType> TYPESYSTEM_CACHE = new WeakHashMap<>();
     static {
-        // put primitives into type system by name because they do not resolve normally
-        TYPESYSTEM_CACHE.put("boolean", new NotchJavaType(Boolean.TYPE));
-        TYPESYSTEM_CACHE.put("byte", new NotchJavaType(Byte.TYPE));
-        TYPESYSTEM_CACHE.put("char", new NotchJavaType(Character.TYPE));
-        TYPESYSTEM_CACHE.put("int", new NotchJavaType(Integer.TYPE));
-        TYPESYSTEM_CACHE.put("long", new NotchJavaType(Long.TYPE));
-        TYPESYSTEM_CACHE.put("float", new NotchJavaType(Float.TYPE));
-        TYPESYSTEM_CACHE.put("double", new NotchJavaType(Double.TYPE));
+        synchronized (TYPESYSTEM_CACHE) {
+            // put primitives into type system by name because they do not resolve normally
+            TYPESYSTEM_CACHE.put("boolean", BOOLEAN);
+            TYPESYSTEM_CACHE.put("byte", BYTE);
+            TYPESYSTEM_CACHE.put("char", CHAR);
+            TYPESYSTEM_CACHE.put("short", SHORT);
+            TYPESYSTEM_CACHE.put("int", INT);
+            TYPESYSTEM_CACHE.put("long", LONG);
+            TYPESYSTEM_CACHE.put("float", FLOAT);
+            TYPESYSTEM_CACHE.put("double", DOUBLE);
+        }
     }
+
     public static NotchType getRuntimeType(Object rootVal) {
         if (rootVal instanceof HasCustomNotchType hasNotchType) {
             return hasNotchType.getNotchType();
@@ -25,11 +37,15 @@ public class TypeSystem {
     }
 
     public static NotchType getType(Class<?> aClass) {
-        return TYPESYSTEM_CACHE.computeIfAbsent(aClass.getName(), (name) -> newNotchTypeFor(aClass));
+        synchronized (TYPESYSTEM_CACHE) {
+            return TYPESYSTEM_CACHE.computeIfAbsent(aClass.getName(), (name) -> newNotchTypeFor(aClass));
+        }
     }
 
     public static NotchType getType(String className) {
-        return TYPESYSTEM_CACHE.computeIfAbsent(className, TypeSystem::newNotchTypeFor);
+        synchronized (TYPESYSTEM_CACHE) {
+            return TYPESYSTEM_CACHE.computeIfAbsent(className, TypeSystem::newNotchTypeFor);
+        }
     }
 
     private static NotchType newNotchTypeFor(Class aClass) {

@@ -4,7 +4,7 @@ import bigsky.notch.NotchElement;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.utils.chisel.Location;
 
-import java.util.*;
+import java.util.Map;
 
 public abstract class NotchExpression extends NotchElement {
 
@@ -12,9 +12,7 @@ public abstract class NotchExpression extends NotchElement {
         super(start, end);
     }
 
-    protected <T extends NotchExpression> T addChild(T expr) {
-        return super.addChild(expr);
-    }
+    public abstract Object evaluate(NotchRuntime runtime);
 
     public final Object evaluate() {
         return evaluate(Map.of());
@@ -24,5 +22,7 @@ public abstract class NotchExpression extends NotchElement {
         return evaluate(new NotchRuntime(symbols));
     }
 
-    public abstract Object evaluate(NotchRuntime runtime);
+    protected <T extends NotchExpression> T addChild(T expr) {
+        return super.addChild(expr);
+    }
 }

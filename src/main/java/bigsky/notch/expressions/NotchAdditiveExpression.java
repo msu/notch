@@ -1,6 +1,11 @@
 package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntimeException;
+import bigsky.utils.Numbers;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 public class NotchAdditiveExpression extends NotchExpression {
     private final NotchExpression lhs;
@@ -12,15 +17,23 @@ public class NotchAdditiveExpression extends NotchExpression {
         this.rhs = addChild(rhs);
     }
 
+    // this is tricky cuz there are a lot of types of numbers
+    // we need to efficiently and losslessly (relatively) convert between them
+    // that means we have to handle decimals first, and then integers and utilize a greatest type or a universal type..
     @Override
     public Object evaluate(NotchRuntime runtime) {
         Object lhsVal = lhs.evaluate(runtime);
         Object rhsVal = rhs.evaluate(runtime);
-        // TODO how do we want to handle numbers?
-        if(lhsVal instanceof Number n1 && rhsVal instanceof Number n2) {
-            return n1.intValue() + n2.intValue();
-        } else {
+
+        if (lhsVal instanceof String || rhsVal instanceof String) {
             return String.valueOf(lhsVal) + rhsVal;
         }
+
+        if (lhsVal instanceof Number lv) {
+            var rv = runtime.asNumber(rhsVal);
+            return Numbers.safeAdd(lv, rv);
+        }
+
+        throw new NotchRuntimeException(span(), "cannot add " + lhsVal + " and " + rhsVal);
     }
 }
