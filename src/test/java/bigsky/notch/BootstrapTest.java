@@ -147,7 +147,7 @@ public class BootstrapTest {
 
     @Test
     public void bootstrapMapLiteralWithTerseStringKeys() {
-        Map result = (Map) eval("{:foo123=1, bar=2}");
+        Map result = (Map) eval("{:foo123 = 1, bar=2}");
         assertEquals(Map.of("foo123", 1, "bar", 2), result);
         assertTrue(result instanceof BetterMap<?, ?>);
     }

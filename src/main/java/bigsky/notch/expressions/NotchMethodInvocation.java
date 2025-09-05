@@ -37,16 +37,20 @@ public class NotchMethodInvocation extends NotchExpression {
             for (NotchExpression arg : args) {
                 argValues.add(arg.evaluate(runtime));
             }
-            return switch (functionObj) {
-                case NotchBoundMethod bm -> bm.invoke(argValues);
-                case NotchClosure nc -> nc.call(argValues);
-                case NotchJavaMethod jm -> jm.invoke(null, argValues);
-                case Callable<?> c -> safelyEval(c);
-                case Runnable r -> run(r);
+            if (functionObj instanceof NotchBoundMethod bm) {
+                return bm.invoke(argValues);
+            } else if (functionObj instanceof NotchClosure nc) {
+                return nc.call(argValues);
+            } else if (functionObj instanceof NotchJavaMethod jm) {
+                return jm.invoke(null, argValues);
+            } else if (functionObj instanceof Callable<?> c) {
+                return safelyEval(c);
+            } else if (functionObj instanceof Runnable r) {
+                return run(r);
                 // TODO better error message
-                default ->
-                        throw new NotchRuntimeException(span(), "The expression " + root + " returned a " + functionObj.getClass().getSimpleName() + ", which I don't know how to invoke!");
-            };
+            } else {
+                throw new NotchRuntimeException(span(), "The expression " + root + " returned a " + functionObj.getClass().getSimpleName() + ", which I don't know how to invoke!");
+            }
         }
     }
 

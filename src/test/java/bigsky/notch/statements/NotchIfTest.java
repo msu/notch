@@ -307,7 +307,7 @@ class NotchIfTest {
             end
             print(inner)
             """);
-        assertEquals("<undefined>\n", result);
+        assertEquals("inside if\n", result);
     }
 
     @Test

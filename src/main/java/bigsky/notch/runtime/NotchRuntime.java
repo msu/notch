@@ -1,11 +1,9 @@
 package bigsky.notch.runtime;
 
-import bigsky.utils.Numbers;
+import bigsky.utils.ReverseOrderListView;
 import bigsky.utils.SafeAutoClosable;
 import bigsky.utils.chisel.Span;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -38,7 +36,7 @@ public class NotchRuntime {
     }
 
     public Object getSymbol(String sym) {
-        for (var frame : values.reversed()) {
+        for (var frame : ReverseOrderListView.of(values)) {
             if (frame.containsKey(sym)) {
                 return frame.get(sym);
             }
@@ -47,7 +45,7 @@ public class NotchRuntime {
     }
 
     public void unsetSymbol(String sym) {
-        for (var frame : values.reversed()) {
+        for (var frame : ReverseOrderListView.of(values)) {
             if (frame.containsKey(sym)) {
                 frame.remove(sym);
                 break;
@@ -60,7 +58,7 @@ public class NotchRuntime {
             unsetSymbol(sym);
         }
 
-        for (var frame : values.reversed()) {
+        for (var frame : ReverseOrderListView.of(values)) {
             if (frame.containsKey(sym)) {
                 frame.put(sym, value);
             }

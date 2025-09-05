@@ -507,7 +507,7 @@ public class NotchParser extends BasicParser {
             stmts.add(parseStatement());
         }
         if (stmts.size() == 1) {
-            return stmts.getFirst();
+            return stmts.get(0);
         } else {
             NotchStatements notchStatements = new NotchStatements(start, tokens.location());
             notchStatements.addChildren(stmts);
@@ -556,7 +556,7 @@ public class NotchParser extends BasicParser {
         if (takeKeyword("for")) {
 
             Token loopIdentifier = requireIdent("expected a variable name for the loop item");
-            requireIdent("in", "expected 'in'");
+            requireKeyword("in", "expected 'in'");
 
             NotchExpression loopExpression = requireExpression("expected expression for the loop iterable");
 
