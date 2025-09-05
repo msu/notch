@@ -32,6 +32,11 @@ public class NotchRuntime {
         values.addLast(first);
     }
 
+    public NotchRuntime(NotchRuntime parent) {
+        out = parent.out;
+        values = new LinkedList<>(parent.values);
+    }
+
     public Object getSymbol(String sym) {
         for (var frame : values.reversed()) {
             if (frame.containsKey(sym)) {
