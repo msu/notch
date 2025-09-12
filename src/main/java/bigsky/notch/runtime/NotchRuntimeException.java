@@ -2,8 +2,9 @@ package bigsky.notch.runtime;
 
 import bigsky.utils.chisel.Location;
 import bigsky.utils.chisel.Span;
+import bigsky.utils.chisel.Spanned;
 
-public class NotchRuntimeException extends RuntimeException {
+public class NotchRuntimeException extends RuntimeException implements Spanned {
     public final Span span;
 
     public NotchRuntimeException(Span span, String message) {
@@ -27,5 +28,10 @@ public class NotchRuntimeException extends RuntimeException {
         s += " (at %s)".formatted(span.start().display());
         String message = getMessage();
         return (message != null) ? (s + ": " + message) : s;
+    }
+
+    @Override
+    public Span span() {
+        return span;
     }
 }
