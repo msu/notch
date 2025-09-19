@@ -1,6 +1,7 @@
 package bigsky.notch.types;
 
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TypeSystem {
     public static final NotchJavaType BOOLEAN = new NotchJavaType(Boolean.TYPE);
@@ -12,19 +13,28 @@ public class TypeSystem {
     public static final NotchJavaType FLOAT = new NotchJavaType(Float.TYPE);
     public static final NotchJavaType DOUBLE = new NotchJavaType(Double.TYPE);
 
-    private static final WeakHashMap<String, NotchType> TYPESYSTEM_CACHE = new WeakHashMap<>();
+    private static final ConcurrentHashMap<String, NotchType> TYPESYSTEM_CACHE = new ConcurrentHashMap<>();
     static {
         synchronized (TYPESYSTEM_CACHE) {
-            // put primitives into type system by name because they do not resolve normally
-            TYPESYSTEM_CACHE.put("boolean", BOOLEAN);
-            TYPESYSTEM_CACHE.put("byte", BYTE);
-            TYPESYSTEM_CACHE.put("char", CHAR);
-            TYPESYSTEM_CACHE.put("short", SHORT);
-            TYPESYSTEM_CACHE.put("int", INT);
-            TYPESYSTEM_CACHE.put("long", LONG);
-            TYPESYSTEM_CACHE.put("float", FLOAT);
-            TYPESYSTEM_CACHE.put("double", DOUBLE);
+            init();
         }
+    }
+
+    public static void refresh() {
+        init();
+    }
+
+    private static void init() {
+        // put primitives into type system by name because they do not resolve normally
+        TYPESYSTEM_CACHE.clear();
+        TYPESYSTEM_CACHE.put("boolean", BOOLEAN);
+        TYPESYSTEM_CACHE.put("byte", BYTE);
+        TYPESYSTEM_CACHE.put("char", CHAR);
+        TYPESYSTEM_CACHE.put("short", SHORT);
+        TYPESYSTEM_CACHE.put("int", INT);
+        TYPESYSTEM_CACHE.put("long", LONG);
+        TYPESYSTEM_CACHE.put("float", FLOAT);
+        TYPESYSTEM_CACHE.put("double", DOUBLE);
     }
 
     public static NotchType getRuntimeType(Object rootVal) {
