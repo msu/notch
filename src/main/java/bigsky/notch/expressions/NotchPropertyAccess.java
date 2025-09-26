@@ -69,9 +69,9 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
         }
 
         if (!favorMethods) {
-            NotchBoundMethod staticMethod = resolveBoundMethod(rootValue, runtimeType);
-            if (staticMethod != null) {
-                return staticMethod;
+            NotchBoundMethod method = resolveBoundMethod(rootValue, runtimeType);
+            if (method != null) {
+                return method;
             }
         }
 
