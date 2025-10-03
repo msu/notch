@@ -375,6 +375,10 @@ public class NotchParser extends BasicParser {
             return parseMapLiteral();
         }
 
+        if (peekKeyword("null")) {
+            return new NullLiteral(take());
+        }
+
         return null;
     }
 
