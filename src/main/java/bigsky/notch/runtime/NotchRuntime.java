@@ -101,6 +101,11 @@ public class NotchRuntime {
     }
 
     public Iterable<?> asIterable(Span span, Object iterableValue) {
+
+        if(iterableValue == null) {
+            return Collections.emptyList();
+        }
+
         if (iterableValue instanceof Object[] oa) {
             return List.of(oa);
         }
