@@ -1,6 +1,5 @@
 package bigsky.notch.runtime;
 
-import bigsky.utils.ReverseOrderListView;
 import bigsky.utils.SafeAutoClosable;
 import bigsky.utils.chisel.Span;
 
@@ -27,7 +26,7 @@ public class NotchRuntime {
         Objects.requireNonNull(entry);
 
         var first = new LinkedHashMap<>(entry);
-        values.addLast(first);
+        values.push(first);
     }
 
     public NotchRuntime(NotchRuntime parent) {
@@ -36,7 +35,7 @@ public class NotchRuntime {
     }
 
     public Object getSymbol(String sym) {
-        for (var frame : ReverseOrderListView.of(values)) {
+        for (var frame : values) {
             if (frame.containsKey(sym)) {
                 return frame.get(sym);
             }
@@ -45,7 +44,7 @@ public class NotchRuntime {
     }
 
     public void unsetSymbol(String sym) {
-        for (var frame : ReverseOrderListView.of(values)) {
+        for (var frame : values) {
             if (frame.containsKey(sym)) {
                 frame.remove(sym);
                 break;
@@ -58,19 +57,19 @@ public class NotchRuntime {
             unsetSymbol(sym);
         }
 
-        for (var frame : ReverseOrderListView.of(values)) {
+        for (var frame : values) {
             if (frame.containsKey(sym)) {
                 frame.put(sym, value);
             }
         }
 
-        var frame = values.getLast();
+        var frame = values.peek();
         frame.put(sym, value);
     }
 
     public ScopeLock pushScope() {
         var entry = new LinkedHashMap<String, Object>();
-        values.addLast(entry);
+        values.push(entry);
         var lock = new ScopeLock(entry);
         return lock;
     }
@@ -138,7 +137,7 @@ public class NotchRuntime {
 
         @Override
         public void close() {
-            var f = values.removeLast();
+            var f = values.pop();
             if (f != frame) {
                 throw new IllegalStateException("popped different scope than was pushed!");
             }
