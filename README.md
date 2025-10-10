@@ -1,4 +1,4 @@
-# Notch - A modern day scripting language
+# Notch Yet Another Scripting Language
 
 yes, I did name this after another horse, sue me
 
