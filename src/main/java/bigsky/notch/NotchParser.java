@@ -163,7 +163,7 @@ public class NotchParser extends BasicParser {
             Token op = take();
             var rhs = parseEqualityExpr();
             if (rhs == null) {
-                throw new ParseException(location(), "expected expression after '+' operator");
+                throw new ParseException(location(), "expected expression after logical operator");
             }
             expr = new NotchLogicalExpression(op, expr, rhs);
         }
@@ -247,6 +247,11 @@ public class NotchParser extends BasicParser {
         if (takeKeyword("not") || take(BANG)) {
             NotchExpression expr = parseUnaryExpression();
             NotchNotExpression notExpr = new NotchNotExpression(start, location());
+            notExpr.setExpression(expr);
+            return notExpr;
+        } else if (take(DASH)) {
+            NotchExpression expr = parseUnaryExpression();
+            var notExpr = new NotchNegateExpression(start, location());
             notExpr.setExpression(expr);
             return notExpr;
         } else {
