@@ -28,6 +28,13 @@ public class NotchBasicExpressionTest {
     }
 
     @Test
+    public void testTerseStrings() {
+        assertEquals("hello", eval(":hello"));
+        assertEquals("hello-world", eval(":hello-world"));
+        assertEquals("hello-world&%", eval(":hello-world&%"));
+    }
+
+    @Test
     public void testAddition() {
         assertEquals(2, eval("1 + 1"));
         assertEquals(10, eval("5 + 5"));
