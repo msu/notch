@@ -46,6 +46,7 @@ public class NotchBasicExpressionTest {
         assertEquals(0, eval("1 - 1"));
         assertEquals(5, eval("10 - 5"));
         assertEquals(-5, eval("5 - 10"));
+        assertEquals(15, eval("5 - -10"));
     }
 
     @Test
