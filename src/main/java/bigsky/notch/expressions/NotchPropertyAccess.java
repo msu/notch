@@ -75,6 +75,15 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
             }
         }
 
+        // check if this dot path is an inner class
+        if(rootValue instanceof NotchType notchType && isADotPathComponent()) {
+            // TODO - move into runtime to support imports
+            NotchType type = TypeSystem.getType(notchType.getDisplayName() + "$" + property.str());
+            if(type != null) {
+                return type;
+            }
+        }
+
         return UNDEFINED;
     }
 

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static bigsky.notch.NotchTestUtils.eval;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class NotchExpressionTest {
+public class NotchBasicExpressionTest {
 
     @Test
     public void testIntegers() {

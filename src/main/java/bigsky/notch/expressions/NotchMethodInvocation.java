@@ -25,7 +25,7 @@ public class NotchMethodInvocation extends NotchExpression {
     @Override
     public Object evaluate(NotchRuntime runtime) {
         Object functionObj = root.evaluate(runtime);
-        if (functionObj == null) {
+        if (functionObj == null || functionObj == NotchRuntime.UNDEFINED) {
             NotchExpression actualRoot = root;
             if (actualRoot instanceof NotchPropertyAccess pa) {
                 actualRoot = pa.getRoot();
@@ -49,7 +49,7 @@ public class NotchMethodInvocation extends NotchExpression {
                 return run(r);
                 // TODO better error message
             } else {
-                throw new NotchRuntimeException(span(), "The expression " + root + " returned a " + functionObj.getClass().getSimpleName() + ", which I don't know how to invoke!");
+                throw new NotchRuntimeException(span(), "The expression " + root + " returned a " + functionObj.getClass().getName() + ", which I don't know how to invoke!");
             }
         }
     }
