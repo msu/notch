@@ -23,6 +23,10 @@ public class NotchParser extends BasicParser {
         ignoredTokenTypes.add(WHITESPACE);
     }
 
+    public NotchParser(String src) {
+        this(Notch.TOKENIZER.tokenize(src));
+    }
+
     public boolean peekIdent(String word) {
         if (!peek(IDENT)) return false;
         var token = tokens.peek();
