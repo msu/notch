@@ -6,10 +6,6 @@ import bigsky.notch.statements.NotchStatement;
 import bigsky.utils.chisel.Tokenizer;
 import bigsky.utils.chisel.type.TokenTypePunct;
 
-import java.io.BufferedInputStream;
-import java.io.Console;
-import java.nio.file.Path;
-import java.sql.SQLOutput;
 import java.util.Scanner;
 
 import static bigsky.notch.token.NotchTokenTypeKeyword.NOTCH_KEYWORD;
