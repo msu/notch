@@ -16,7 +16,7 @@ public class NotchAssignment extends NotchStatement {
     @Override
     public void execute(NotchRuntime runtime) {
         Object value = expression.evaluate(runtime);
-        runtime.setOrInsert(name.str(), value);
+        runtime.defineOrUpdate(name.str(), value);
     }
 
     public void setVariableName(Token varName) {

@@ -44,9 +44,9 @@ public class NotchForLoop extends NotchStatement {
             result = convertResult(result);
             if (result instanceof Iterable i) {
                 for (Object o : i) {
-                    runtime.setOrInsert(((String) loopVariable.data), o);
+                    runtime.defineOrUpdate(((String) loopVariable.data), o);
                     if (indexVariable != null) {
-                        runtime.setOrInsert(((String) indexVariable.data), index++);
+                        runtime.defineOrUpdate(((String) indexVariable.data), index++);
                     }
                     for (NotchStatement notchStatement : loopBody) {
                         notchStatement.execute(runtime);

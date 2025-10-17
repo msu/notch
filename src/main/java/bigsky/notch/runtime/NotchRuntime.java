@@ -52,7 +52,7 @@ public class NotchRuntime {
         }
     }
 
-    public void setOrInsert(String sym, Object value) {
+    public void defineOrUpdate(String sym, Object value) {
         if (isUndefined(value)) {
             unsetSymbol(sym);
         }
