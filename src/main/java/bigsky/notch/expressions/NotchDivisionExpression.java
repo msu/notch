@@ -2,7 +2,7 @@ package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
-import bigsky.utils.Numbers;
+import bigsky.utils.BetterMath;
 
 public class NotchDivisionExpression extends NotchExpression {
     public final NotchExpression lhs, rhs;
@@ -19,7 +19,7 @@ public class NotchDivisionExpression extends NotchExpression {
         var rhsVal = rhs.evaluate(runtime);
 
         if (lhsVal instanceof Number l && rhsVal instanceof Number r) {
-            return Numbers.safeDiv(l, r);
+            return BetterMath.safeDiv(l, r);
         } else {
             throw new NotchRuntimeException(span(), "unable to subtract %s with %s".formatted(lhsVal, rhsVal));
         }

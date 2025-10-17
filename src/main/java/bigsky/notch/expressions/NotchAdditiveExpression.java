@@ -2,10 +2,7 @@ package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
-import bigsky.utils.Numbers;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import bigsky.utils.BetterMath;
 
 public class NotchAdditiveExpression extends NotchExpression {
     private final NotchExpression lhs;
@@ -31,7 +28,7 @@ public class NotchAdditiveExpression extends NotchExpression {
 
         if (lhsVal instanceof Number lv) {
             var rv = runtime.asNumber(rhsVal);
-            return Numbers.safeAdd(lv, rv);
+            return BetterMath.safeAdd(lv, rv);
         }
 
         throw new NotchRuntimeException(span(), "cannot add " + lhsVal + " and " + rhsVal);

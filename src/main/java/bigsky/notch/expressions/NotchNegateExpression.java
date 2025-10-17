@@ -2,7 +2,7 @@ package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
-import bigsky.utils.Numbers;
+import bigsky.utils.BetterMath;
 import bigsky.utils.chisel.Location;
 
 public class NotchNegateExpression extends NotchExpression {
@@ -16,7 +16,7 @@ public class NotchNegateExpression extends NotchExpression {
     public Object evaluate(NotchRuntime runtime) {
         var val = expression.evaluate(runtime);
         if(val instanceof Number n) {
-            return Numbers.safeMul(-1, n);
+            return BetterMath.safeMul(-1, n);
         } else {
             throw new NotchRuntimeException(expression.span(), "Not a number: " + val);
         }
