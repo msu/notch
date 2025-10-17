@@ -11,7 +11,7 @@ public class TokenTypeTerseString implements TokenType {
     protected TokenTypeTerseString() {}
 
     protected boolean isTerseCharacter(char c) {
-        return c != ' ' && c != ')' && c != ',' && c != ']' && c != '\0';
+        return c != ' ' && c != ')' && c != ',' && c != ']' && c != '}' && c != '\0';
     }
 
     @Override
