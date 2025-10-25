@@ -64,9 +64,13 @@ public class NotchJavaMethod implements NotchMethod {
     }
 
     private Method bestMatch(List<Object> argValues) {
+        return getBestMatch(argValues, javaMethods);
+    }
+
+    public static <T extends Executable> T getBestMatch(List<Object> argValues, List<T> executables) {
         int closestDistance = MAX_VALUE;
-        Method bestMatch = null;
-        for (Method javaMethod : javaMethods) {
+        T bestMatch = null;
+        for (T javaMethod : executables) {
             int distance = distanceFromValues(javaMethod, argValues);
             if (distance == MAX_VALUE) {
                 continue;
@@ -85,7 +89,7 @@ public class NotchJavaMethod implements NotchMethod {
         return bestMatch;
     }
 
-    public int distanceFromValues(Executable executable, List<Object> runtimeValues) {
+    public static int distanceFromValues(Executable executable, List<Object> runtimeValues) {
         Class<?>[] parameterTypes = executable.getParameterTypes();
         if(runtimeValues.size() == parameterTypes.length) {
             int distance = 0;
@@ -132,7 +136,7 @@ public class NotchJavaMethod implements NotchMethod {
         return method != null;
     }
 
-    private int distanceTo(Class<?> from, Class<?> to) {
+    private static int distanceTo(Class<?> from, Class<?> to) {
         if (from == null) {
             return MAX_VALUE;
         }

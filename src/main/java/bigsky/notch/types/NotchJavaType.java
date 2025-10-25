@@ -3,28 +3,46 @@ package bigsky.notch.types;
 
 import bigsky.utils.BetterList;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static bigsky.notch.types.NotchJavaProperty.isPropertyMethod;
 import static bigsky.notch.types.NotchJavaProperty.propertyNameFor;
+import static bigsky.utils.Exceptions.safelyEval;
 
 
 public class NotchJavaType implements NotchType {
 
     private final Class backingClass;
+    private final ConcurrentHashMap<String, NotchJavaField> fields = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, NotchJavaProperty> properties = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, NotchJavaProperty> staticProperties = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, NotchMethod> methods = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, NotchMethod> staticMethods = new ConcurrentHashMap<>();
+    private BetterList<Constructor> constructors;
 
     public NotchJavaType(Class backingClass) {
         this.backingClass = backingClass;
         initProperties();
         initMethods();
+        initFields();
+        initConstructors();
+    }
+
+    private void initFields() {
+        for (Field declaredField : backingClass.getDeclaredFields()) {
+            fields.put(declaredField.getName(), new NotchJavaField(declaredField));
+        }
+    }
+
+    private void initConstructors() {
+        this.constructors = new BetterList<>(backingClass.getDeclaredConstructors())
+                .tapEach(constructor -> constructor.setAccessible(true));
     }
 
     private void initProperties() {
@@ -102,6 +120,21 @@ public class NotchJavaType implements NotchType {
     @Override
     public Class getBackingClass() {
         return backingClass;
+    }
+
+    @Override
+    public Object newInstance(Object[] args) {
+        Constructor bestMatch = NotchJavaMethod.getBestMatch(Arrays.asList(args), constructors);
+        if(bestMatch != null){
+            return safelyEval(() -> bestMatch.newInstance(args));
+        } else {
+            throw new IllegalArgumentException("No constructor available for values " + Arrays.asList(args));
+        }
+    }
+
+    @Override
+    public NotchField getField(String name) {
+        return fields.get(name);
     }
 
     @Override

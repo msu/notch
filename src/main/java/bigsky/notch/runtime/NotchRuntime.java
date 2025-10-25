@@ -1,5 +1,6 @@
 package bigsky.notch.runtime;
 
+import bigsky.notch.types.NotchJavaType;
 import bigsky.utils.SafeAutoClosable;
 import bigsky.utils.chisel.Span;
 
@@ -112,6 +113,15 @@ public class NotchRuntime {
 
         if (iterableValue instanceof Iterable<?> it) {
             return it;
+        }
+
+        // convert notch java types to classes so enums are iterable
+        if (iterableValue instanceof NotchJavaType t) {
+            iterableValue = t.getBackingClass();
+        }
+
+        if (iterableValue instanceof Class<?> c && c.isEnum()) {
+            return Arrays.asList(c.getEnumConstants());
         }
 
         throw new NotchRuntimeException(span, "conversion error, cannot convert " + iterableValue.getClass() + " as an iterable");

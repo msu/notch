@@ -1,6 +1,5 @@
 package bigsky.notch.types;
 
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TypeSystem {
@@ -14,13 +13,17 @@ public class TypeSystem {
     public static final NotchJavaType DOUBLE = new NotchJavaType(Double.TYPE);
 
     private static final ConcurrentHashMap<String, NotchType> TYPESYSTEM_CACHE = new ConcurrentHashMap<>();
+    private static ClassLoader contextClassLoader;
+
     static {
         synchronized (TYPESYSTEM_CACHE) {
             init();
+            contextClassLoader = TypeSystem.class.getClassLoader();
         }
     }
 
-    public static void refresh() {
+    public static void refresh(ClassLoader classLoader) {
+        contextClassLoader = classLoader;
         init();
     }
 
@@ -47,25 +50,15 @@ public class TypeSystem {
     }
 
     public static NotchType getType(Class<?> aClass) {
-        synchronized (TYPESYSTEM_CACHE) {
-            return TYPESYSTEM_CACHE.computeIfAbsent(aClass.getName(), (name) -> newNotchTypeFor(aClass));
-        }
+        return TYPESYSTEM_CACHE.computeIfAbsent(aClass.getName(), (str) -> {
+            return new NotchJavaType(aClass);
+        });
     }
 
     public static NotchType getType(String className) {
-        synchronized (TYPESYSTEM_CACHE) {
-            return TYPESYSTEM_CACHE.computeIfAbsent(className, TypeSystem::newNotchTypeFor);
-        }
-    }
-
-    private static NotchType newNotchTypeFor(Class aClass) {
-        return new NotchJavaType(aClass);
-    }
-
-    private static NotchType newNotchTypeFor(String className) {
         try {
-            Class<?> backingClass = Class.forName(className);
-            return new NotchJavaType(backingClass);
+            Class<?> backingClass = Class.forName(className, true, contextClassLoader);
+            return getType(backingClass);
         } catch (ClassNotFoundException e) {
             return null;
         }
