@@ -3,10 +3,7 @@ package bigsky.notch.types;
 
 import bigsky.utils.BetterList;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,7 +33,11 @@ public class NotchJavaType implements NotchType {
 
     private void initFields() {
         for (Field declaredField : backingClass.getDeclaredFields()) {
-            fields.put(declaredField.getName(), new NotchJavaField(declaredField));
+            try {
+                fields.put(declaredField.getName(), new NotchJavaField(declaredField));
+            } catch (InaccessibleObjectException e) {
+                // ignore inaccessible fields
+            }
         }
     }
 
