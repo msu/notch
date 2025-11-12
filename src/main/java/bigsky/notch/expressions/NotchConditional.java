@@ -6,7 +6,7 @@ public class NotchConditional extends NotchExpression {
     public final NotchExpression value, condition, fallback;
 
     public NotchConditional(NotchExpression value, NotchExpression condition, NotchExpression fallback) {
-        super(value.start, fallback == null ? condition.end : fallback.end);
+        super(value.fileId, value.start, fallback == null ? condition.end : fallback.end);
         this.value = addChild(value);
         this.condition = addChild(condition);
         this.fallback = addChild(fallback);
@@ -14,13 +14,13 @@ public class NotchConditional extends NotchExpression {
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        var cond = condition.evaluate(runtime);
+        var cond = runtime.evaluate(condition);
         if (runtime.isTruthy(cond)) {
-            return value.evaluate(runtime);
+            return runtime.evaluate(value);
         }
         if (fallback == null) {
             return NotchRuntime.UNDEFINED;
         }
-        return fallback.evaluate(runtime);
+        return runtime.evaluate(fallback);
     }
 }

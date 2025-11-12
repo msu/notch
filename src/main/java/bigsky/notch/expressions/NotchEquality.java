@@ -10,7 +10,7 @@ public class NotchEquality extends NotchExpression {
     private final Token op;
 
     public NotchEquality(Token op, NotchExpression lhs, NotchExpression rhs) {
-        super(lhs.start, rhs.end);
+        super(lhs.fileId, lhs.start, rhs.end);
         this.op = op;
         this.lhs = addChild(lhs);
         this.rhs = addChild(rhs);
@@ -18,8 +18,8 @@ public class NotchEquality extends NotchExpression {
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        var lv = lhs.evaluate(runtime);
-        var rv = rhs.evaluate(runtime);
+        var lv = runtime.evaluate(lhs);
+        var rv = runtime.evaluate(rhs);
         if (op.str().equals("==")) {
             return Objects.equals(lv, rv);
         } else {

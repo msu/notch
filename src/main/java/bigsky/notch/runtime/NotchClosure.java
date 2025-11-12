@@ -19,17 +19,17 @@ public record NotchClosure(NotchRuntime closure, List<Token> parameters, NotchEx
         if (args.size() != parameters.size()) {
             throw new IllegalArgumentException(String.format("The number of arguments, %s, does not match the number of parameters of this closure, %s", args.size(), parameters.size()));
         }
-        try (var scopeLock = closure.pushScope()) {
+        try (var scopeLock = closure.pushScope(expression.fileId, expression.span())) {
             for (int i = 0; i < args.size(); i++) {
                 Object arg = args.get(i);
                 String param = parameters.get(i).str();
                 scopeLock.define(param, arg);
             }
             if (expression != null) {
-                return expression.evaluate(closure);
+                return closure.evaluate(expression);
             } else {
                 for (NotchStatement statement : statements) {
-                    statement.execute(closure);
+                    closure.execute(statement);
                 }
                 // TODO - support return statements eventually
                 return UNDEFINED;

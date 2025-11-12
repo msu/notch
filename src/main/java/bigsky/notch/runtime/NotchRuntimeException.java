@@ -1,37 +1,46 @@
 package bigsky.notch.runtime;
 
-import bigsky.utils.chisel.Location;
 import bigsky.utils.chisel.Span;
 import bigsky.utils.chisel.Spanned;
 
+import java.util.Objects;
+
 public class NotchRuntimeException extends RuntimeException implements Spanned {
+    public final NotchStackTrace stackTrace;
     public final Span span;
 
-    public NotchRuntimeException(Span span, String message) {
+    public NotchRuntimeException(NotchStackTrace stackTrace, Span span, String message) {
         super(message);
-        this.span = span;
+        this.stackTrace = Objects.requireNonNull(stackTrace);
+        this.span = null;
     }
 
-    public NotchRuntimeException(Location start, Location end, String message) {
+    public NotchRuntimeException(NotchStackTrace stackTrace, String message) {
         super(message);
-        this.span = new Span(start, end);
+        this.stackTrace = Objects.requireNonNull(stackTrace);
+        this.span = null;
     }
 
-    public NotchRuntimeException(Span span, String message, Throwable t) {
+    public NotchRuntimeException(NotchStackTrace stackTrace, Throwable t, String message) {
         super(message, t);
-        this.span = span;
+        this.stackTrace = Objects.requireNonNull(stackTrace);
+        this.span = null;
     }
 
-    @Override
-    public String toString() {
-        String s = getClass().getName();
-        s += " (at %s)".formatted(span.start().display());
-        String message = getMessage();
-        return (message != null) ? (s + ": " + message) : s;
+    public NotchRuntimeException(NotchStackTrace stackTrace, Throwable t) {
+        super(t);
+        this.stackTrace = Objects.requireNonNull(stackTrace);
+        this.span = null;
+    }
+
+    public NotchRuntimeException(NotchStackTrace notchStackTrace, Span span, Exception e) {
+        super(e);
+        this.stackTrace = Objects.requireNonNull(notchStackTrace);
+        this.span = Objects.requireNonNull(span);
     }
 
     @Override
     public Span span() {
-        return span;
+        return stackTrace.span();
     }
 }

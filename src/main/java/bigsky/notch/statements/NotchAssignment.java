@@ -9,13 +9,13 @@ public class NotchAssignment extends NotchStatement {
     private Token name;
     private NotchExpression expression;
 
-    public NotchAssignment(Location start, Location end) {
-        super(start, end);
+    public NotchAssignment(String fileId, Location start, Location end) {
+        super(fileId, start, end);
     }
 
     @Override
     public void execute(NotchRuntime runtime) {
-        Object value = expression.evaluate(runtime);
+        Object value = runtime.evaluate(expression);
         runtime.defineOrUpdate(name.str(), value);
     }
 

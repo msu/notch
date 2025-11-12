@@ -8,20 +8,20 @@ public class NotchRemainderExpression extends NotchExpression {
     public final NotchExpression lhs, rhs;
 
     public NotchRemainderExpression(NotchExpression lhs, NotchExpression rhs) {
-        super(lhs.start, rhs.end);
+        super(lhs.fileId, lhs.start, rhs.end);
         this.lhs = addChild(lhs);
         this.rhs = addChild(rhs);
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        var lhsVal = lhs.evaluate(runtime);
-        var rhsVal = rhs.evaluate(runtime);
+        var lhsVal = runtime.evaluate(lhs);
+        var rhsVal = runtime.evaluate(rhs);
 
         if (lhsVal instanceof Number l && rhsVal instanceof Number r) {
             return BetterMath.safeRem(l, r);
         } else {
-            throw new NotchRuntimeException(span(), "unable to subtract %s with %s".formatted(lhsVal, rhsVal));
+            throw runtime.raise(span(), "unable to subtract %s with %s".formatted(lhsVal, rhsVal));
         }
     }
 }

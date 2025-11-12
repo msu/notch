@@ -2,7 +2,6 @@ package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchBoundMethod;
 import bigsky.notch.runtime.NotchRuntime;
-import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.notch.types.*;
 import bigsky.utils.chisel.Location;
 import bigsky.utils.chisel.Token;
@@ -17,13 +16,13 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
     private boolean favorMethods;
     private String dotPath;
 
-    public NotchPropertyAccess(Location start, Location end) {
-        super(start, end);
+    public NotchPropertyAccess(String fileId, Location start, Location end) {
+        super(fileId, start, end);
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        Object rootValue = root.evaluate(runtime);
+        Object rootValue = runtime.evaluate(root);
         if (rootValue == null) {
             return rootValue;
         } else if (rootValue == UNDEFINED) {

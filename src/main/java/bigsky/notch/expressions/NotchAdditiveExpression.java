@@ -9,7 +9,7 @@ public class NotchAdditiveExpression extends NotchExpression {
     private final NotchExpression rhs;
 
     public NotchAdditiveExpression(NotchExpression lhs, NotchExpression rhs) {
-        super(lhs.start, rhs.end);
+        super(lhs.fileId, lhs.start, rhs.end);
         this.lhs = addChild(lhs);
         this.rhs = addChild(rhs);
     }
@@ -19,8 +19,8 @@ public class NotchAdditiveExpression extends NotchExpression {
     // that means we have to handle decimals first, and then integers and utilize a greatest type or a universal type..
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        Object lhsVal = lhs.evaluate(runtime);
-        Object rhsVal = rhs.evaluate(runtime);
+        Object lhsVal = runtime.evaluate(lhs);
+        Object rhsVal = runtime.evaluate(rhs);
 
         if (lhsVal instanceof String || rhsVal instanceof String) {
             return String.valueOf(lhsVal) + rhsVal;
@@ -31,6 +31,6 @@ public class NotchAdditiveExpression extends NotchExpression {
             return BetterMath.safeAdd(lv, rv);
         }
 
-        throw new NotchRuntimeException(span(), "cannot add " + lhsVal + " and " + rhsVal);
+        throw runtime.raise(span(), "cannot add " + lhsVal + " and " + rhsVal);
     }
 }

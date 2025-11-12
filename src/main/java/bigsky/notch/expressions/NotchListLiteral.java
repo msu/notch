@@ -1,30 +1,27 @@
 package bigsky.notch.expressions;
 
-import bigsky.notch.NotchElement;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.utils.BetterList;
 import bigsky.utils.chisel.Location;
 
 import java.util.List;
+import java.util.Objects;
 
 public class NotchListLiteral extends NotchExpression {
-    private List<NotchExpression> values;
+    public final List<NotchExpression> values;
 
-    public NotchListLiteral(Location start, Location end) {
-        super(start, end);
+    public NotchListLiteral(String fileId, Location start, List<NotchExpression> values, Location end) {
+        super(fileId, start, end);
+        this.values = Objects.requireNonNull(values);
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
         BetterList<Object> betterList = new BetterList<>();
         for (NotchExpression expression : values) {
-            betterList.add(expression.evaluate(runtime));
+            betterList.add(runtime.evaluate(expression));
         }
         return betterList;
     }
-
-    public void setValues(List<NotchExpression> listValues) {
-        this.values = addChildren(listValues);
-    }
-
 }
+

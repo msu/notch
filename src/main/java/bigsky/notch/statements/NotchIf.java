@@ -4,41 +4,32 @@ import bigsky.notch.expressions.NotchExpression;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.utils.chisel.Location;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class NotchIf extends NotchStatement {
 
-    NotchExpression expr;
-    List<NotchStatement> ifTrue;
-    List<NotchStatement> ifFalse;
+    public final NotchExpression expr;
+    public final List<NotchStatement> ifTrue;
+    public final List<NotchStatement> ifFalse;
 
-    public NotchIf(Location start, Location end) {
-        super(start, end);
-    }
-
-    public void setExpression(NotchExpression expr) {
-        this.expr = addChild(expr);
-    }
-
-    public void setIfTrue(List<NotchStatement> ifTrue) {
-        this.ifTrue = addChildren(ifTrue);
-    }
-
-    public void setIfFalse(List<NotchStatement> ifFalse) {
-        this.ifFalse = addChildren(ifFalse);
+    public NotchIf(Location start, NotchExpression expr, List<NotchStatement> ifTrue, List<NotchStatement> ifFalse, Location end) {
+        super(expr.fileId, start, end);
+        this.expr = Objects.requireNonNull(expr);
+        this.ifTrue = List.copyOf(ifTrue);
+        this.ifFalse = List.copyOf(ifFalse);
     }
 
     @Override
     public void execute(NotchRuntime runtime) {
-        Object result = expr.evaluate(runtime);
-        if(Boolean.TRUE.equals(result)) {
+        Object result = runtime.evaluate(expr);
+        if (Boolean.TRUE.equals(result)) {
             for (NotchStatement stmt : ifTrue) {
-                stmt.execute(runtime);
+                runtime.execute(stmt);
             }
         } else {
             for (NotchStatement stmt : ifFalse) {
-                stmt.execute(runtime);
+                runtime.execute(stmt);
             }
         }
     }

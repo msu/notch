@@ -8,14 +8,14 @@ public class IsEmptyExpression extends NotchExpression {
     public final boolean isInverted;
 
     public IsEmptyExpression(NotchExpression lhs, boolean isInverted, Token end) {
-        super(lhs.start, end.end);
+        super(lhs.fileId, lhs.start, end.end);
         this.lhs = lhs;
         this.isInverted = isInverted;
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        var lval = lhs.evaluate(runtime);
+        var lval = runtime.evaluate(lhs);
         if (lval instanceof String s) {
             return isInverted == s.isEmpty();
         } else {

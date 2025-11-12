@@ -5,15 +5,13 @@ import bigsky.notch.types.NotchType;
 import bigsky.notch.types.TypeSystem;
 import bigsky.utils.chisel.Token;
 
-import java.beans.Expression;
-
 import static bigsky.notch.runtime.NotchRuntime.UNDEFINED;
 
 public class NotchIdentifier extends NotchExpression implements DotPathMember {
     public final Token token;
 
-    public NotchIdentifier(Token token) {
-        super(token.start, token.end);
+    public NotchIdentifier(String fileId, Token token) {
+        super(fileId, token.start, token.end);
         this.token = token;
     }
 

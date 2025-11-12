@@ -4,8 +4,8 @@ import bigsky.notch.runtime.NotchRuntime;
 import bigsky.utils.chisel.Token;
 
 public class NullLiteral extends NotchExpression {
-    public NullLiteral(Token token) {
-        super(token.start, token.end);
+    public NullLiteral(String fileId, Token token) {
+        super(fileId, token.start, token.end);
     }
 
     @Override

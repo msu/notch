@@ -3,20 +3,19 @@ package bigsky.notch.expressions;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.utils.chisel.Location;
 
+import java.util.Objects;
+
 public class NotchParenthesizedExpression extends NotchExpression {
 
-    private NotchExpression expression;
+    public final NotchExpression expression;
 
-    public NotchParenthesizedExpression(Location start, Location end) {
-        super(start, end);
+    public NotchParenthesizedExpression(Location start, NotchExpression expression, Location end) {
+        super(expression.fileId, start, end);
+        this.expression = Objects.requireNonNull(expression);
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        return expression.evaluate(runtime);
-    }
-
-    public void setExpression(NotchExpression expr) {
-        this.expression = addChild(expr);
+        return runtime.evaluate(expression);
     }
 }

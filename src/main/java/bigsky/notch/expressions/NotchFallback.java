@@ -3,19 +3,19 @@ package bigsky.notch.expressions;
 import bigsky.notch.runtime.NotchRuntime;
 
 public class NotchFallback extends NotchExpression {
-    public final NotchExpression value, fallback;
+    public final NotchExpression primary, fallback;
 
-    public NotchFallback(NotchExpression value, NotchExpression fallback) {
-        super(value.start, fallback.end);
-        this.value = addChild(value);
+    public NotchFallback(NotchExpression primary, NotchExpression fallback) {
+        super(primary.fileId, primary.start, fallback.end);
+        this.primary = addChild(primary);
         this.fallback = addChild(fallback);
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        var value = this.value.evaluate(runtime);
+        var value = runtime.evaluate(primary);
         if (runtime.isUndefined(value)) {
-            value = fallback.evaluate(runtime);
+            value = runtime.evaluate(fallback);
         }
         return value;
     }

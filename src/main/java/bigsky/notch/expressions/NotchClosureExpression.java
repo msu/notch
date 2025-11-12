@@ -13,13 +13,13 @@ public class NotchClosureExpression extends NotchExpression {
     private NotchExpression expression;
     private List<NotchStatement> statements;
 
-    public NotchClosureExpression(Location start, Location end) {
-        super(start, end);
+    public NotchClosureExpression(String fileId, Location start, Location end) {
+        super(fileId, start, end);
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        NotchRuntime closure = runtime.captureClosure();
+        NotchRuntime closure = runtime.captureClosure(fileId, span());
         return new NotchClosure(closure, parameters, expression, statements);
     }
 

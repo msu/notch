@@ -3,28 +3,30 @@ package bigsky.notch.expressions;
 import bigsky.notch.runtime.NotchBoundMethod;
 import bigsky.notch.runtime.NotchClosure;
 import bigsky.notch.runtime.NotchRuntime;
-import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.notch.types.NotchJavaMethod;
 import bigsky.utils.chisel.Location;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 import static bigsky.utils.Exceptions.safelyEval;
 
 public class NotchMethodInvocation extends NotchExpression {
 
-    private NotchExpression root;
-    private List<NotchExpression> args;
+    public final NotchExpression root;
+    public final List<NotchExpression> args;
 
-    public NotchMethodInvocation(Location start, Location end) {
-        super(start, end);
+    public NotchMethodInvocation(Location start, NotchExpression root, List<NotchExpression> args, Location end) {
+        super(root.fileId, start, end);
+        this.root = Objects.requireNonNull(root);
+        this.args = List.copyOf(Objects.requireNonNull(args));
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        Object functionObj = root.evaluate(runtime);
+        Object functionObj = runtime.evaluate(root);
         if (functionObj == null || functionObj == NotchRuntime.UNDEFINED) {
             NotchExpression actualRoot = root;
             if (actualRoot instanceof NotchPropertyAccess pa) {
@@ -35,7 +37,7 @@ public class NotchMethodInvocation extends NotchExpression {
         } else {
             var argValues = new ArrayList<>(args.size());
             for (NotchExpression arg : args) {
-                argValues.add(arg.evaluate(runtime));
+                argValues.add(runtime.evaluate(arg));
             }
             if (functionObj instanceof NotchBoundMethod bm) {
                 return bm.invoke(argValues);
@@ -49,7 +51,7 @@ public class NotchMethodInvocation extends NotchExpression {
                 return run(r);
                 // TODO better error message
             } else {
-                throw new NotchRuntimeException(span(), "The expression " + root + " returned a " + functionObj.getClass().getName() + ", which I don't know how to invoke!");
+                throw runtime.raise(span(), "The expression " + root + " returned a " + functionObj.getClass().getName() + ", which I don't know how to invoke!");
             }
         }
     }
@@ -57,13 +59,5 @@ public class NotchMethodInvocation extends NotchExpression {
     private static Object run(Runnable r) {
         r.run();
         return null;
-    }
-
-    public void setRoot(NotchExpression root) {
-        this.root = addChild(root);
-    }
-
-    public void setArgs(List<NotchExpression> args) {
-        this.args = addChildren(args);
     }
 }

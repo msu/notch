@@ -6,8 +6,8 @@ import bigsky.utils.chisel.Token;
 public class NotchString extends NotchExpression {
     public final Token token;
 
-    public NotchString(Token token) {
-        super(token.start, token.end);
+    public NotchString(String fileId, Token token) {
+        super(fileId, token.start, token.end);
         this.token = token;
     }
 

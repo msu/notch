@@ -8,7 +8,7 @@ public class NotchComparisonExpression extends NotchExpression {
     private NotchExpression lhs;
     private NotchExpression rhs;
     public NotchComparisonExpression(Token op, NotchExpression lhs, NotchExpression rhs) {
-        super(lhs.start, rhs.end);
+        super(lhs.fileId, lhs.start, rhs.end);
         this.op = op;
         this.lhs = addChild(lhs);
         this.rhs = addChild(rhs);
@@ -16,8 +16,8 @@ public class NotchComparisonExpression extends NotchExpression {
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        Integer lhsValue = (Integer) lhs.evaluate(runtime);
-        Integer rhsValue = (Integer) rhs.evaluate(runtime);
+        Integer lhsValue = (Integer) runtime.evaluate(lhs);
+        Integer rhsValue = (Integer) runtime.evaluate(rhs);
         if (op.str().equals(">")) {
             return lhsValue > rhsValue;
         } else if (op.str().equals("<")) {

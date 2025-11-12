@@ -8,56 +8,45 @@ import bigsky.utils.chisel.Token;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class NotchForLoop extends NotchStatement {
 
-    private Token loopVariable;
-    private Token indexVariable;
-    NotchExpression expr;
-    List<NotchStatement> loopBody = new ArrayList<>();
+    public final Token loopVariable;
+    public final Token indexVariable;
+    public final NotchExpression expr;
+    public final List<NotchStatement> loopBody;
 
-    public NotchForLoop(Location start, Location end) {
-        super(start, end);
-    }
-
-    public void setLoopVariable(Token name) {
-        this.loopVariable = name;
-    }
-
-    public void setIndexVariable(Token indexVariable) {
+    public NotchForLoop(Location start, Token loopVariable, NotchExpression expr, Token indexVariable, List<NotchStatement> loopBody, Location end) {
+        super(expr.fileId, start, end);
+        this.loopVariable = Objects.requireNonNull(loopVariable);
+        this.expr = Objects.requireNonNull(expr);
         this.indexVariable = indexVariable;
-    }
-
-    public void setExpression(NotchExpression expr) {
-        this.expr = addChild(expr);
-    }
-
-    public void setLoopBody(List<NotchStatement> statements) {
-        this.loopBody = addChildren(statements);
+        this.loopBody = List.copyOf(Objects.requireNonNull(loopBody));
     }
 
     @Override
     public void execute(NotchRuntime runtime) {
-        Object result = expr.evaluate(runtime);
+        Object result = runtime.evaluate(expr);
         int index = 0;
-        try(var scope = runtime.pushScope()) {
-            result = convertResult(result);
-            if (result instanceof Iterable i) {
+        try (var scope = runtime.pushScope(fileId, span())) {
+            result = tryCoerceIterable(result);
+            if (result instanceof Iterable<?> i) {
                 for (Object o : i) {
                     runtime.defineOrUpdate(((String) loopVariable.data), o);
                     if (indexVariable != null) {
                         runtime.defineOrUpdate(((String) indexVariable.data), index++);
                     }
                     for (NotchStatement notchStatement : loopBody) {
-                        notchStatement.execute(runtime);
+                        runtime.execute(notchStatement);
                     }
                 }
             }
         }
     }
 
-    private static Object convertResult(Object result) {
-        if(result instanceof String s) {
+    private static Object tryCoerceIterable(Object result) {
+        if (result instanceof String s) {
             char[] charArray = s.toCharArray();
             ArrayList<String> charList = new ArrayList<>(charArray.length);
             for (char c : charArray) {

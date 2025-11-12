@@ -1,6 +1,6 @@
 package bigsky.notch.expressions;
 
-import bigsky.utils.chisel.Location;
+import bigsky.utils.chisel.Span;
 
 public abstract class NotchErrorExpression extends NotchExpression {
     public final String message;
@@ -9,14 +9,14 @@ public abstract class NotchErrorExpression extends NotchExpression {
 
 
     public NotchErrorExpression(String message, NotchExpression expr) {
-        super(expr.start, expr.end);
+        super(expr.fileId, expr.start, expr.end);
         this.message = message;
         this.child = expr;
         this.cause = null;
     }
 
-    public NotchErrorExpression(Location start, Location end, Throwable cause) {
-        super(start, end);
+    public NotchErrorExpression(String fileId, Span span, Throwable cause) {
+        super(fileId, span.start(), span.end());
         this.message = cause.getMessage();
         this.child = null;
         this.cause = cause;

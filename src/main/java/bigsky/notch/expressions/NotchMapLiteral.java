@@ -9,8 +9,8 @@ import java.util.Map;
 public class NotchMapLiteral extends NotchExpression {
     private Map<String, NotchExpression> mapValues;
 
-    public NotchMapLiteral(Location start, Location end) {
-        super(start, end);
+    public NotchMapLiteral(String fileId, Location start, Location end) {
+        super(fileId, start, end);
     }
 
     @Override
@@ -18,7 +18,7 @@ public class NotchMapLiteral extends NotchExpression {
         BetterMap<Object, Object> betterMap = new BetterMap<>();
         for (Map.Entry<String, NotchExpression> s : mapValues.entrySet()) {
             String key = s.getKey();
-            Object val = s.getValue().evaluate(runtime);
+            Object val = runtime.evaluate(s.getValue());
             betterMap.put(key, val);
         }
         return betterMap;

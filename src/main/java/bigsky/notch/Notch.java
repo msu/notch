@@ -31,19 +31,19 @@ public class Notch {
             .withTokenTypes(TokenTypePunct.common());
 
     public static void main(String[] args) {
-        NotchRuntime notchRuntime = new NotchRuntime();
+        NotchRuntime notchRuntime = new NotchRuntime("notch-repl");
         Scanner scanner = new Scanner(System.in);
         while (true) {
             System.out.print("notch > ");
             String s = scanner.nextLine();
-            NotchParser notchParser = new NotchParser(s);
+            NotchParser notchParser = new NotchParser("notch-repl", s);
             try {
                 NotchElement elt = notchParser.parse();
                 if (elt instanceof NotchExpression expr) {
-                    Object result = expr.evaluate(notchRuntime);
+                    Object result = notchRuntime.evaluate(expr);
                     System.out.println(result);
                 } else if (elt instanceof NotchStatement stmt) {
-                    stmt.execute(notchRuntime);
+                    notchRuntime.execute(stmt);
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());

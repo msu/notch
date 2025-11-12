@@ -7,8 +7,9 @@ public class NotchLogicalExpression extends NotchExpression {
     private final Token op;
     private NotchExpression lhs;
     private NotchExpression rhs;
+
     public NotchLogicalExpression(Token op, NotchExpression lhs, NotchExpression rhs) {
-        super(lhs.start, rhs.end);
+        super(lhs.fileId, lhs.start, rhs.end);
         this.op = op;
         this.lhs = addChild(lhs);
         this.rhs = addChild(rhs);
@@ -16,8 +17,8 @@ public class NotchLogicalExpression extends NotchExpression {
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        Object lhsValue = lhs.evaluate(runtime);
-        Object rhsValue = rhs.evaluate(runtime);
+        Object lhsValue = runtime.evaluate(lhs);
+        Object rhsValue = runtime.evaluate(rhs);
         if(op.str().equals("and") || op.str().equals("&&")) {
             return runtime.isTruthy(lhsValue) && runtime.isTruthy(rhsValue);
         } else {

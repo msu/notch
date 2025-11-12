@@ -7,10 +7,12 @@ import bigsky.utils.chisel.Span;
 import java.util.*;
 
 public class NotchElement {
+    public final String fileId;
     public final Location start, end;
     private final List<NotchElement> children = new LinkedList<>();
 
-    public NotchElement(Location start, Location end) {
+    public NotchElement(String fileId, Location start, Location end) {
+        this.fileId = Objects.requireNonNull(fileId, "file id was null");
         this.start = Objects.requireNonNull(start, "start location must not be null");
         this.end = Objects.requireNonNull(end, "end location must not be null");
     }

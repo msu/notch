@@ -10,32 +10,34 @@ import java.util.List;
 import java.util.Map;
 
 public class NotchIndexExpression extends NotchExpression {
-    NotchExpression root;
-    NotchExpression value;
+    public final NotchExpression root;
+    public final NotchExpression index;
 
-    public NotchIndexExpression(Location start, Location end) {
-        super(start, end);
+    public NotchIndexExpression(Location start, NotchExpression root, NotchExpression index, Location end) {
+        super(root.fileId, start, end);
+        this.root = root;
+        this.index = index;
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        Object rootValue = root.evaluate(runtime);
-        Object index = value.evaluate(runtime);
+        Object rootValue = runtime.evaluate(root);
+        Object indexValue = runtime.evaluate(index);
         if(rootValue == null) {
             return null;
         }
         // TODO this needs to be a lot more flexible
         if(rootValue instanceof Map m) {
-            return m.get(index);
+            return m.get(indexValue);
         } else if(rootValue instanceof List l) {
-            return l.get(toInteger(index));
+            return l.get(toInteger(indexValue));
         } else if(rootValue instanceof Object[] arr) {
-            return arr[toInteger(index)];
+            return arr[toInteger(indexValue)];
         } else if(rootValue instanceof String s) {
-            return String.valueOf(s.charAt(toInteger(index)));
+            return String.valueOf(s.charAt(toInteger(indexValue)));
         } else {
             NotchType runtimeType = TypeSystem.getRuntimeType(rootValue);
-            NotchProperty property = runtimeType.getProperty(String.valueOf(index));
+            NotchProperty property = runtimeType.getProperty(String.valueOf(indexValue));
             if(property != null) {
                 return property.get(rootValue);
             }
@@ -46,13 +48,5 @@ public class NotchIndexExpression extends NotchExpression {
     private static Integer toInteger(Object index) {
         // TODO - replace with proper coercions
         return (Integer) index;
-    }
-
-    public void setRoot(NotchExpression root) {
-        this.root = addChild(root);
-    }
-
-    public void setValue(NotchExpression value) {
-        this.value = addChild(value);
     }
 }

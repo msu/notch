@@ -1,6 +1,10 @@
 package bigsky.notch.runtime;
 
+import bigsky.notch.expressions.NotchExpression;
+import bigsky.notch.statements.NotchStatement;
 import bigsky.notch.types.NotchJavaType;
+import bigsky.utils.BetterList;
+import bigsky.utils.Exceptions;
 import bigsky.utils.SafeAutoClosable;
 import bigsky.utils.chisel.Span;
 
@@ -15,19 +19,27 @@ public class NotchRuntime {
         }
     };
 
-    private LinkedList<LinkedHashMap<String, Object>> values = new LinkedList<>();
+    private LinkedList<Scope> values = new LinkedList<>();
+    private final BetterList<NotchStackTraceElement> stackTraceElements = new BetterList<>();
+    private Consumer<Object> out = System.out::println;
 
-    Consumer<Object> out = System.out::println;
-
-    public NotchRuntime() {
-        this(Map.of());
+    public NotchRuntime(String fileId, Span span) {
+        var first = new Scope();
+        values.push(first);
+        var trace = new NotchStackTraceElement(fileId, span);
+        stackTraceElements.add(trace);
     }
 
-    public NotchRuntime(Map<String, Object> entry) {
-        Objects.requireNonNull(entry);
+    public NotchRuntime(String fileId) {
+        this(fileId, Map.of());
+    }
 
-        var first = new LinkedHashMap<>(entry);
+    public NotchRuntime(String fileId, Map<String, Object> entryBlock) {
+        Objects.requireNonNull(entryBlock);
+        var first = new Scope(entryBlock);
         values.push(first);
+        var trace = new NotchStackTraceElement(fileId, Span.CALLSITE);
+        stackTraceElements.add(trace);
     }
 
     public NotchRuntime(NotchRuntime parent) {
@@ -68,8 +80,8 @@ public class NotchRuntime {
         frame.put(sym, value);
     }
 
-    public ScopeLock pushScope() {
-        var entry = new LinkedHashMap<String, Object>();
+    public ScopeLock pushScope(String fileId, Span span) {
+        var entry = new Scope();
         values.push(entry);
         var lock = new ScopeLock(entry);
         return lock;
@@ -83,8 +95,8 @@ public class NotchRuntime {
         out.accept(result);
     }
 
-    public NotchRuntime captureClosure() {
-        NotchRuntime closure = new NotchRuntime();
+    public NotchRuntime captureClosure(String fileId, Span span) {
+        NotchRuntime closure = new NotchRuntime(fileId, span);
         closure.values = new LinkedList<>(values);
         return closure;
     }
@@ -124,12 +136,23 @@ public class NotchRuntime {
             return Arrays.asList(c.getEnumConstants());
         }
 
-        throw new NotchRuntimeException(span, "conversion error, cannot convert " + iterableValue.getClass() + " as an iterable");
+        var st = currentStackTrace();
+        throw new NotchRuntimeException(st, "conversion error, cannot convert " + iterableValue.getClass() + " as an iterable");
+    }
+
+    public NotchStackTrace currentStackTrace() {
+        var trace = stackTraceElements.toArray(NotchStackTraceElement[]::new);
+        return new NotchStackTrace(trace);
     }
 
     public Number asNumber(Object value) {
         if (value instanceof Number n) return n;
         return 0;
+    }
+
+    public NotchRuntimeException raise(Span span, String message) {
+        var t = new NotchRuntimeException(currentStackTrace(), span, message);
+        throw t;
     }
 
     public class ScopeLock implements SafeAutoClosable {
@@ -158,4 +181,41 @@ public class NotchRuntime {
             }
         }
     }
+
+    public Object evaluate(NotchExpression expression) {
+        try {
+            var value = expression.evaluate(this);
+            return value;
+        } catch (NotchRuntimeException e) {
+            throw Exceptions.rethrow(e);
+        } catch (Throwable t) {
+            var st = currentStackTrace();
+            throw new NotchRuntimeException(st, t);
+        }
+    }
+
+    public void execute(NotchStatement stmt) {
+        NotchStackTraceElement ste;
+        try {
+            ste = new NotchStackTraceElement(stmt.fileId, stmt.span());
+            stackTraceElements.add(ste);
+            stmt.execute(this);
+        } catch (NotchRuntimeException e) {
+            throw Exceptions.rethrow(e);
+        } catch (Throwable t) {
+            var st = currentStackTrace();
+            throw new NotchRuntimeException(st, t);
+        } finally {
+            stackTraceElements.removeLast();
+        }
+    }
+
+    public static class Scope extends LinkedHashMap<String, Object> {
+        public Scope() {}
+
+        public Scope(Map<? extends String, ?> m) {
+            super(m);
+        }
+    }
+
 }

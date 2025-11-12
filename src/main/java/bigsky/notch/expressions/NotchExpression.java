@@ -8,8 +8,8 @@ import java.util.Map;
 
 public abstract class NotchExpression extends NotchElement {
 
-    public NotchExpression(Location start, Location end) {
-        super(start, end);
+    public NotchExpression(String fileId, Location start, Location end) {
+        super(fileId, start, end);
     }
 
     public abstract Object evaluate(NotchRuntime runtime);
@@ -19,7 +19,8 @@ public abstract class NotchExpression extends NotchElement {
     }
 
     public final Object evaluate(Map<String, Object> symbols) {
-        return evaluate(new NotchRuntime(symbols));
+        var runtime = new NotchRuntime(fileId, symbols);
+        return runtime.evaluate(this);
     }
 
     protected <T extends NotchExpression> T addChild(T expr) {

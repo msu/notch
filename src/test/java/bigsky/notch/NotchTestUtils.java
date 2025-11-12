@@ -15,7 +15,7 @@ public class NotchTestUtils {
     public static Object eval(String source, Object... vars) {
         TokenStream tokens;
         try {
-            tokens = Notch.TOKENIZER.tokenize(source);
+            tokens = Notch.TOKENIZER.tokenize("<eval>", source);
         } catch (TokenizeException e) {
             throw rethrow(e);
         }
@@ -28,16 +28,16 @@ public class NotchTestUtils {
     public static String exec(String source, Object... vars) {
         TokenStream tokens;
         try {
-            tokens = Notch.TOKENIZER.tokenize(source);
+            tokens = Notch.TOKENIZER.tokenize("<exec>", source);
         } catch (TokenizeException e) {
             throw rethrow(e);
         }
         NotchParser notchParser = new NotchParser(tokens);
         NotchStatement expr = notchParser.parseAsStatement();
         StringBuilder sb = new StringBuilder();
-        NotchRuntime runtime = new NotchRuntime(map(vars));
+        NotchRuntime runtime = new NotchRuntime("<exec>", map(vars));
         runtime.setOut(obj -> sb.append(obj).append("\n"));
-        expr.execute(runtime);
+        runtime.execute(expr);
         String result = sb.toString();
         return result;
     }
