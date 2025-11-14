@@ -11,13 +11,13 @@ public class NotchRuntimeException extends RuntimeException implements Spanned {
 
     public NotchRuntimeException(NotchStackTrace stackTrace, NotchDiagnostic diagnostic) {
         this.stackTrace = Objects.requireNonNull(stackTrace);
-        this.diagnostic = diagnostic;
+        this.diagnostic = Objects.requireNonNull(diagnostic);
     }
 
     public NotchRuntimeException(NotchStackTrace stackTrace, NotchDiagnostic diagnostic, Throwable t) {
         super(t);
         this.stackTrace = Objects.requireNonNull(stackTrace);
-        this.diagnostic = diagnostic;
+        this.diagnostic = Objects.requireNonNull(diagnostic);
     }
 
     @Override
