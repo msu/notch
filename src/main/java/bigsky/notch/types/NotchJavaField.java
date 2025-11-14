@@ -1,5 +1,7 @@
 package bigsky.notch.types;
 
+import bigsky.utils.Exceptions;
+
 import java.lang.reflect.Field;
 
 import static bigsky.utils.Exceptions.safely;
@@ -25,6 +27,10 @@ public class NotchJavaField implements NotchField {
 
     @Override
     public void set(Object object, Object val) {
-        safely(()->field.set(object, val));
+        try {
+            field.set(object, val);
+        } catch (Exception e) {
+            throw Exceptions.rethrow(e);
+        }
     }
 }
