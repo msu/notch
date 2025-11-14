@@ -20,15 +20,8 @@ public class NotchRuntime {
     };
 
     private LinkedList<Scope> values = new LinkedList<>();
-    private final BetterList<NotchStackTraceElement> stackTraceElements = new BetterList<>();
+    protected BetterList<NotchStackTraceElement> stackTraceElements = new BetterList<>();
     private Consumer<Object> out = System.out::println;
-
-    public NotchRuntime(String fileId, Span span) {
-        var first = new Scope();
-        values.push(first);
-        var trace = new NotchStackTraceElement(fileId, span);
-        stackTraceElements.add(trace);
-    }
 
     public NotchRuntime(String fileId) {
         this(fileId, Map.of());
@@ -36,16 +29,24 @@ public class NotchRuntime {
 
     public NotchRuntime(String fileId, Map<String, Object> entryBlock) {
         Objects.requireNonNull(entryBlock);
-        var first = new Scope(entryBlock);
-        values.push(first);
-        var trace = new NotchStackTraceElement(fileId, Span.CALLSITE);
+        var scope = new Scope(entryBlock);
+        values.push(scope);
+        var trace = new NotchStackTraceElement(fileId, Span.CALLSITE, "<render>");
         stackTraceElements.add(trace);
     }
 
-    public NotchRuntime(NotchRuntime parent) {
+    public NotchRuntime(String fileId, NotchRuntime parent) {
+        this(fileId, Span.CALLSITE, parent);
+    }
+
+    public NotchRuntime(String fileId, Span span, NotchRuntime parent) {
         out = parent.out;
         values = new LinkedList<>(parent.values);
+        stackTraceElements.addAll(parent.stackTraceElements);
+        var trace = new NotchStackTraceElement(fileId, Span.CALLSITE, "<render>");
+        stackTraceElements.add(trace);
     }
+
 
     public Object getSymbol(String sym) {
         for (var frame : values) {
@@ -87,18 +88,17 @@ public class NotchRuntime {
         return lock;
     }
 
+    public TraceGuard trace(String fileId, Span span, String hint) {
+        var elt = new NotchStackTraceElement(fileId, span, hint);
+        return new TraceGuard(elt);
+    }
+
     public void setOut(Consumer<Object> out) {
         this.out = out;
     }
 
     public void println(Object result) {
         out.accept(result);
-    }
-
-    public NotchRuntime captureClosure(String fileId, Span span) {
-        NotchRuntime closure = new NotchRuntime(fileId, span);
-        closure.values = new LinkedList<>(values);
-        return closure;
     }
 
     public boolean isUndefined(Object value) {
@@ -198,10 +198,7 @@ public class NotchRuntime {
     }
 
     public void execute(NotchStatement stmt) {
-        NotchStackTraceElement ste;
         try {
-            ste = new NotchStackTraceElement(stmt.fileId, stmt.span());
-            stackTraceElements.add(ste);
             stmt.execute(this);
         } catch (NotchRuntimeException e) {
             throw Exceptions.rethrow(e);
@@ -212,8 +209,6 @@ public class NotchRuntime {
             diag.highlight(stmt.fileId, stmt.span());
             diag.note(t.getMessage());
             throw new NotchRuntimeException(st, diag, t);
-        } finally {
-            stackTraceElements.removeLast();
         }
     }
 
@@ -225,4 +220,18 @@ public class NotchRuntime {
         }
     }
 
+    public class TraceGuard implements SafeAutoClosable {
+        public final NotchStackTraceElement element;
+
+        public TraceGuard(NotchStackTraceElement element) {
+            this.element = Objects.requireNonNull(element);
+            stackTraceElements.add(this.element);
+        }
+
+        @Override
+        public void close() {
+            var removed = stackTraceElements.removeLast();
+            assert element == removed;
+        }
+    }
 }

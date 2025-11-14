@@ -121,6 +121,12 @@ public class NotchJavaMethod implements NotchMethod {
     }
 
     @Override
+    public String getQualifiedName() {
+        var parent = javaMethods.get(0).getDeclaringClass();
+        return parent.getName() + "#" + name;
+    }
+
+    @Override
     public boolean isStatic() {
         return staticMethod;
     }

@@ -35,7 +35,10 @@ public class NotchDiagnostic {
         var highlighting = new HashMap<Highlight, List<String>>();
         int maxLineNoSize = 0;
         for (var highlight : highlights) {
-            var lines = sp.provideLines(highlight.fileId, highlight.span());
+            var startLine = highlight.span().start().line;
+            var endLine = highlight.span().end().line;
+
+            var lines = sp.provideLines(highlight.fileId, startLine, endLine);
             highlighting.put(highlight, lines);
 
             int lineNumberLen = ("" + highlight.span.end().line).length();
@@ -46,27 +49,43 @@ public class NotchDiagnostic {
         var padding = " ".repeat(paddingLen);
 
         if (title != null) {
-            sb.append("= ").append(title).append('\n');
+            sb
+                .append(" ".repeat(paddingLen - 4))
+                .append(" ERROR: ").append(title).append('\n');
         }
 
         for (var highlight : highlights) {
             var startLine = highlight.span.start().line;
             var startCol = highlight.span.start().column;
-            sb.append(padding).append("/ ").append(highlight.fileId).append(" [").append(startLine).append(":").append(startCol).append("]\n");
+            var endLine = highlight.span.end().line;
+            var endCol = highlight.span.end().column;
+
+            sb.append(" ".repeat(paddingLen - 1)).append("--> ").append(highlight.fileId).append('\n');
+            sb.append(padding).append("|\n");
 
             var lines = highlighting.get(highlight);
             for (int i = 0; i < lines.size(); i++) {
                 var line = lines.get(i);
                 var lineNo = startLine + i;
-                sb
-                        .append(Text.center(paddingLen, lineNo))
-                        .append("| ")
-                        .append(line)
-                        .append('\n');
+
+                sb.append(Text.center(paddingLen, lineNo)).append("| ").append(line).append('\n');
+
+                if (lineNo > startLine && lineNo < endLine) {
+                    sb.append(padding).append("| ").append("^".repeat(line.length())).append('\n');
+                } else if (lineNo == startLine && lineNo == endLine) {
+                    sb.append(padding).append("| ")
+                            .append(" ".repeat(startCol - 1))
+                            .append("^".repeat(endCol - startCol)).append('\n');
+                } else if (lineNo == startLine) {
+                    sb.append(padding).append("| ")
+                            .append(" ".repeat(startCol - 1))
+                            .append("^".repeat(line.length() - startCol)).append('\n');
+                } else if (lineNo == endLine) {
+                    sb.append(padding).append("| ").append("^".repeat(endCol - 1)).append('\n');
+                }
             }
-            sb.append('\n');
+            sb.append(padding).append("|\n");
         }
-        sb.append('\n');
 
         var footerPadding = " ".repeat(paddingLen - 4);
         for (var footer : notes) {

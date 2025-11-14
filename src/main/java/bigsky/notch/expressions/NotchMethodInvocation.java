@@ -26,39 +26,51 @@ public class NotchMethodInvocation extends NotchExpression {
     public Object evaluate(NotchRuntime runtime) {
         Object functionObj = runtime.evaluate(root);
         if (runtime.isUndefined(functionObj)) {
-            NotchExpression actualRoot = root;
-            if (actualRoot instanceof NotchPropertyAccess pa) {
+            NotchExpression actualRoot;
+            if (root instanceof NotchPropertyAccess pa) {
                 actualRoot = pa.getRoot();
+            } else {
+                actualRoot = root;
             }
 
             var diag = new NotchDiagnostic();
             diag.setTitle("invocation target was null");
             diag.highlight(actualRoot.fileId, actualRoot.span());
-            diag.note("this expression was nil");
+            diag.note("this expression was undefined");
             throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
-        } else {
-            var argValues = new ArrayList<>(args.size());
-            for (NotchExpression arg : args) {
-                argValues.add(runtime.evaluate(arg));
-            }
-            if (functionObj instanceof NotchBoundMethod bm) {
+        }
+
+        var argValues = new ArrayList<>(args.size());
+        for (NotchExpression arg : args) {
+            argValues.add(runtime.evaluate(arg));
+        }
+
+        if (functionObj instanceof NotchBoundMethod bm) {
+            try (var ignoredTrace = runtime.trace(fileId, span(), bm.method().getQualifiedName())) {
                 return bm.invoke(argValues);
-            } else if (functionObj instanceof NotchClosure nc) {
-                return nc.call(argValues);
-            } else if (functionObj instanceof NotchJavaMethod jm) {
-                return jm.invoke(null, argValues);
-            } else if (functionObj instanceof Callable<?> c) {
-                return safelyEval(c);
-            } else if (functionObj instanceof Runnable r) {
-                return run(r);
-                // TODO better error message
-            } else {
-                var diag = new NotchDiagnostic();
-                diag.setTitle("failed to invoke unknown value");
-                diag.highlight(root.fileId, root.span());
-                diag.note("the value had type " + functionObj.getClass().getName());
-                throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
             }
+        } else if (functionObj instanceof NotchClosure nc) {
+            try (var ignoredTrace = runtime.trace(fileId, span(), nc.getQualifiedName())) {
+                return nc.call(argValues);
+            }
+        } else if (functionObj instanceof NotchJavaMethod jm) {
+            try (var ignoredTrace = runtime.trace(fileId, span(), jm.getQualifiedName())) {
+                return jm.invoke(null, argValues);
+            }
+        } else if (functionObj instanceof Callable<?> c) {
+            try (var ignoreTrace = runtime.trace(fileId, span(), "<callable:%s>".formatted(c.getClass().getName()))) {
+                return safelyEval(c);
+            }
+        } else if (functionObj instanceof Runnable r) {
+            try (var ignoreTrace = runtime.trace(fileId, span(), "<internal:%s>".formatted(r.getClass().getName()))) {
+                return run(r);
+            }
+        } else {
+            var diag = new NotchDiagnostic();
+            diag.setTitle("failed to invoke unknown value");
+            diag.highlight(root.fileId, root.span());
+            diag.note("the value had type " + functionObj.getClass().getName());
+            throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
     }
 

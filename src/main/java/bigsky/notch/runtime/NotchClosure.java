@@ -37,6 +37,12 @@ public record NotchClosure(NotchRuntime closure, List<Token> parameters, NotchEx
         }
     }
 
+    public String getQualifiedName() {
+        var ste = closure.stackTraceElements.getLast();
+
+        return "<closure:%s:%d:%d>".formatted(ste.file(), ste.span().start().line, ste.span().start().column);
+    }
+
     // implement a bunch of functional interfaces in java to make NotchClosures work w/various APIs
 
     @Override
