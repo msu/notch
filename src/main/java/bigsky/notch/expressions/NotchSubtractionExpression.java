@@ -1,6 +1,8 @@
 package bigsky.notch.expressions;
 
+import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.utils.BetterMath;
 
 public class NotchSubtractionExpression extends NotchExpression {
@@ -20,7 +22,10 @@ public class NotchSubtractionExpression extends NotchExpression {
         if (lhsVal instanceof Number l && rhsVal instanceof Number r) {
             return BetterMath.safeSub(l, r);
         } else {
-            throw runtime.raise(span(), "unable to subtract %s with %s".formatted(lhsVal, rhsVal));
+            var diag = new NotchDiagnostic();
+            diag.highlight(fileId, span());
+            diag.note("cannot subtract %s from %s".formatted(rhsVal.getClass().getName(), lhsVal.getClass().getName()));
+            throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
     }
 }

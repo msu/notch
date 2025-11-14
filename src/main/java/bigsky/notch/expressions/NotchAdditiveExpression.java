@@ -1,5 +1,6 @@
 package bigsky.notch.expressions;
 
+import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.utils.BetterMath;
@@ -26,11 +27,13 @@ public class NotchAdditiveExpression extends NotchExpression {
             return String.valueOf(lhsVal) + rhsVal;
         }
 
-        if (lhsVal instanceof Number lv) {
-            var rv = runtime.asNumber(rhsVal);
+        if (lhsVal instanceof Number lv && rhsVal instanceof Number rv) {
             return BetterMath.safeAdd(lv, rv);
         }
 
-        throw runtime.raise(span(), "cannot add " + lhsVal + " and " + rhsVal);
+        var diag = new NotchDiagnostic();
+        diag.highlight(fileId, span());
+        diag.note("cannot add %s to %s".formatted(rhsVal.getClass().getName(), lhsVal.getClass().getName()));
+        throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
     }
 }

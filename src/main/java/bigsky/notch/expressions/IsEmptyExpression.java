@@ -19,7 +19,7 @@ public class IsEmptyExpression extends NotchExpression {
         if (lval instanceof String s) {
             return isInverted == s.isEmpty();
         } else {
-            var iterable = runtime.asIterable(lhs.span(), lval);
+            var iterable = runtime.coerceIterable(lhs.fileId, lhs.span(), lval);
             var it = iterable.iterator();
             return isInverted == it.hasNext();
         }

@@ -7,36 +7,17 @@ import java.util.Objects;
 
 public class NotchRuntimeException extends RuntimeException implements Spanned {
     public final NotchStackTrace stackTrace;
-    public final Span span;
+    public final NotchDiagnostic diagnostic;
 
-    public NotchRuntimeException(NotchStackTrace stackTrace, Span span, String message) {
-        super(message);
+    public NotchRuntimeException(NotchStackTrace stackTrace, NotchDiagnostic diagnostic) {
         this.stackTrace = Objects.requireNonNull(stackTrace);
-        this.span = null;
+        this.diagnostic = diagnostic;
     }
 
-    public NotchRuntimeException(NotchStackTrace stackTrace, String message) {
-        super(message);
-        this.stackTrace = Objects.requireNonNull(stackTrace);
-        this.span = null;
-    }
-
-    public NotchRuntimeException(NotchStackTrace stackTrace, Throwable t, String message) {
-        super(message, t);
-        this.stackTrace = Objects.requireNonNull(stackTrace);
-        this.span = null;
-    }
-
-    public NotchRuntimeException(NotchStackTrace stackTrace, Throwable t) {
+    public NotchRuntimeException(NotchStackTrace stackTrace, NotchDiagnostic diagnostic, Throwable t) {
         super(t);
         this.stackTrace = Objects.requireNonNull(stackTrace);
-        this.span = null;
-    }
-
-    public NotchRuntimeException(NotchStackTrace notchStackTrace, Span span, Exception e) {
-        super(e);
-        this.stackTrace = Objects.requireNonNull(notchStackTrace);
-        this.span = Objects.requireNonNull(span);
+        this.diagnostic = diagnostic;
     }
 
     @Override

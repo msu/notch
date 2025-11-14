@@ -1,8 +1,6 @@
 package bigsky.notch.expressions;
 
-import bigsky.notch.runtime.NotchBoundMethod;
-import bigsky.notch.runtime.NotchClosure;
-import bigsky.notch.runtime.NotchRuntime;
+import bigsky.notch.runtime.*;
 import bigsky.notch.types.NotchJavaMethod;
 import bigsky.utils.chisel.Location;
 
@@ -27,13 +25,17 @@ public class NotchMethodInvocation extends NotchExpression {
     @Override
     public Object evaluate(NotchRuntime runtime) {
         Object functionObj = runtime.evaluate(root);
-        if (functionObj == null || functionObj == NotchRuntime.UNDEFINED) {
+        if (runtime.isUndefined(functionObj)) {
             NotchExpression actualRoot = root;
             if (actualRoot instanceof NotchPropertyAccess pa) {
                 actualRoot = pa.getRoot();
             }
-            //TODO improve error message
-            throw new NullPointerException("The root expression " + actualRoot + " returned null");
+
+            var diag = new NotchDiagnostic();
+            diag.setTitle("invocation target was null");
+            diag.highlight(actualRoot.fileId, actualRoot.span());
+            diag.note("this expression was nil");
+            throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         } else {
             var argValues = new ArrayList<>(args.size());
             for (NotchExpression arg : args) {
@@ -51,7 +53,11 @@ public class NotchMethodInvocation extends NotchExpression {
                 return run(r);
                 // TODO better error message
             } else {
-                throw runtime.raise(span(), "The expression " + root + " returned a " + functionObj.getClass().getName() + ", which I don't know how to invoke!");
+                var diag = new NotchDiagnostic();
+                diag.setTitle("failed to invoke unknown value");
+                diag.highlight(root.fileId, root.span());
+                diag.note("the value had type " + functionObj.getClass().getName());
+                throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
             }
         }
     }

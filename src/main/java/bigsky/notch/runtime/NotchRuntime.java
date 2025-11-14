@@ -113,7 +113,7 @@ public class NotchRuntime {
         return !isTruthy(value);
     }
 
-    public Iterable<?> asIterable(Span span, Object iterableValue) {
+    public Iterable<?> coerceIterable(String fileId, Span span, Object iterableValue) {
 
         if(iterableValue == null) {
             return Collections.emptyList();
@@ -137,7 +137,11 @@ public class NotchRuntime {
         }
 
         var st = currentStackTrace();
-        throw new NotchRuntimeException(st, "conversion error, cannot convert " + iterableValue.getClass() + " as an iterable");
+        var diag = new NotchDiagnostic();
+        diag.setTitle("failed to coerce iterable from value");
+        diag.highlight(fileId, span);
+        diag.note("target class was " + iterableValue.getClass().getName());
+        throw new NotchRuntimeException(st, diag);
     }
 
     public NotchStackTrace currentStackTrace() {
@@ -148,11 +152,6 @@ public class NotchRuntime {
     public Number asNumber(Object value) {
         if (value instanceof Number n) return n;
         return 0;
-    }
-
-    public NotchRuntimeException raise(Span span, String message) {
-        var t = new NotchRuntimeException(currentStackTrace(), span, message);
-        throw t;
     }
 
     public class ScopeLock implements SafeAutoClosable {
@@ -190,7 +189,11 @@ public class NotchRuntime {
             throw Exceptions.rethrow(e);
         } catch (Throwable t) {
             var st = currentStackTrace();
-            throw new NotchRuntimeException(st, t);
+            var diag = new NotchDiagnostic();
+            diag.setTitle("failed to evaluate expression");
+            diag.highlight(expression.fileId, expression.span());
+            diag.note(t.getMessage());
+            throw new NotchRuntimeException(st, diag, t);
         }
     }
 
@@ -204,7 +207,11 @@ public class NotchRuntime {
             throw Exceptions.rethrow(e);
         } catch (Throwable t) {
             var st = currentStackTrace();
-            throw new NotchRuntimeException(st, t);
+            var diag = new NotchDiagnostic();
+            diag.setTitle("failed to execute statement");
+            diag.highlight(stmt.fileId, stmt.span());
+            diag.note(t.getMessage());
+            throw new NotchRuntimeException(st, diag, t);
         } finally {
             stackTraceElements.removeLast();
         }

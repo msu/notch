@@ -1,6 +1,8 @@
 package bigsky.notch.expressions;
 
+import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.utils.BetterMath;
 import bigsky.utils.chisel.Location;
 
@@ -20,7 +22,10 @@ public class NotchNegateExpression extends NotchExpression {
         if(val instanceof Number n) {
             return BetterMath.safeMul(-1, n);
         } else {
-            throw runtime.raise(expression.span(), "Not a number: " + val);
+            var diag = new NotchDiagnostic();
+            diag.highlight(fileId, span());
+            diag.note("cannot negate %s".formatted(val.getClass().getName()));
+            throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
     }
 }
