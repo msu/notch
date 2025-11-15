@@ -42,7 +42,7 @@ public class NotchParser extends BasicParser {
     public Token requireIdent(String errMessage) {
         if (!peek(IDENT)) {
             var loc = tokens.location();
-            throw new ParseException(loc, errMessage + ": (expected identifier)");
+            throw new ParseException(fileId(), errMessage + ": (expected identifier)", loc);
         }
         return tokens.take();
     }
@@ -50,7 +50,7 @@ public class NotchParser extends BasicParser {
     public void requireIdent(String word, String contextMessage) {
         if (!takeIdent(word)) {
             var loc = tokens.location();
-            throw new ParseException(loc, loc, contextMessage + " : (expected " + repr(word) + ")");
+            throw new ParseException(fileId(), contextMessage + " : (expected " + repr(word) + ")", loc);
         }
     }
 
@@ -69,7 +69,7 @@ public class NotchParser extends BasicParser {
     public Token requireKeyword(String errMessage) {
         if (!peek(NOTCH_KEYWORD)) {
             var loc = tokens.location();
-            throw new ParseException(loc, errMessage + ": (expected identifier)");
+            throw new ParseException(fileId(), errMessage + ": (expected identifier)", loc);
         }
         return tokens.take();
     }
@@ -77,13 +77,13 @@ public class NotchParser extends BasicParser {
     public void requireKeyword(String word, String contextMessage) {
         if (!takeKeyword(word)) {
             var loc = tokens.location();
-            throw new ParseException(loc, loc, contextMessage + " : (expected " + repr(word) + ")");
+            throw new ParseException(fileId(), contextMessage + " : (expected " + repr(word) + ")", loc);
         }
     }
 
     public void requireEnd(String message) {
         if (!atEnd()) {
-            throw new ParseException(location(), message + ", found " + peek());
+            throw new ParseException(fileId(), message + ", found " + peek(), location());
         }
     }
 
@@ -96,11 +96,11 @@ public class NotchParser extends BasicParser {
         try {
             expr = parseExpression();
         } catch (ParseException e) {
-            throw new ParseException(location(), errorMessage, e);
+            throw new ParseException(errorMessage, e, fileId(), location());
         }
 
         if (expr == null) {
-            throw new ParseException(location(), errorMessage + ", expected expression");
+            throw new ParseException(errorMessage + ", expected expression", fileId(), location());
         }
         return expr;
     }
@@ -113,14 +113,14 @@ public class NotchParser extends BasicParser {
         if (takeKeywordOnSameLine("if", expr)) {
             var condition = parseFallbackExpr();
             if (condition == null) {
-                throw new ParseException(location(), "expected condition after 'if' operator");
+                throw new ParseException("expected condition after 'if' operator", fileId(), location());
             }
 
             NotchExpression fallback = null;
             if (takeKeywordOnSameLine("else", expr)) {
                 fallback = parseConditionalExpr();
                 if (fallback == null) {
-                    throw new ParseException(location(), "expected value after 'else' in 'if' expression");
+                    throw new ParseException("expected value after 'else' in 'if' expression", fileId(), location());
                 }
             }
 
@@ -150,7 +150,7 @@ public class NotchParser extends BasicParser {
         while (take(QUESTION_COLON)) {
             var fallback = parseLogicalExpression();
             if (fallback == null) {
-                throw new ParseException(location(), "expected expression after '?:' operator");
+                throw new ParseException("expected expression after '?:' operator", fileId(), location());
             }
 
             expr = new NotchFallback(expr, fallback);
@@ -167,7 +167,7 @@ public class NotchParser extends BasicParser {
             Token op = take();
             var rhs = parseEqualityExpr();
             if (rhs == null) {
-                throw new ParseException(location(), "expected expression after logical operator");
+                throw new ParseException("expected expression after logical operator", fileId(), location());
             }
             expr = new NotchLogicalExpression(op, expr, rhs);
         }
@@ -182,7 +182,7 @@ public class NotchParser extends BasicParser {
             Token op = take();
             var rhs = parseComparisonExpression();
             if (rhs == null) {
-                throw new ParseException(location(), "expected expression after '" + op.str() + "' operator");
+                throw new ParseException("expected expression after '" + op.str() + "' operator", fileId(), location());
             }
 
             expr = new NotchEquality(op, expr, rhs);
@@ -199,7 +199,7 @@ public class NotchParser extends BasicParser {
             Token op = take();
             var rhs = parseAdditiveExpression();
             if (rhs == null) {
-                throw new ParseException(location(), "expected expression after '+' operator");
+                throw new ParseException("expected expression after '+' operator", fileId(), location());
             }
             expr = new NotchComparisonExpression(op, expr, rhs);
         }
@@ -213,7 +213,7 @@ public class NotchParser extends BasicParser {
 
             var rhs = parseMultiplicativeExpression();
             if (rhs == null) {
-                throw new ParseException(location(), "expected expression after '+' operator");
+                throw new ParseException("expected expression after '+' operator", fileId(), location());
             }
 
             if (opToken.type.equals(PLUS)) {
@@ -232,7 +232,7 @@ public class NotchParser extends BasicParser {
 
             var rhs = parseUnaryExpression();
             if (rhs == null) {
-                throw new ParseException(location(), "expected expression after '+' operator");
+                throw new ParseException("expected expression after '+' operator", fileId(), location());
             }
 
             if (opToken.type.equals(STAR)) {
@@ -287,7 +287,7 @@ public class NotchParser extends BasicParser {
         if (takeIdent("empty")) {
             return new IsEmptyExpression(lhs, isInverted, tokens.prev());
         } else {
-            throw new ParseException(location(), "expected property after " + (isInverted ? "'is not'" : "'is'"));
+            throw new ParseException("expected property after " + (isInverted ? "'is not'" : "'is'"), fileId(), location());
         }
     }
 
@@ -311,7 +311,7 @@ public class NotchParser extends BasicParser {
                 args.add(arg);
                 if (!peek(RPAREN)) {
                     if (!take(COMMA)) {
-                        throw new ParseException(location(), "Expected ','");
+                        throw new ParseException("Expected ','", fileId(), location());
                     }
                 }
             }
@@ -417,7 +417,7 @@ public class NotchParser extends BasicParser {
                 } else if (peek(TERSE_STRING)) {
                     key = String.valueOf(take().data);
                 } else {
-                    throw new ParseException(location(), "Expected a key");
+                    throw new ParseException("Expected a key", fileId(), location());
                 }
                 require(EQ, "Expected a '=` to separate a key from a value in the map");
                 NotchExpression notchExpression = parseExpression();
@@ -539,7 +539,7 @@ public class NotchParser extends BasicParser {
             return assignmentStmt;
         }
 
-        throw new ParseException(tokens.location(), "expected statement");
+        throw new ParseException("expected statement", fileId(), tokens.location());
     }
 
     private NotchStatement parseAssignmentStatement() {
@@ -590,7 +590,7 @@ public class NotchParser extends BasicParser {
 
             NotchExpression conditional = parseExpression();
             if (conditional == null) {
-                throw new ParseException(start, tokens.location(), "Expected a conditional expression");
+                throw new ParseException("Expected a conditional expression", fileId(), new Span(start, tokens.location()));
             }
 
             var ifTrue = new ArrayList<NotchStatement>();
