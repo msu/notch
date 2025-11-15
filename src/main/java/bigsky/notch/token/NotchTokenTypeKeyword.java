@@ -14,7 +14,7 @@ public class NotchTokenTypeKeyword implements TokenType {
 
     private NotchTokenTypeKeyword() {}
 
-    public static final Set<String> KEYWORDS = Set.of("if", "for", "else", "end", "in", "is", "not", "null");
+    public static final Set<String> KEYWORDS = Set.of("if", "for", "else", "end", "in", "is", "not", "null", "as");
 
     @Override
     public Token tokenize(Tokenizer t) throws TokenizeException {
