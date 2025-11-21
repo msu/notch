@@ -2,7 +2,7 @@ package bigsky.notch.runtime;
 
 import java.util.List;
 
-public interface NotchMacro {
+public interface NotchRenderable {
     String getName();
     String getQualifiedName();
 
