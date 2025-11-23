@@ -3,11 +3,13 @@ package bigsky.notch.runtime;
 import bigsky.utils.chisel.Span;
 import bigsky.utils.chisel.Spanned;
 
+import java.util.Objects;
+
 public class NotchStackTrace implements Spanned {
     public NotchStackTraceElement[] elements;
 
     public NotchStackTrace(NotchStackTraceElement[] elements) {
-        this.elements = elements;
+        this.elements = Objects.requireNonNull(elements);
     }
 
     @Override

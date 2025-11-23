@@ -20,6 +20,7 @@ public class NotchRuntime {
         }
     };
 
+    public final String fileId;
     private LinkedList<Scope> values = new LinkedList<>();
     protected BetterList<NotchStackTraceElement> stackTraceElements = new BetterList<>();
     private Consumer<Object> out = System.out::println;
@@ -29,6 +30,7 @@ public class NotchRuntime {
     }
 
     public NotchRuntime(String fileId, Map<String, Object> entryBlock) {
+        this.fileId = Objects.requireNonNull(fileId);
         Objects.requireNonNull(entryBlock);
         var scope = new Scope(entryBlock);
         values.push(scope);
@@ -37,10 +39,7 @@ public class NotchRuntime {
     }
 
     public NotchRuntime(String fileId, NotchRuntime parent) {
-        this(fileId, Span.CALLSITE, parent);
-    }
-
-    public NotchRuntime(String fileId, Span span, NotchRuntime parent) {
+        this.fileId = Objects.requireNonNull(fileId);
         out = parent.out;
         values = new LinkedList<>(parent.values);
         stackTraceElements.addAll(parent.stackTraceElements);
