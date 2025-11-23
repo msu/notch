@@ -4,6 +4,7 @@ import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.utils.BetterMath;
+import bigsky.utils.Text;
 
 public class NotchRemainderExpression extends NotchExpression {
     public final NotchExpression lhs, rhs;
@@ -24,7 +25,7 @@ public class NotchRemainderExpression extends NotchExpression {
         } else {
             var diag = new NotchDiagnostic();
             diag.highlight(fileId, span());
-            diag.note("cannot take the remainder of %s from %s".formatted(lhsVal.getClass().getName(), rhsVal.getClass().getName()));
+            diag.note("cannot take the remainder of %s from %s".formatted(Text.className(lhsVal), Text.className(rhsVal)));
             throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
     }

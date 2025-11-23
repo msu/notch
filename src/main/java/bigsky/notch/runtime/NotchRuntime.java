@@ -6,6 +6,7 @@ import bigsky.notch.types.NotchJavaType;
 import bigsky.utils.BetterList;
 import bigsky.utils.Exceptions;
 import bigsky.utils.SafeAutoClosable;
+import bigsky.utils.Text;
 import bigsky.utils.chisel.Span;
 
 import java.util.*;
@@ -140,7 +141,7 @@ public class NotchRuntime {
         var diag = new NotchDiagnostic();
         diag.setTitle("failed to coerce iterable from value");
         diag.highlight(fileId, span);
-        diag.note("target class was " + iterableValue.getClass().getName());
+        diag.note("target class was " + Text.className(iterableValue));
         throw new NotchRuntimeException(st, diag);
     }
 

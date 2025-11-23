@@ -2,6 +2,7 @@ package bigsky.notch.types;
 
 import bigsky.notch.types.coercions.Coercion;
 import bigsky.utils.BetterList;
+import bigsky.utils.Text;
 
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
@@ -41,7 +42,7 @@ public class NotchJavaMethod implements NotchMethod {
             }
             Method method = bestMatch(args);
             if (method == null) {
-                String argTypes = BetterList.better(args).map(o -> o.getClass().getName()).join(",");
+                String argTypes = BetterList.better(args).map(Text::className).join(",");
                 throw new IllegalArgumentException("Could not find compatible method with args (" + argTypes + ")");
             }
             for (int i = 0; i < args.size(); i++) {
