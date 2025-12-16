@@ -18,11 +18,18 @@ public class NotchLogicalExpression extends NotchExpression {
     @Override
     public Object evaluate(NotchRuntime runtime) {
         Object lhsValue = runtime.evaluate(lhs);
-        Object rhsValue = runtime.evaluate(rhs);
         if(op.str().equals("and") || op.str().equals("&&")) {
-            return runtime.isTruthy(lhsValue) && runtime.isTruthy(rhsValue);
+            if(!runtime.isTruthy(lhsValue)) {
+                return false;
+            }
+            Object rhsValue = runtime.evaluate(rhs);
+            return runtime.isTruthy(rhsValue);
         } else {
-            return runtime.isTruthy(lhsValue) || runtime.isTruthy(rhsValue);
+            if(runtime.isTruthy(lhsValue)) {
+                return true;
+            }
+            Object rhsValue = runtime.evaluate(rhs);
+            return runtime.isTruthy(rhsValue);
         }
     }
 }

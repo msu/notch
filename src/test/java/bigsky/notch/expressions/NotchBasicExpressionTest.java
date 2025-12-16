@@ -2,6 +2,8 @@ package bigsky.notch.expressions;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.Callable;
+
 import static bigsky.notch.NotchTestUtils.eval;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -124,6 +126,25 @@ public class NotchBasicExpressionTest {
     }
 
     @Test
+    public void testLogicalOperatorsShortCircuits() {
+        var callable = new MyCallable(true);
+        assertEquals(true, eval("true and foo()", "foo", callable));
+        assertEquals(true, callable.wasCalled);
+
+        callable = new MyCallable(true);
+        assertEquals(false, eval("false and foo()", "foo", callable));
+        assertEquals(false, callable.wasCalled);
+
+        callable = new MyCallable(true);
+        assertEquals(true, eval("false or foo()", "foo", callable));
+        assertEquals(true, callable.wasCalled);
+
+        callable = new MyCallable(true);
+        assertEquals(true, eval("true or foo()", "foo", callable));
+        assertEquals(false, callable.wasCalled);
+    }
+
+    @Test
     public void testNotOperator() {
         assertEquals(false, eval("not true"));
         assertEquals(true, eval("not false"));
@@ -139,4 +160,18 @@ public class NotchBasicExpressionTest {
         assertEquals(true, eval("!(5 > 10)"));
     }
 
+    private static class MyCallable implements Callable<Boolean> {
+        private final boolean returnValue;
+        public boolean wasCalled;
+
+        public MyCallable(boolean returnValue) {
+            this.returnValue = returnValue;
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            this.wasCalled = true;
+            return returnValue;
+        }
+    }
 }
