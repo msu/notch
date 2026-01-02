@@ -1,6 +1,7 @@
 package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.utils.BetterMath;
 import bigsky.utils.chisel.Token;
 
 public class NotchComparisonExpression extends NotchExpression {
@@ -16,15 +17,21 @@ public class NotchComparisonExpression extends NotchExpression {
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        Integer lhsValue = (Integer) runtime.evaluate(lhs);
-        Integer rhsValue = (Integer) runtime.evaluate(rhs);
-        if (op.str().equals(">")) {
-            return lhsValue > rhsValue;
-        } else if (op.str().equals("<")) {
-            return lhsValue < rhsValue;
-        } else if (op.str().equals("<=")) {
-            return lhsValue <= rhsValue;
+        Object lhsValue = runtime.evaluate(lhs);
+        Object rhsValue = runtime.evaluate(rhs);
+        if(lhsValue instanceof Number lhsNumber && rhsValue instanceof Number rhsNumber) {
+            BetterMath.Ordering ordering = BetterMath.safeCompare(lhsNumber, rhsNumber);
+            if (op.str().equals(">")) {
+                return ordering == BetterMath.Ordering.GreaterThan;
+            } else if (op.str().equals("<")) {
+                return ordering == BetterMath.Ordering.LessThan;
+            } else if (op.str().equals("<=")) {
+                return ordering == BetterMath.Ordering.LessThan ||  ordering == BetterMath.Ordering.Equal;
+            } else {
+                return ordering == BetterMath.Ordering.GreaterThan ||  ordering == BetterMath.Ordering.Equal;
+            }
         } else {
-            return lhsValue >= rhsValue;}
+            return false;
+        }
     }
 }
