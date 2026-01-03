@@ -22,13 +22,13 @@ public class NotchComparisonExpression extends NotchExpression {
         if(lhsValue instanceof Number lhsNumber && rhsValue instanceof Number rhsNumber) {
             BetterMath.Ordering ordering = BetterMath.safeCompare(lhsNumber, rhsNumber);
             if (op.str().equals(">")) {
-                return ordering == BetterMath.Ordering.GreaterThan;
+                return ordering == BetterMath.Ordering.GREATER_THAN;
             } else if (op.str().equals("<")) {
-                return ordering == BetterMath.Ordering.LessThan;
+                return ordering == BetterMath.Ordering.LESS_THAN;
             } else if (op.str().equals("<=")) {
-                return ordering == BetterMath.Ordering.LessThan ||  ordering == BetterMath.Ordering.Equal;
+                return ordering == BetterMath.Ordering.LESS_THAN ||  ordering == BetterMath.Ordering.EQUAL;
             } else {
-                return ordering == BetterMath.Ordering.GreaterThan ||  ordering == BetterMath.Ordering.Equal;
+                return ordering == BetterMath.Ordering.GREATER_THAN ||  ordering == BetterMath.Ordering.EQUAL;
             }
         } else {
             return false;
