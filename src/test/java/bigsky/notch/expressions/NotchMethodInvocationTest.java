@@ -74,6 +74,18 @@ public class NotchMethodInvocationTest {
         assertEquals(NotchRuntime.UNDEFINED, result);
     }
 
+    @Test
+    public void testMethodWithNullParameter() {
+        Object result = eval("foo.withNullableArg(x)", "foo", new SampleClass(), "x", null);
+        assertEquals("null", result);
+    }
+
+    @Test
+    public void testMethodWithNonNullParameter() {
+        Object result = eval("foo.withNullableArg(x)", "foo", new SampleClass(), "x", "test");
+        assertEquals("test", result);
+    }
+
     public static class SampleClass {
 
         public static String staticMethod() {
@@ -122,6 +134,10 @@ public class NotchMethodInvocationTest {
 
         public SampleClass getNull() {
             return null;
+        }
+
+        public String withNullableArg(String arg) {
+            return arg == null ? "null" : arg;
         }
     }
 }

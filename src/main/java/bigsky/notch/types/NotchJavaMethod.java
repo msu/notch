@@ -48,13 +48,15 @@ public class NotchJavaMethod implements NotchMethod {
             for (int i = 0; i < args.size(); i++) {
                 Object arg = args.get(i);
                 Class<?> parameterType = method.getParameterTypes()[i];
-                Class<?> runtimeType = arg.getClass();
-                if (!parameterType.isAssignableFrom(runtimeType)) {
-                    Coercion coercer = Coercion.resolve(runtimeType, parameterType);
-                    if (coercer == null) {
-                        throw new IllegalArgumentException("Could not figure out how to convert argument " + i + " of type " + runtimeType.getName() + " to " + parameterType.getName());
-                    } else {
-                        args.set(i, coercer.coerce(arg));
+                if (arg != null) {
+                    Class<?> runtimeType = arg.getClass();
+                    if (!parameterType.isAssignableFrom(runtimeType)) {
+                        Coercion coercer = Coercion.resolve(runtimeType, parameterType);
+                        if (coercer == null) {
+                            throw new IllegalArgumentException("Could not figure out how to convert argument " + i + " of type " + runtimeType.getName() + " to " + parameterType.getName());
+                        } else {
+                            args.set(i, coercer.coerce(arg));
+                        }
                     }
                 }
             }
