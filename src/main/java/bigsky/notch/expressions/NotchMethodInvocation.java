@@ -26,16 +26,9 @@ public class NotchMethodInvocation extends NotchExpression {
     public Object evaluate(NotchRuntime runtime) {
         Object functionObj = runtime.evaluate(root);
         if (runtime.isUndefined(functionObj)) {
-            NotchExpression actualRoot;
-            if (root instanceof NotchPropertyAccess pa) {
-                actualRoot = pa.getRoot();
-            } else {
-                actualRoot = root;
-            }
-
             var diag = new NotchDiagnostic();
-            diag.setTitle("invocation target was null");
-            diag.highlight(actualRoot.fileId, actualRoot.span());
+            diag.setTitle("Attempted to invoke a null value");
+            diag.highlight(root.fileId, root.span());
             diag.note("this expression was undefined");
             throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
