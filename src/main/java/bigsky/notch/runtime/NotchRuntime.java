@@ -6,7 +6,6 @@ import bigsky.notch.types.NotchJavaType;
 import bigsky.utils.BetterList;
 import bigsky.utils.Exceptions;
 import bigsky.utils.SafeAutoClosable;
-import bigsky.utils.Text;
 import bigsky.utils.chisel.Span;
 
 import java.util.*;
@@ -47,6 +46,14 @@ public class NotchRuntime {
         stackTraceElements.add(trace);
     }
 
+    public static String className(Object obj) {
+        if (obj == null) {
+            return "<null>";
+        } else if (obj == UNDEFINED) {
+            return "<undefined>";
+        }
+        return obj.getClass().getName();
+    }
 
     public Object getSymbol(String sym) {
         for (var frame : values) {
@@ -140,7 +147,7 @@ public class NotchRuntime {
         var diag = new NotchDiagnostic();
         diag.setTitle("failed to coerce iterable from value");
         diag.highlight(fileId, span);
-        diag.note("target class was " + Text.className(iterableValue));
+        diag.note("target class was " + className(iterableValue));
         throw new NotchRuntimeException(st, diag);
     }
 

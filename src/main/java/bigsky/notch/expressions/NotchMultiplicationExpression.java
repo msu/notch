@@ -4,7 +4,6 @@ import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.utils.BetterMath;
-import bigsky.utils.Text;
 
 public class NotchMultiplicationExpression extends NotchExpression {
     public final NotchExpression lhs, rhs;
@@ -25,7 +24,7 @@ public class NotchMultiplicationExpression extends NotchExpression {
         } else {
             var diag = new NotchDiagnostic();
             diag.highlight(fileId, span());
-            diag.note("cannot take the product of %s from %s".formatted(Text.className(lhsVal), Text.className(rhsVal)));
+            diag.note("cannot take the product of %s from %s".formatted(NotchRuntime.className(lhsVal), NotchRuntime.className(rhsVal)));
             throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
     }

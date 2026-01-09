@@ -2,7 +2,6 @@ package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.*;
 import bigsky.notch.types.NotchJavaMethod;
-import bigsky.utils.Text;
 import bigsky.utils.chisel.Location;
 
 import java.util.ArrayList;
@@ -59,18 +58,18 @@ public class NotchMethodInvocation extends NotchExpression {
                 return jm.invoke(null, argValues);
             }
         } else if (functionObj instanceof Callable<?> c) {
-            try (var ignoreTrace = runtime.trace(fileId, span(), "<callable:%s>".formatted(Text.className(c)))) {
+            try (var ignoreTrace = runtime.trace(fileId, span(), "<callable:%s>".formatted(NotchRuntime.className(c)))) {
                 return safelyEval(c);
             }
         } else if (functionObj instanceof Runnable r) {
-            try (var ignoreTrace = runtime.trace(fileId, span(), "<internal:%s>".formatted(Text.className(r)))) {
+            try (var ignoreTrace = runtime.trace(fileId, span(), "<internal:%s>".formatted(NotchRuntime.className(r)))) {
                 return run(r);
             }
         } else {
             var diag = new NotchDiagnostic();
             diag.setTitle("failed to invoke unknown value");
             diag.highlight(root.fileId, root.span());
-            diag.note("the value had type " + Text.className(functionObj));
+            diag.note("the value had type " + NotchRuntime.className(functionObj));
             throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
     }

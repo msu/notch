@@ -4,7 +4,6 @@ import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.utils.BetterMath;
-import bigsky.utils.Text;
 
 public class NotchAdditiveExpression extends NotchExpression {
     private final NotchExpression lhs;
@@ -34,7 +33,7 @@ public class NotchAdditiveExpression extends NotchExpression {
 
         var diag = new NotchDiagnostic();
         diag.highlight(fileId, span());
-        diag.note("cannot add %s to %s".formatted(Text.className(rhsVal), Text.className(lhsVal)));
+        diag.note("cannot add %s to %s".formatted(NotchRuntime.className(lhsVal), NotchRuntime.className(rhsVal)));
         throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
     }
 }

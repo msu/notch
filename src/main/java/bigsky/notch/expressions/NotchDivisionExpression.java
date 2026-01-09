@@ -4,7 +4,6 @@ import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.utils.BetterMath;
-import bigsky.utils.Text;
 
 public class NotchDivisionExpression extends NotchExpression {
     public final NotchExpression lhs, rhs;
@@ -25,7 +24,7 @@ public class NotchDivisionExpression extends NotchExpression {
         } else {
             var diag = new NotchDiagnostic();
             diag.highlight(fileId, span());
-            diag.note("cannot take the quotient of %s from %s".formatted(Text.className(rhsVal), Text.className(lhsVal)));
+            diag.note("cannot take the quotient of %s from %s".formatted(NotchRuntime.className(rhsVal), NotchRuntime.className(lhsVal)));
             throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
     }
