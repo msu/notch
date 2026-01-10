@@ -89,11 +89,13 @@ public class NotchDiagnostic {
 
         var footerPadding = " ".repeat(paddingLen - 4);
         for (var footer : notes) {
-            var lines = footer.lines().iterator();
-            if (!lines.hasNext()) continue;
-            sb.append(footerPadding).append("note: ").append(lines.next()).append('\n');
-            while (lines.hasNext()) {
-                sb.append(padding).append(": ").append(lines.next()).append('\n');
+            if (footer != null) {
+                var lines = footer.lines().iterator();
+                if (!lines.hasNext()) continue;
+                sb.append(footerPadding).append("note: ").append(lines.next()).append('\n');
+                while (lines.hasNext()) {
+                    sb.append(padding).append(": ").append(lines.next()).append('\n');
+                }
             }
         }
     }
