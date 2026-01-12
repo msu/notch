@@ -26,18 +26,16 @@ public class NotchMethodInvocation extends NotchExpression {
     @Override
     public Object evaluate(NotchRuntime runtime) {
         Object functionObj = runtime.evaluate(root);
-        if (runtime.isUndefined(functionObj)) {
-            NotchExpression actualRoot;
-            if (root instanceof NotchPropertyAccess pa) {
-                actualRoot = pa.getRoot();
-            } else {
-                actualRoot = root;
-            }
-
+        if (functionObj == null || runtime.isUndefined(functionObj)) {
             var diag = new NotchDiagnostic();
-            diag.setTitle("invocation target was null");
-            diag.highlight(actualRoot.fileId, actualRoot.span());
-            diag.note("this expression was undefined");
+            diag.highlight(fileId, span());
+            if (root instanceof NotchPropertyAccess pa) {
+                var prop = pa.getProperty();
+                var parentPath = pa.getParentDotPath();
+                diag.note("unable to call %s, %s was null".formatted(Text.repr(prop), Text.repr(parentPath)));
+            } else {
+                diag.note("unable to call null");
+            }
             throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
 

@@ -1,8 +1,11 @@
 package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchBoundMethod;
+import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.notch.types.*;
+import bigsky.utils.Text;
 import bigsky.utils.chisel.Location;
 import bigsky.utils.chisel.Token;
 
@@ -23,16 +26,7 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
     @Override
     public Object evaluate(NotchRuntime runtime) {
         Object rootValue = runtime.evaluate(root);
-        if (rootValue == null) {
-            return rootValue;
-        } else if (rootValue == UNDEFINED) {
-            if(isADotPathComponent()) {
-                // TODO - move into runtime to support imports
-                NotchType type = TypeSystem.getType(dotPath);
-                if(type != null) {
-                    return type;
-                }
-            }
+        if (rootValue == null || runtime.isUndefined(rootValue)) {
             return rootValue;
         }
 
@@ -41,6 +35,11 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
             NotchBoundMethod method = resolveBoundMethod(rootValue, runtimeType);
             if (method != null) {
                 return method;
+            } else {
+                var error = new NotchDiagnostic();
+                error.highlight(fileId, span());
+                error.note("no such property/method named %s on %s (%s), no such property".formatted(Text.repr(getProperty()), Text.repr(getParentDotPath()), runtimeType.getDisplayName()));
+                throw new NotchRuntimeException(runtime.currentStackTrace(), error);
             }
         }
 
@@ -130,5 +129,14 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
     @Override
     public String getDotPath() {
         return this.dotPath;
+    }
+
+    public String getProperty() {
+        return property.str();
+    }
+
+    public String getParentDotPath() {
+        var dp = getDotPath();
+        return dp.substring(0, dp.lastIndexOf(DotPathMember.DOT));
     }
 }
