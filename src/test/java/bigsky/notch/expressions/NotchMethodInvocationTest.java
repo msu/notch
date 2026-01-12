@@ -1,6 +1,7 @@
 package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.notch.types.TypeSystem;
 import org.junit.jupiter.api.Test;
 
 import static bigsky.notch.NotchTestUtils.eval;
@@ -16,7 +17,8 @@ public class NotchMethodInvocationTest {
 
     @Test
     public void testStaticMethodInvocationWorks() {
-        Object result = eval("bigsky.notch.expressions.NotchMethodInvocationTest.SampleClass.staticMethod()", "foo", new SampleClass());
+        var type = TypeSystem.getType(SampleClass.class);
+        Object result = eval("SampleClass.staticMethod()", type.getSimpleName(), type);
         assertEquals("staticMethod", result);
     }
 

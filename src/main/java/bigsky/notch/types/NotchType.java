@@ -1,7 +1,6 @@
 package bigsky.notch.types;
 
 import java.util.List;
-import java.util.Map;
 
 public interface NotchType {
     NotchMethod getMethod(String propName);
@@ -9,6 +8,7 @@ public interface NotchType {
     NotchProperty getProperty(String propName);
     NotchProperty getStaticProperty(String propName);
     String getDisplayName();
+    String getSimpleName();
     List<NotchMethod> getMethods();
     List<NotchMethod> getStaticMethods();
     List<NotchProperty> getProperties();
