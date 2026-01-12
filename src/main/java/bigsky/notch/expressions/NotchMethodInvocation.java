@@ -2,6 +2,7 @@ package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.*;
 import bigsky.notch.types.NotchJavaMethod;
+import bigsky.utils.Text;
 import bigsky.utils.chisel.Location;
 
 import java.util.ArrayList;
