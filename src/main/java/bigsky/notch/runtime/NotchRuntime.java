@@ -73,6 +73,14 @@ public class NotchRuntime {
         }
     }
 
+    public Set<String> getInScopeSymbols() {
+        Set<String> symbols = new LinkedHashSet<>();
+        for (var frame : values) {
+            symbols.addAll(frame.keySet());
+        }
+        return symbols;
+    }
+
     public void defineOrUpdate(String sym, Object value) {
         if (isUndefined(value)) {
             unsetSymbol(sym);
