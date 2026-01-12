@@ -306,7 +306,7 @@ public class NotchParser extends BasicParser {
         if (take(LPAREN)) {
             Location start = root.start;
             var args = new ArrayList<NotchExpression>();
-            while (!atEnd() && !take(RPAREN)) {
+            while (!atEnd() && !peek(RPAREN)) {
                 NotchExpression arg = parseExpression();
                 args.add(arg);
                 if (!peek(RPAREN)) {
@@ -314,6 +314,9 @@ public class NotchParser extends BasicParser {
                         throw new ParseException("Expected ','", fileId(), location());
                     }
                 }
+            }
+            if (!take(RPAREN)) {
+                throw new ParseException("Expected ')'", fileId(), location());
             }
             NotchMethodInvocation methodInvocation = new NotchMethodInvocation(start, root, args, location());
             if (root instanceof NotchPropertyAccess pa) {

@@ -2,7 +2,10 @@ package bigsky.notch;
 
 import bigsky.notch.expressions.NotchExpression;
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntimeException;
+import bigsky.notch.runtime.SourceProvider;
 import bigsky.notch.statements.NotchStatement;
+import bigsky.utils.chisel.Span;
 import bigsky.utils.chisel.TokenStream;
 import bigsky.utils.chisel.TokenizeException;
 
@@ -21,8 +24,17 @@ public class NotchTestUtils {
         }
         NotchParser notchParser = new NotchParser(tokens);
         NotchExpression expr = notchParser.parseExpression();
-        Object result = expr.evaluate(map(vars));
-        return result;
+        try {
+            Object result = expr.evaluate(map(vars));
+            return result;
+        } catch (NotchRuntimeException ex) {
+            var result = ex.diagnostic.render((fileId, span) -> {
+                var start = span.start().index;
+                var end = span.end().index;
+                return source.substring(start, Math.min(source.length(), end));
+            });
+            throw new RuntimeException(result);
+        }
     }
 
     public static String exec(String source, Object... vars) {
@@ -42,7 +54,7 @@ public class NotchTestUtils {
         return result;
     }
 
-    private static Map<String, Object> map(Object[] vars) {
+    public static Map<String, Object> map(Object[] vars) {
         HashMap<String, Object> map = new HashMap<>();
         for (int i = 0; i < vars.length; i++) {
             Object key = vars[i];

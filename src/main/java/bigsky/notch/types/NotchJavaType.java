@@ -99,6 +99,11 @@ public class NotchJavaType implements NotchType {
     }
 
     @Override
+    public String getSimpleName() {
+        return backingClass.getSimpleName();
+    }
+
+    @Override
     public List<NotchMethod> getMethods() {
         return new BetterList<>(methods.values());
     }

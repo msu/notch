@@ -1,8 +1,11 @@
 package bigsky.notch.expressions;
 
+import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
+import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.notch.types.NotchType;
 import bigsky.notch.types.TypeSystem;
+import bigsky.utils.Text;
 import bigsky.utils.chisel.Token;
 
 import static bigsky.notch.runtime.NotchRuntime.UNDEFINED;
@@ -21,12 +24,18 @@ public class NotchIdentifier extends NotchExpression implements DotPathMember {
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        var val = runtime.getSymbol(name());
+        var name = name();
+        var val = runtime.getSymbol(name);
         if (val == UNDEFINED) {
-            NotchType type = TypeSystem.getType(token.str());
+            NotchType type = TypeSystem.getType(name);
             if(type != null) {
                 return type;
             }
+
+            var error = new NotchDiagnostic();
+            error.highlight(fileId, token.span());
+            error.note("undefined variable %s".formatted(Text.repr(name)));
+            throw new NotchRuntimeException(runtime.currentStackTrace(), error);
         }
         return val;
     }
