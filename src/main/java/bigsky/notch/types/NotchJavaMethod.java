@@ -5,6 +5,7 @@ import bigsky.notch.types.coercions.Coercion;
 import bigsky.utils.BetterList;
 
 import java.lang.reflect.Executable;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -61,7 +62,13 @@ public class NotchJavaMethod implements NotchMethod {
                 }
             }
             return method.invoke(rootVal, args.toArray());
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            if (e instanceof InvocationTargetException) {
+                e = e.getCause();
+                // remove the reflection internals
+                StackTraceElement[] stackTrace = e.getStackTrace();
+                e.setStackTrace(Arrays.copyOfRange(stackTrace, 2, stackTrace.length));
+            }
             throw rethrow(e);
         }
     }

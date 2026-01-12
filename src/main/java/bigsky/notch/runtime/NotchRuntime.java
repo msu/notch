@@ -203,6 +203,7 @@ public class NotchRuntime {
         } catch (NotchRuntimeException e) {
             throw Exceptions.rethrow(e);
         } catch (Throwable t) {
+            // TODO - would prefer to replace the stack trace here
             var st = currentStackTrace();
             var diag = new NotchDiagnostic();
             diag.setTitle("failed to evaluate expression");
