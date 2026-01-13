@@ -37,6 +37,19 @@ public class NotchTestUtils {
         }
     }
 
+    public static Object evalNoCatch(String source, Object... vars) {
+        TokenStream tokens;
+        try {
+            tokens = Notch.TOKENIZER.tokenize("<eval>", source);
+        } catch (TokenizeException e) {
+            throw rethrow(e);
+        }
+        NotchParser notchParser = new NotchParser(tokens);
+        NotchExpression expr = notchParser.parseExpression();
+        Object result = expr.evaluate(map(vars));
+        return result;
+    }
+
     public static String exec(String source, Object... vars) {
         TokenStream tokens;
         try {

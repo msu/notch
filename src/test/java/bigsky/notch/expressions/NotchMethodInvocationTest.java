@@ -4,8 +4,12 @@ import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.types.TypeSystem;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.*;
+
 import static bigsky.notch.NotchTestUtils.eval;
+import static bigsky.notch.NotchTestUtils.evalNoCatch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class NotchMethodInvocationTest {
 
@@ -88,6 +92,11 @@ public class NotchMethodInvocationTest {
         assertEquals("test", result);
     }
 
+    @Test
+    public void testExceptionsPropogateProperly() {
+        assertThrows(CustomException.class, () -> evalNoCatch("foo.throwsException(x)", "foo", new SampleClass(), "x", 10));
+    }
+
     public static class SampleClass {
 
         public static String staticMethod() {
@@ -141,5 +150,14 @@ public class NotchMethodInvocationTest {
         public String withNullableArg(String arg) {
             return arg == null ? "null" : arg;
         }
+
+        public void throwsException(int depth) {
+            if (depth <= 0) {
+                throw new CustomException();
+            } else {
+                throwsException(depth - 1);
+            }
+        }
     }
+    public static class CustomException extends RuntimeException {}
 }

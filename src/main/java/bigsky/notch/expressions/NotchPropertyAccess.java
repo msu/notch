@@ -33,14 +33,7 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
         NotchType runtimeType = TypeSystem.getRuntimeType(rootValue);
         if (favorMethods) {
             NotchBoundMethod method = resolveBoundMethod(rootValue, runtimeType);
-            if (method != null) {
-                return method;
-            } else {
-                var error = new NotchDiagnostic();
-                error.highlight(fileId, span());
-                error.note("no such property/method named %s on %s (%s), no such property".formatted(Text.repr(getProperty()), Text.repr(getParentDotPath()), runtimeType.getDisplayName()));
-                throw new NotchRuntimeException(runtime.currentStackTrace(), error);
-            }
+            return method;
         }
 
         if(rootValue instanceof NotchType notchType) {
@@ -82,7 +75,53 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
             }
         }
 
-        return UNDEFINED;
+        var error = new NotchDiagnostic();
+        error.highlight(fileId, span());
+        String hint;
+        if (rootValue instanceof NotchType notchType) {
+            hint = resolveClosestFeatureName(notchType);
+        } else {
+            hint = resolveClosestFeatureName(runtimeType);
+        }
+        error.note("no property/method named %s on %s (%s)%s".formatted(Text.repr(getProperty()),
+                Text.repr(getParentDotPath()),
+                runtimeType.getDisplayName(), hint));
+        throw new NotchRuntimeException(runtime.currentStackTrace(), error);
+
+    }
+
+    private String resolveClosestFeatureName(NotchType runtimeType) {
+        var allFeatures = new java.util.ArrayList<String>();
+
+        if (favorMethods) {
+            runtimeType.getMethods().forEach(m -> allFeatures.add(m.getName()));
+            runtimeType.getStaticMethods().forEach(m -> allFeatures.add(m.getName()));
+            runtimeType.getProperties().forEach(p -> allFeatures.add(p.getName()));
+            runtimeType.getStaticProperties().forEach(p -> allFeatures.add(p.getName()));
+        } else {
+            runtimeType.getProperties().forEach(p -> allFeatures.add(p.getName()));
+            runtimeType.getStaticProperties().forEach(p -> allFeatures.add(p.getName()));
+            runtimeType.getMethods().forEach(m -> allFeatures.add(m.getName()));
+            runtimeType.getStaticMethods().forEach(m -> allFeatures.add(m.getName()));
+        }
+
+        String targetProperty = getProperty().toLowerCase();
+        String closest = allFeatures.get(0);
+        int minDistance = Text.levenshteinDistance(targetProperty, closest.toLowerCase());
+
+        for (int i = 1; i < allFeatures.size(); i++) {
+            String feature = allFeatures.get(i);
+            int distance = Text.levenshteinDistance(targetProperty, feature.toLowerCase());
+            if (distance < minDistance) {
+                minDistance = distance;
+                closest = feature;
+            }
+        }
+
+        if (minDistance <= 2) {
+            return " - Did you mean '" + closest + "'?";
+        }
+        return "";
     }
 
     private NotchBoundMethod resolveBoundMethod(Object rootValue, NotchType runtimeType) {

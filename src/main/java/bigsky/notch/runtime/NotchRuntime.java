@@ -197,20 +197,8 @@ public class NotchRuntime {
     }
 
     public Object evaluate(NotchExpression expression) {
-        try {
             var value = expression.evaluate(this);
             return value;
-        } catch (NotchRuntimeException e) {
-            throw Exceptions.rethrow(e);
-        } catch (Throwable t) {
-            // TODO - would prefer to replace the stack trace here
-            var st = currentStackTrace();
-            var diag = new NotchDiagnostic();
-            diag.setTitle("failed to evaluate expression");
-            diag.highlight(expression.fileId, expression.span());
-            diag.note(t.getMessage());
-            throw new NotchRuntimeException(st, diag, t);
-        }
     }
 
     public void execute(NotchStatement stmt) {

@@ -3,6 +3,7 @@ package bigsky.notch.types;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.types.coercions.Coercion;
 import bigsky.utils.BetterList;
+import bigsky.utils.Exceptions;
 
 import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
@@ -65,9 +66,13 @@ public class NotchJavaMethod implements NotchMethod {
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
                 e = e.getCause();
-                // remove the reflection internals
-                StackTraceElement[] stackTrace = e.getStackTrace();
-                e.setStackTrace(Arrays.copyOfRange(stackTrace, 2, stackTrace.length));
+                // remove reflection internals
+                e.setStackTrace(Exceptions.replaceInStackTrace(e.getStackTrace(),
+                        (ste) -> ste.getClassName().startsWith("java.") ||
+                               ste.getClassName().startsWith("jdk.") ||
+                               ste.getClassName().startsWith("javax.") ||
+                               ste.getClassName().contains("NotchJavaMethod"),
+                        new RuntimeException()));
             }
             throw rethrow(e);
         }
