@@ -5,14 +5,14 @@ import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.notch.runtime.SourceProvider;
 import bigsky.notch.statements.NotchStatement;
-import bigsky.utils.chisel.Span;
-import bigsky.utils.chisel.TokenStream;
-import bigsky.utils.chisel.TokenizeException;
+import bigsky.notch.chisel.Span;
+import bigsky.notch.chisel.TokenStream;
+import bigsky.notch.chisel.TokenizeException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static bigsky.utils.Exceptions.rethrow;
+import static bigsky.notch.util.Exceptions.rethrow;
 
 public class NotchTestUtils {
     public static Object eval(String source, Object... vars) {

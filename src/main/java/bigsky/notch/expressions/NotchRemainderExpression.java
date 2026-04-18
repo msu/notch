@@ -3,7 +3,7 @@ package bigsky.notch.expressions;
 import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
-import bigsky.utils.BetterMath;
+import bigsky.notch.util.BetterMath;
 
 public class NotchRemainderExpression extends NotchExpression {
     public final NotchExpression lhs, rhs;

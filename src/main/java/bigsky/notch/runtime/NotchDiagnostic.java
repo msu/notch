@@ -1,9 +1,9 @@
 package bigsky.notch.runtime;
 
-import bigsky.utils.BetterList;
-import bigsky.utils.BetterMath;
-import bigsky.utils.Text;
-import bigsky.utils.chisel.Span;
+import bigsky.notch.util.BetterList;
+import bigsky.notch.util.BetterMath;
+import bigsky.notch.util.Text;
+import bigsky.notch.chisel.Span;
 
 import java.util.HashMap;
 import java.util.List;

@@ -2,15 +2,15 @@ package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.*;
 import bigsky.notch.types.NotchJavaMethod;
-import bigsky.utils.Text;
-import bigsky.utils.chisel.Location;
+import bigsky.notch.util.Text;
+import bigsky.notch.chisel.Location;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-import static bigsky.utils.Exceptions.safelyEval;
+import static bigsky.notch.util.Exceptions.safelyEval;
 
 public class NotchMethodInvocation extends NotchExpression {
 

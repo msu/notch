@@ -1,10 +1,10 @@
 package bigsky.notch.types;
 
-import bigsky.utils.Text;
+import bigsky.notch.util.Text;
 
 import java.lang.reflect.*;
 
-import static bigsky.utils.Exceptions.rethrow;
+import static bigsky.notch.util.Exceptions.rethrow;
 
 public class NotchJavaProperty implements NotchProperty {
 

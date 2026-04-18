@@ -1,8 +1,8 @@
 package bigsky.notch;
 
 import bigsky.notch.expressions.NotchErrorExpression;
-import bigsky.utils.chisel.Location;
-import bigsky.utils.chisel.Span;
+import bigsky.notch.chisel.Location;
+import bigsky.notch.chisel.Span;
 
 import java.util.*;
 

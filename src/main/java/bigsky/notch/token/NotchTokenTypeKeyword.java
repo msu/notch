@@ -1,13 +1,13 @@
 package bigsky.notch.token;
 
-import bigsky.utils.chisel.Token;
-import bigsky.utils.chisel.TokenType;
-import bigsky.utils.chisel.TokenizeException;
-import bigsky.utils.chisel.Tokenizer;
+import bigsky.notch.chisel.Token;
+import bigsky.notch.chisel.TokenType;
+import bigsky.notch.chisel.TokenizeException;
+import bigsky.notch.chisel.Tokenizer;
 
 import java.util.Set;
 
-import static bigsky.utils.chisel.type.TokenTypeIdentifier.IDENT;
+import static bigsky.notch.chisel.type.TokenTypeIdentifier.IDENT;
 
 public class NotchTokenTypeKeyword implements TokenType {
     public static final NotchTokenTypeKeyword NOTCH_KEYWORD = new NotchTokenTypeKeyword();

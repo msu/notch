@@ -1,6 +1,6 @@
 package bigsky.notch.statements;
 
-import bigsky.utils.BetterList;
+import bigsky.notch.util.BetterList;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;

@@ -4,7 +4,7 @@ import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.types.NotchProperty;
 import bigsky.notch.types.NotchType;
 import bigsky.notch.types.TypeSystem;
-import bigsky.utils.chisel.Location;
+import bigsky.notch.chisel.Location;
 
 import java.util.List;
 import java.util.Map;

@@ -2,20 +2,20 @@ package bigsky.notch;
 
 import bigsky.notch.expressions.*;
 import bigsky.notch.statements.*;
-import bigsky.utils.chisel.*;
+import bigsky.notch.chisel.*;
 
 import java.util.*;
 
 import static bigsky.notch.token.NotchTokenTypeKeyword.NOTCH_KEYWORD;
 import static bigsky.notch.token.TokenTypeTerseString.TERSE_STRING;
-import static bigsky.utils.Exceptions.rethrow;
-import static bigsky.utils.Text.repr;
-import static bigsky.utils.chisel.type.TokenTypeBoolean.BOOL;
-import static bigsky.utils.chisel.type.TokenTypeIdentifier.IDENT;
-import static bigsky.utils.chisel.type.TokenTypeInteger.INT;
-import static bigsky.utils.chisel.type.TokenTypePunct.*;
-import static bigsky.utils.chisel.type.TokenTypeString.STR;
-import static bigsky.utils.chisel.type.TokenTypeWhitespace.WHITESPACE;
+import static bigsky.notch.util.Exceptions.rethrow;
+import static bigsky.notch.util.Text.repr;
+import static bigsky.notch.chisel.type.TokenTypeBoolean.BOOL;
+import static bigsky.notch.chisel.type.TokenTypeIdentifier.IDENT;
+import static bigsky.notch.chisel.type.TokenTypeInteger.INT;
+import static bigsky.notch.chisel.type.TokenTypePunct.*;
+import static bigsky.notch.chisel.type.TokenTypeString.STR;
+import static bigsky.notch.chisel.type.TokenTypeWhitespace.WHITESPACE;
 
 public class NotchParser extends BasicParser {
     public NotchParser(TokenStream tokens) {

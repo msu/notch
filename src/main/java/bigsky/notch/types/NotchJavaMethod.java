@@ -2,8 +2,8 @@ package bigsky.notch.types;
 
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.types.coercions.Coercion;
-import bigsky.utils.BetterList;
-import bigsky.utils.Exceptions;
+import bigsky.notch.util.BetterList;
+import bigsky.notch.util.Exceptions;
 
 import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
@@ -12,7 +12,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
-import static bigsky.utils.Exceptions.rethrow;
+import static bigsky.notch.util.Exceptions.rethrow;
 import static java.lang.Integer.MAX_VALUE;
 
 public class NotchJavaMethod implements NotchMethod {

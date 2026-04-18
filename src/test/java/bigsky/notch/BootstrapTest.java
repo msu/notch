@@ -4,8 +4,8 @@ import bigsky.notch.runtime.NotchClosure;
 import bigsky.notch.types.NotchMethod;
 import bigsky.notch.types.NotchType;
 import bigsky.notch.types.TypeSystem;
-import bigsky.utils.BetterList;
-import bigsky.utils.BetterMap;
+import bigsky.notch.util.BetterList;
+import bigsky.notch.util.BetterMap;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

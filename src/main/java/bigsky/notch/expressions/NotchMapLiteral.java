@@ -1,8 +1,8 @@
 package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
-import bigsky.utils.BetterMap;
-import bigsky.utils.chisel.Location;
+import bigsky.notch.util.BetterMap;
+import bigsky.notch.chisel.Location;
 
 import java.util.Map;
 

@@ -1,7 +1,7 @@
 package bigsky.notch.types;
 
 
-import bigsky.utils.BetterList;
+import bigsky.notch.util.BetterList;
 
 import java.lang.reflect.*;
 import java.util.Arrays;
@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static bigsky.notch.types.NotchJavaProperty.isPropertyMethod;
 import static bigsky.notch.types.NotchJavaProperty.propertyNameFor;
-import static bigsky.utils.Exceptions.safelyEval;
+import static bigsky.notch.util.Exceptions.safelyEval;
 
 
 public class NotchJavaType implements NotchType {

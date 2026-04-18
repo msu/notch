@@ -3,10 +3,10 @@ package bigsky.notch.runtime;
 import bigsky.notch.expressions.NotchExpression;
 import bigsky.notch.statements.NotchStatement;
 import bigsky.notch.types.NotchJavaType;
-import bigsky.utils.BetterList;
-import bigsky.utils.Exceptions;
-import bigsky.utils.SafeAutoClosable;
-import bigsky.utils.chisel.Span;
+import bigsky.notch.util.BetterList;
+import bigsky.notch.util.Exceptions;
+import bigsky.notch.util.SafeAutoClosable;
+import bigsky.notch.chisel.Span;
 
 import java.util.*;
 import java.util.function.Consumer;

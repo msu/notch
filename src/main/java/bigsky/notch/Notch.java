@@ -3,18 +3,18 @@ package bigsky.notch;
 import bigsky.notch.expressions.NotchExpression;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.statements.NotchStatement;
-import bigsky.utils.chisel.Tokenizer;
-import bigsky.utils.chisel.type.TokenTypePunct;
+import bigsky.notch.chisel.Tokenizer;
+import bigsky.notch.chisel.type.TokenTypePunct;
 
 import java.util.Scanner;
 
 import static bigsky.notch.token.NotchTokenTypeKeyword.NOTCH_KEYWORD;
 import static bigsky.notch.token.TokenTypeTerseString.TERSE_STRING;
-import static bigsky.utils.chisel.type.TokenTypeBoolean.BOOL;
-import static bigsky.utils.chisel.type.TokenTypeIdentifier.IDENT;
-import static bigsky.utils.chisel.type.TokenTypeInteger.INT;
-import static bigsky.utils.chisel.type.TokenTypeString.STR;
-import static bigsky.utils.chisel.type.TokenTypeWhitespace.WHITESPACE;
+import static bigsky.notch.chisel.type.TokenTypeBoolean.BOOL;
+import static bigsky.notch.chisel.type.TokenTypeIdentifier.IDENT;
+import static bigsky.notch.chisel.type.TokenTypeInteger.INT;
+import static bigsky.notch.chisel.type.TokenTypeString.STR;
+import static bigsky.notch.chisel.type.TokenTypeWhitespace.WHITESPACE;
 
 public class Notch {
     private Notch() {

@@ -2,7 +2,7 @@ package bigsky.notch.runtime;
 
 import bigsky.notch.expressions.NotchExpression;
 import bigsky.notch.statements.NotchStatement;
-import bigsky.utils.chisel.Token;
+import bigsky.notch.chisel.Token;
 
 import java.util.Collections;
 import java.util.List;

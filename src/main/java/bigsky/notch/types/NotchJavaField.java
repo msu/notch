@@ -1,11 +1,11 @@
 package bigsky.notch.types;
 
-import bigsky.utils.Exceptions;
+import bigsky.notch.util.Exceptions;
 
 import java.lang.reflect.Field;
 
-import static bigsky.utils.Exceptions.safely;
-import static bigsky.utils.Exceptions.safelyEval;
+import static bigsky.notch.util.Exceptions.safely;
+import static bigsky.notch.util.Exceptions.safelyEval;
 
 public class NotchJavaField implements NotchField {
     private Field field;

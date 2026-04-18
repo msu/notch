@@ -2,7 +2,7 @@ package bigsky.notch.statements;
 
 import bigsky.notch.expressions.NotchExpression;
 import bigsky.notch.runtime.NotchRuntime;
-import bigsky.utils.chisel.Location;
+import bigsky.notch.chisel.Location;
 
 import java.util.List;
 import java.util.Objects;

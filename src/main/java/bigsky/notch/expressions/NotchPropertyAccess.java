@@ -5,9 +5,9 @@ import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.notch.types.*;
-import bigsky.utils.Text;
-import bigsky.utils.chisel.Location;
-import bigsky.utils.chisel.Token;
+import bigsky.notch.util.Text;
+import bigsky.notch.chisel.Location;
+import bigsky.notch.chisel.Token;
 
 import java.util.Map;
 

@@ -1,7 +1,7 @@
 package bigsky.notch.runtime;
 
-import bigsky.utils.chisel.Span;
-import bigsky.utils.chisel.Spanned;
+import bigsky.notch.chisel.Span;
+import bigsky.notch.chisel.Spanned;
 
 import java.util.Objects;
 

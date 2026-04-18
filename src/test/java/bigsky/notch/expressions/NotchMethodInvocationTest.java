@@ -95,6 +95,7 @@ public class NotchMethodInvocationTest {
     @Test
     public void testExceptionsPropogateProperly() {
         assertThrows(CustomException.class, () -> evalNoCatch("foo.throwsException(x)", "foo", new SampleClass(), "x", 10));
+        evalNoCatch("foo.throwsException(x)", "foo", new SampleClass(), "x", 10);
     }
 
     public static class SampleClass {

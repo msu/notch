@@ -3,8 +3,8 @@ package bigsky.notch.expressions;
 import bigsky.notch.runtime.NotchClosure;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.statements.NotchStatement;
-import bigsky.utils.chisel.Location;
-import bigsky.utils.chisel.Token;
+import bigsky.notch.chisel.Location;
+import bigsky.notch.chisel.Token;
 
 import java.util.List;
 

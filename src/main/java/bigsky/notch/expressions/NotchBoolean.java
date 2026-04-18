@@ -1,7 +1,7 @@
 package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
-import bigsky.utils.chisel.Token;
+import bigsky.notch.chisel.Token;
 
 public class NotchBoolean extends NotchExpression {
     public final Token token;

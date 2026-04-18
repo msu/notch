@@ -5,8 +5,8 @@ import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.notch.types.NotchType;
 import bigsky.notch.types.TypeSystem;
-import bigsky.utils.Text;
-import bigsky.utils.chisel.Token;
+import bigsky.notch.util.Text;
+import bigsky.notch.chisel.Token;
 
 import static bigsky.notch.runtime.NotchRuntime.UNDEFINED;
 

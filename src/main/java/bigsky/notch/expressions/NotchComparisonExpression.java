@@ -1,8 +1,8 @@
 package bigsky.notch.expressions;
 
 import bigsky.notch.runtime.NotchRuntime;
-import bigsky.utils.BetterMath;
-import bigsky.utils.chisel.Token;
+import bigsky.notch.util.BetterMath;
+import bigsky.notch.chisel.Token;
 
 public class NotchComparisonExpression extends NotchExpression {
     private final Token op;

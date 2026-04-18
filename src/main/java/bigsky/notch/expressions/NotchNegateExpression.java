@@ -3,8 +3,8 @@ package bigsky.notch.expressions;
 import bigsky.notch.runtime.NotchDiagnostic;
 import bigsky.notch.runtime.NotchRuntime;
 import bigsky.notch.runtime.NotchRuntimeException;
-import bigsky.utils.BetterMath;
-import bigsky.utils.chisel.Location;
+import bigsky.notch.util.BetterMath;
+import bigsky.notch.chisel.Location;
 
 import java.util.Objects;
 

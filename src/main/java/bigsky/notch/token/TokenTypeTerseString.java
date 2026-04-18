@@ -1,9 +1,9 @@
 package bigsky.notch.token;
 
-import bigsky.utils.chisel.Token;
-import bigsky.utils.chisel.Tokenizer;
-import bigsky.utils.chisel.TokenType;
-import bigsky.utils.chisel.TokenizeException;
+import bigsky.notch.chisel.Token;
+import bigsky.notch.chisel.Tokenizer;
+import bigsky.notch.chisel.TokenType;
+import bigsky.notch.chisel.TokenizeException;
 
 public class TokenTypeTerseString implements TokenType {
     public static final TokenTypeTerseString TERSE_STRING = new TokenTypeTerseString();
