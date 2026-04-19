@@ -107,10 +107,10 @@ public class MacroCommand extends NotchTemplateCommand implements NotchTemplateC
                         if (type != null) {
                             var clazz = type.qualifiedClass();
 
-                            if (!runtime.isUndefined(value) && value != null && clazz.isAssignableFrom(value.getClass())) {
+                            if (!runtime.isUndefined(value) && value != null && !clazz.isAssignableFrom(value.getClass())) {
                                 var diag = new NotchDiagnostic();
                                 diag.highlight(fileId, name.span());
-                                diag.note("undefined is not assignable to " + type.qualifiedName());
+                                diag.note(value.getClass().getName() + " is not assignable to " + type.qualifiedName());
                                 throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
                             }
                         }

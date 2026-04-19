@@ -6,7 +6,6 @@ import bigsky.notch.runtime.NotchRuntimeException;
 import bigsky.notch.templates.NotchTemplateCommand;
 import bigsky.notch.templates.NotchTemplateRegistry;
 import bigsky.notch.util.Exceptions;
-import org.unbescape.html.HtmlEscape;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -82,7 +81,29 @@ public class NotchTemplateRuntime extends NotchRuntime {
     }
 
     public String escapeText(String text) {
-        return HtmlEscape.escapeHtml5(text);
+        if (text == null || text.isEmpty()) return text;
+        StringBuilder out = null;
+        for (int i = 0, n = text.length(); i < n; i++) {
+            char c = text.charAt(i);
+            String replacement = switch (c) {
+                case '&' -> "&amp;";
+                case '<' -> "&lt;";
+                case '>' -> "&gt;";
+                case '"' -> "&quot;";
+                case '\'' -> "&apos;";
+                default -> null;
+            };
+            if (replacement != null) {
+                if (out == null) {
+                    out = new StringBuilder(text.length() + 16);
+                    out.append(text, 0, i);
+                }
+                out.append(replacement);
+            } else if (out != null) {
+                out.append(c);
+            }
+        }
+        return out == null ? text : out.toString();
     }
 
     public void render(NotchTemplateCommand cmd, StringBuilder out) {

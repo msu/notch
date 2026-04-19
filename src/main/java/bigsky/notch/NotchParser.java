@@ -147,12 +147,11 @@ public class NotchParser extends BasicParser {
         var expr = parseLogicalExpression();
         if (expr == null) return null;
 
-        while (take(QUESTION_COLON)) {
-            var fallback = parseLogicalExpression();
+        if (take(QUESTION_COLON)) {
+            var fallback = parseFallbackExpr();
             if (fallback == null) {
                 throw new ParseException("expected expression after '?:' operator", fileId(), location());
             }
-
             expr = new NotchFallback(expr, fallback);
         }
 

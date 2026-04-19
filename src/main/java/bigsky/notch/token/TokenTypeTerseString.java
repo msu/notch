@@ -26,6 +26,13 @@ public class TokenTypeTerseString implements TokenType {
             lex.append(c);
         }
 
+        // a bare ':' with no terse content isn't a terse-string literal; let
+        // other tokenizers (e.g. the COLON punctuator) handle it instead.
+        if (lex.length() == 0) {
+            t.location(start);
+            return null;
+        }
+
         return new Token(start, t.location(), this, lex.toString());
     }
 }

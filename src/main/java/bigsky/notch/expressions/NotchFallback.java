@@ -13,7 +13,12 @@ public class NotchFallback extends NotchExpression {
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        var value = runtime.evaluate(primary);
+        Object value;
+        if (primary instanceof NotchIdentifier id) {
+            value = runtime.getSymbol(id.name());
+        } else {
+            value = runtime.evaluate(primary);
+        }
         if (runtime.isUndefined(value)) {
             value = runtime.evaluate(fallback);
         }

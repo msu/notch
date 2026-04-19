@@ -19,8 +19,9 @@ public final class BasicNotchTemplateCommands {
             new MacroCommand(),
             new ExpandCommand(),
             new ImportCommand(),
-            new MacroCommand(),
             new FragmentCommand(),
+            new SetCommand(),
+            new CommentCommand(),
     };
 
     public static void addTo(NotchTemplateRegistry templates) {
