@@ -257,7 +257,7 @@ class BetterMapTest {
         assertEquals(Set.of(2, 4), evenValues);
 
         String joined = map.map(entry -> entry.getKey() + "=" + entry.getValue())
-                          .join(", ");
+                          .toString(", ");
         assertTrue(joined.contains("one=1"));
         assertTrue(joined.contains("two=2"));
         assertTrue(joined.contains("three=3"));
@@ -361,7 +361,7 @@ class BetterMapTest {
         assertNull(emptyMap.firstWhere(entry -> true));
         assertFalse(emptyMap.hasMatch(entry -> true));
         assertTrue(emptyMap.hasNoMatch(entry -> true));
-        assertEquals("", emptyMap.join(","));
+        assertEquals("", emptyMap.toString(","));
         
         BetterMap<String, Integer> filteredEmpty = emptyMap.filterByValues(v -> true);
         assertTrue(filteredEmpty.isEmpty());

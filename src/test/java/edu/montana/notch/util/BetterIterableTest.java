@@ -40,12 +40,11 @@ class BetterIterableTest {
         List<String> withDuplicates = Arrays.asList("a", "b", "a", "c", "b");
         BetterIterable<String> betterIterable = BetterIterable.better(withDuplicates);
         
-        Set<String> result = betterIterable.toSet();
+        BetterSet<String> result = betterIterable.toSet();
         assertEquals(3, result.size());
         assertTrue(result.contains("a"));
         assertTrue(result.contains("b"));
         assertTrue(result.contains("c"));
-        assertTrue(result instanceof LinkedHashSet);
     }
 
     @Test
@@ -61,77 +60,72 @@ class BetterIterableTest {
     }
 
     @Test
-    void testToMap() {
+    void testGroupBy() {
         List<String> words = Arrays.asList("cat", "dog", "car", "door", "cab");
         BetterIterable<String> betterWords = BetterIterable.better(words);
-        
-        Map<Integer, List<String>> byLength = betterWords.toMap(String::length);
+
+        BetterMap<Integer, BetterList<String>> byLength = betterWords.groupBy(String::length);
         assertEquals(2, byLength.size());
         assertEquals(4, byLength.get(3).size());
         assertEquals(Arrays.asList("cat", "dog", "car", "cab"), byLength.get(3));
         assertEquals(Arrays.asList("door"), byLength.get(4));
-        assertTrue(byLength instanceof LinkedHashMap);
     }
 
     @Test
-    void testToOrderedMap() {
+    void testGroupByOrdered() {
         List<String> words = Arrays.asList("zebra", "apple", "banana");
         BetterIterable<String> betterWords = BetterIterable.better(words);
-        
-        TreeMap<Character, List<String>> orderedByFirstChar = betterWords.toOrderedMap(s -> s.charAt(0));
-        assertTrue(orderedByFirstChar instanceof TreeMap);
+
+        BetterMap<Character, BetterList<String>> orderedByFirstChar = betterWords.groupBy(s -> s.charAt(0), Comparator.<Character>naturalOrder());
         assertEquals(3, orderedByFirstChar.size());
-        
+
         List<Character> keys = new ArrayList<>(orderedByFirstChar.keySet());
         assertEquals(Arrays.asList('a', 'b', 'z'), keys);
     }
 
     @Test
-    void testToOrderedMapWithComparator() {
+    void testGroupByOrderedWithComparator() {
         List<String> words = Arrays.asList("zebra", "apple", "banana");
         BetterIterable<String> betterWords = BetterIterable.better(words);
-        
+
         Comparator<Character> reverseOrder = Comparator.<Character>naturalOrder().reversed();
-        TreeMap<Character, List<String>> orderedByFirstChar = betterWords.toOrderedMap(s -> s.charAt(0), reverseOrder);
-        
-        assertTrue(orderedByFirstChar instanceof TreeMap);
+        BetterMap<Character, BetterList<String>> orderedByFirstChar = betterWords.groupBy(s -> s.charAt(0), reverseOrder);
+
         List<Character> keys = new ArrayList<>(orderedByFirstChar.keySet());
         assertEquals(Arrays.asList('z', 'b', 'a'), keys);
     }
 
     @Test
-    void testToDistinctMap() {
+    void testToMap() {
         List<String> words = Arrays.asList("cat", "car", "dog", "door");
         BetterIterable<String> betterWords = BetterIterable.better(words);
-        
-        Map<Character, String> distinctByFirstChar = betterWords.toDistinctMap(s -> s.charAt(0));
+
+        BetterMap<Character, String> distinctByFirstChar = betterWords.toMap(s -> s.charAt(0));
         assertEquals(2, distinctByFirstChar.size());
         assertEquals("car", distinctByFirstChar.get('c'));
         assertEquals("door", distinctByFirstChar.get('d'));
     }
 
     @Test
-    void testToOrderedDistinctMap() {
+    void testToMapOrdered() {
         List<String> words = Arrays.asList("zebra", "apple", "banana");
         BetterIterable<String> betterWords = BetterIterable.better(words);
-        
-        TreeMap<Character, String> orderedDistinct = betterWords.toOrderedDistinctMap(s -> s.charAt(0));
-        assertTrue(orderedDistinct instanceof TreeMap);
+
+        BetterMap<Character, String> orderedDistinct = betterWords.toMap(s -> s.charAt(0), Comparator.<Character>naturalOrder());
         assertEquals(3, orderedDistinct.size());
-        
+
         List<Character> keys = new ArrayList<>(orderedDistinct.keySet());
         assertEquals(Arrays.asList('a', 'b', 'z'), keys);
     }
 
     @Test
-    void testToOrderedDistinctMapWithComparator() {
+    void testToMapOrderedWithComparator() {
         List<String> words = Arrays.asList("zebra", "apple", "banana");
         BetterIterable<String> betterWords = BetterIterable.better(words);
-        
+
         Comparator<Character> reverseOrder = Comparator.<Character>naturalOrder().reversed();
-        TreeMap<Character, String> orderedDistinct = betterWords.toOrderedDistinctMap(s -> s.charAt(0), reverseOrder);
-        
-        assertTrue(orderedDistinct instanceof TreeMap);
+        BetterMap<Character, String> orderedDistinct = betterWords.toMap(s -> s.charAt(0), reverseOrder);
+
         List<Character> keys = new ArrayList<>(orderedDistinct.keySet());
         assertEquals(Arrays.asList('z', 'b', 'a'), keys);
     }
@@ -233,13 +227,13 @@ class BetterIterableTest {
         List<String> items = Arrays.asList("apple", "banana", "cherry");
         BetterIterable<String> betterItems = BetterIterable.better(items);
         
-        assertEquals("apple, banana, cherry", betterItems.join(", "));
-        assertEquals("apple|banana|cherry", betterItems.join("|"));
-        assertEquals("applebananacherry", betterItems.join(""));
+        assertEquals("apple, banana, cherry", betterItems.toString(", "));
+        assertEquals("apple|banana|cherry", betterItems.toString("|"));
+        assertEquals("applebananacherry", betterItems.toString(""));
         
         List<Integer> numbers = Arrays.asList(1, 2, 3);
         BetterIterable<Integer> betterNumbers = BetterIterable.better(numbers);
-        assertEquals("1-2-3", betterNumbers.join("-"));
+        assertEquals("1-2-3", betterNumbers.toString("-"));
     }
 
     @Test
@@ -247,8 +241,8 @@ class BetterIterableTest {
         List<String> emptyList = Arrays.asList();
         BetterIterable<String> betterEmpty = BetterIterable.better(emptyList);
         
-        assertEquals("", betterEmpty.join(", "));
-        assertEquals("", betterEmpty.join("|"));
+        assertEquals("", betterEmpty.toString(", "));
+        assertEquals("", betterEmpty.toString("|"));
     }
 
     @Test
@@ -256,8 +250,8 @@ class BetterIterableTest {
         List<String> singleItem = Arrays.asList("alone");
         BetterIterable<String> betterSingle = BetterIterable.better(singleItem);
         
-        assertEquals("alone", betterSingle.join(", "));
-        assertEquals("alone", betterSingle.join("|"));
+        assertEquals("alone", betterSingle.toString(", "));
+        assertEquals("alone", betterSingle.toString("|"));
     }
 
     @Test
@@ -293,7 +287,7 @@ class BetterIterableTest {
         Queue<Integer> sourceQueue = new ArrayDeque<>(Arrays.asList(1, 2, 3));
         BetterIterable<Integer> fromQueue = BetterIterable.better(sourceQueue);
         
-        String joined = fromQueue.join("-");
+        String joined = fromQueue.toString("-");
         assertEquals("1-2-3", joined);
     }
 
@@ -330,16 +324,16 @@ class BetterIterableTest {
         List<Object> mixedObjects = Arrays.asList("hello", 42, "world", 3.14, 100, "test");
         BetterIterable<Object> betterMixed = BetterIterable.better(mixedObjects);
         
-        BetterList<String> strings = betterMixed.filterByType(String.class);
+        BetterList<String> strings = betterMixed.filter(String.class);
         assertEquals(Arrays.asList("hello", "world", "test"), strings);
         
-        BetterList<Integer> integers = betterMixed.filterByType(Integer.class);
+        BetterList<Integer> integers = betterMixed.filter(Integer.class);
         assertEquals(Arrays.asList(42, 100), integers);
         
-        BetterList<Double> doubles = betterMixed.filterByType(Double.class);
+        BetterList<Double> doubles = betterMixed.filter(Double.class);
         assertEquals(Arrays.asList(3.14), doubles);
         
-        BetterList<Boolean> booleans = betterMixed.filterByType(Boolean.class);
+        BetterList<Boolean> booleans = betterMixed.filter(Boolean.class);
         assertEquals(0, booleans.size());
     }
 
@@ -348,12 +342,12 @@ class BetterIterableTest {
         List<Object> objects = Arrays.asList("string", new ArrayList<>(), new LinkedList<>(), 42);
         BetterIterable<Object> betterObjects = BetterIterable.better(objects);
         
-        BetterList<List> lists = betterObjects.filterByType(List.class);
+        BetterList<List> lists = betterObjects.filter(List.class);
         assertEquals(2, lists.size());
         assertTrue(lists.get(0) instanceof ArrayList);
         assertTrue(lists.get(1) instanceof LinkedList);
         
-        BetterList<ArrayList> arrayLists = betterObjects.filterByType(ArrayList.class);
+        BetterList<ArrayList> arrayLists = betterObjects.filter(ArrayList.class);
         assertEquals(1, arrayLists.size());
         assertTrue(arrayLists.get(0) instanceof ArrayList);
     }
@@ -363,7 +357,7 @@ class BetterIterableTest {
         List<Object> emptyList = Arrays.asList();
         BetterIterable<Object> betterEmpty = BetterIterable.better(emptyList);
         
-        BetterList<String> strings = betterEmpty.filterByType(String.class);
+        BetterList<String> strings = betterEmpty.filter(String.class);
         assertEquals(0, strings.size());
     }
 
@@ -372,10 +366,10 @@ class BetterIterableTest {
         List<Object> withNulls = Arrays.asList("hello", null, 42, null, "world");
         BetterIterable<Object> betterWithNulls = BetterIterable.better(withNulls);
         
-        BetterList<String> strings = betterWithNulls.filterByType(String.class);
+        BetterList<String> strings = betterWithNulls.filter(String.class);
         assertEquals(Arrays.asList("hello", "world"), strings);
         
-        BetterList<Integer> integers = betterWithNulls.filterByType(Integer.class);
+        BetterList<Integer> integers = betterWithNulls.filter(Integer.class);
         assertEquals(Arrays.asList(42), integers);
     }
 
@@ -457,13 +451,13 @@ class BetterIterableTest {
         BetterIterable<Object> betterMixed = BetterIterable.better(mixedData);
         
         BetterList<String> words = betterMixed
-            .filterByType(String.class)
+            .filter(String.class)
             .flatMap(s -> Arrays.asList(s.split(" ")));
         
         assertEquals(Arrays.asList("hello", "world", "java", "programming", "test", "case"), words);
         
         BetterList<String> uppercaseWords = betterMixed
-            .filterByType(String.class)
+            .filter(String.class)
             .flatMap(s -> Arrays.asList(s.split(" ")))
             .map(String::toUpperCase);
         
@@ -485,7 +479,7 @@ class BetterIterableTest {
         
         assertEquals(Arrays.asList(1, 2, 1, 2, 3, 1, 2, 3, 4), ranges);
         
-        Map<Integer, List<Integer>> grouped = ranges.toMap(Function.identity());
+        BetterMap<Integer, BetterList<Integer>> grouped = ranges.groupBy(Function.identity());
         assertEquals(Arrays.asList(1, 1, 1), grouped.get(1));
         assertEquals(Arrays.asList(2, 2, 2), grouped.get(2));
         assertEquals(Arrays.asList(3, 3), grouped.get(3));

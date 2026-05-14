@@ -1,11 +1,7 @@
 package edu.montana.notch.util;
 
-import edu.montana.notch.iter.BIterator;
-import edu.montana.notch.iter.JavaBIterator;
-
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class BetterList<T> extends AbstractList<T> implements BetterIterable<T> {
@@ -104,7 +100,13 @@ public class BetterList<T> extends AbstractList<T> implements BetterIterable<T> 
     // Extension methods
     //=================================================================
 
-    public BetterList<T> tapEach(Consumer<? super T> action) {
+    @Override
+    public T last() {
+        return isEmpty() ? null : get(size() - 1);
+    }
+
+    @Override
+    public BetterList<T> tap(Consumer<? super T> action) {
         Objects.requireNonNull(action);
         for (T t : this) {
             action.accept(t);
@@ -112,39 +114,14 @@ public class BetterList<T> extends AbstractList<T> implements BetterIterable<T> 
         return this;
     }
 
-    public T last() {
-        if (this.size() == 0) {
-            return null;
-        } else {
-            return this.get(this.size() - 1);
-        }
-    }
-
     public T lastWhere(Predicate<? super T> predicate) {
-        for (int i = this.delegate.size() - 1; i >= 0; i--) {
-             T t = this.delegate.get(i);
+        for (int i = delegate.size() - 1; i >= 0; i--) {
+            T t = delegate.get(i);
             if (predicate.test(t)) {
                 return t;
             }
         }
         return null;
-    }
-
-    public BetterList<T> distinct() {
-        return distinct(t -> t);
-    }
-
-    public BetterList<T> distinct(Function<T, Object> by) {
-        HashSet<Object> objects = new HashSet<>();
-        BetterList<T> ts = new BetterList<>();
-        for (T t : this) {
-            Object key = by.apply(t);
-            if (!objects.contains(key)) {
-                ts.add(t);
-                objects.add(key);
-            }
-        }
-        return ts;
     }
 
     public BetterList<T> copy() {
@@ -156,10 +133,5 @@ public class BetterList<T> extends AbstractList<T> implements BetterIterable<T> 
         ts.addAll(this);
         ts.addAll(other);
         return ts;
-    }
-
-    @Override
-    public BIterator<T> iterator() {
-        return new JavaBIterator<>(super.iterator());
     }
 }

@@ -44,7 +44,7 @@ public class NotchJavaType implements NotchType {
 
     private void initConstructors() {
         this.constructors = new BetterList<>(backingClass.getDeclaredConstructors())
-                .tapEach(constructor -> {
+                .tap(constructor -> {
                     try {
                         constructor.setAccessible(true);
                     } catch (java.lang.reflect.InaccessibleObjectException ignored) {

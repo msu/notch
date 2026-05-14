@@ -44,7 +44,7 @@ public class NotchJavaMethod implements NotchMethod {
             }
             Method method = bestMatch(args);
             if (method == null) {
-                String argTypes = BetterList.better(args).map(NotchRuntime::className).join(",");
+                String argTypes = BetterList.better(args).map(NotchRuntime::className).toString(",");
                 throw new IllegalArgumentException("Could not find compatible method with args (" + argTypes + ")");
             }
             for (int i = 0; i < args.size(); i++) {
@@ -94,8 +94,8 @@ public class NotchJavaMethod implements NotchMethod {
                 bestMatch = javaMethod;
             } else if (distance == closestDistance) {
                 // stable resolution by using string comparison
-                String str1 = new BetterList<>(bestMatch.getParameterTypes()).map(Class::getName).join("-");
-                String str2 = new BetterList<>(javaMethod.getParameterTypes()).map(Class::getName).join("-");
+                String str1 = new BetterList<>(bestMatch.getParameterTypes()).map(Class::getName).toString("-");
+                String str2 = new BetterList<>(javaMethod.getParameterTypes()).map(Class::getName).toString("-");
                 if (str1.compareTo(str2) < 0) {
                     bestMatch = javaMethod;
                 }
