@@ -28,14 +28,14 @@ public class NotchIdentifier extends NotchExpression implements DotPathMember {
         var val = runtime.getSymbol(name);
         if (val == UNDEFINED) {
             NotchType type = TypeSystem.getType(name);
-            if(type != null) {
+            if (type != null) {
                 return type;
             }
-
-            var error = new NotchDiagnostic();
-            error.highlight(fileId, token.span());
-            error.note("undefined variable %s".formatted(Text.repr(name)));
-            throw new NotchRuntimeException(runtime.currentStackTrace(), error);
+            // UNDEFINED propagates as a value: callers that need a defined
+            // value (arithmetic, method invocation, etc.) will throw when they
+            // try to coerce it; callers that can handle absence (?:, print,
+            // property access, template interpolation) do the right thing.
+            return UNDEFINED;
         }
         return val;
     }

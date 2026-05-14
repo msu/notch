@@ -16,9 +16,17 @@ public class NotchPropertyTests {
     }
 
     @Test
-    public void undefinedSymbolThrows() {
-        var ex = assertThrows(RuntimeException.class, () -> eval("foo"));
-        assertContains("undefined symbol \"foo\"", ex.getMessage());
+    public void undefinedSymbolEvaluatesToUndefined() {
+        // Bare identifiers that aren't in scope evaluate to UNDEFINED; errors
+        // only surface when something tries to *use* that value as if it were
+        // defined (arithmetic, method invocation, etc.).
+        var value = eval("foo");
+        assertEquals(bigsky.notch.runtime.NotchRuntime.UNDEFINED, value);
+    }
+
+    @Test
+    public void undefinedSymbolThrowsWhenUsed() {
+        var ex = assertThrows(RuntimeException.class, () -> eval("foo + 1"));
         System.out.println(ex.getMessage());
     }
 
