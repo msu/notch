@@ -25,6 +25,13 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
+        if (dotPath != null) {
+            NotchType qualifiedType = TypeSystem.getType(dotPath);
+            if (qualifiedType != null) {
+                return qualifiedType;
+            }
+        }
+
         Object rootValue = runtime.evaluate(root);
         if (rootValue == null || runtime.isUndefined(rootValue)) {
             return rootValue;
@@ -33,7 +40,12 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
         NotchType runtimeType = TypeSystem.getRuntimeType(rootValue);
         if (favorMethods) {
             NotchBoundMethod method = resolveBoundMethod(rootValue, runtimeType);
-            return method;
+            if (method != null) {
+                return method;
+            }
+            // fall through: no matching method, try properties / map entries /
+            // property-missing, so that e.g. `view.content()` on a map can
+            // resolve `content` to a callable stored as a map value.
         }
 
         if(rootValue instanceof NotchType notchType) {
@@ -83,7 +95,7 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
         } else {
             hint = resolveClosestFeatureName(runtimeType);
         }
-        error.note("no property/method named %s on %s (%s)%s".formatted(Text.repr(getProperty()),
+        error.note("no such property/method named %s on %s (%s)%s".formatted(Text.repr(getProperty()),
                 Text.repr(getParentDotPath()),
                 runtimeType.getDisplayName(), hint));
         throw new NotchRuntimeException(runtime.currentStackTrace(), error);

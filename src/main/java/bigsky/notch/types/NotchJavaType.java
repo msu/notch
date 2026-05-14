@@ -43,7 +43,15 @@ public class NotchJavaType implements NotchType {
 
     private void initConstructors() {
         this.constructors = new BetterList<>(backingClass.getDeclaredConstructors())
-                .tapEach(constructor -> constructor.setAccessible(true));
+                .tapEach(constructor -> {
+                    try {
+                        constructor.setAccessible(true);
+                    } catch (java.lang.reflect.InaccessibleObjectException ignored) {
+                        // JPMS-locked non-public constructor (e.g. private
+                        // String ctors). Public ones are already accessible;
+                        // leave non-public ones in their default state.
+                    }
+                });
     }
 
     private void initProperties() {
@@ -52,6 +60,13 @@ public class NotchJavaType implements NotchType {
                 String propName = propertyNameFor(method);
                 NotchJavaProperty property = new NotchJavaProperty(backingClass, propName, Modifier.isStatic(method.getModifiers()));
                 addProperty(property);
+                // Also allow addressing the property by the original method
+                // name and its snake_case form — e.g. foo.get_null or
+                // foo.getNull both resolve to getNull() the same way foo.null
+                // already does.
+                var map = property.isStatic() ? staticProperties : properties;
+                map.putIfAbsent(method.getName(), property);
+                map.putIfAbsent(bigsky.notch.util.Text.snakeCase(method.getName()), property);
             }
         }
         for(Field field : backingClass.getFields()) {

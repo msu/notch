@@ -56,6 +56,10 @@ public class TypeSystem {
     }
 
     public static NotchType getType(String className) {
+        NotchType cached = TYPESYSTEM_CACHE.get(className);
+        if (cached != null) {
+            return cached;
+        }
         try {
             Class<?> backingClass = Class.forName(className, true, contextClassLoader);
             return getType(backingClass);
