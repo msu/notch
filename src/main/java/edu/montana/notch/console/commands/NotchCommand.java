@@ -11,7 +11,6 @@ import edu.montana.notch.token.NotchTokenTypeKeyword;
 import edu.montana.notch.chisel.TokenStream;
 import edu.montana.notch.chisel.TokenizeException;
 import edu.montana.notch.chisel.Tokenizer;
-import bigsky.notch.chisel.type.*;
 import org.jline.reader.LineReader;
 
 public class NotchCommand implements Command {

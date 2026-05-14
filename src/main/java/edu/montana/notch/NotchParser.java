@@ -1,8 +1,5 @@
 package edu.montana.notch;
 
-import bigsky.notch.expressions.*;
-import bigsky.notch.statements.*;
-import bigsky.notch.chisel.*;
 import edu.montana.notch.chisel.*;
 import edu.montana.notch.expressions.*;
 import edu.montana.notch.statements.*;

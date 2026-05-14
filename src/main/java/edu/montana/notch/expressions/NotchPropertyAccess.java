@@ -4,7 +4,6 @@ import edu.montana.notch.runtime.NotchBoundMethod;
 import edu.montana.notch.runtime.NotchDiagnostic;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
-import bigsky.notch.types.*;
 import edu.montana.notch.types.*;
 import edu.montana.notch.util.Text;
 import edu.montana.notch.chisel.Location;

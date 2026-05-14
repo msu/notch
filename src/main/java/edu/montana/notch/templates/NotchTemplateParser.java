@@ -9,7 +9,6 @@ import edu.montana.notch.templates.ast.content.NotchTemplateContentItem;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentText;
 import edu.montana.notch.templates.token.NotchTemplateTokenTypeCommand;
 import edu.montana.notch.templates.token.NotchTemplateTokenTypeExpression;
-import bigsky.notch.chisel.*;
 
 import java.util.ArrayList;
 import java.util.Objects;

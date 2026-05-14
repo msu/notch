@@ -1,6 +1,5 @@
 package edu.montana.notch.console.token;
 
-import bigsky.notch.chisel.*;
 import edu.montana.notch.chisel.Location;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.chisel.TokenizeException;

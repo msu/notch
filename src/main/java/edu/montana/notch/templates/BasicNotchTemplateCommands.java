@@ -1,6 +1,5 @@
 package edu.montana.notch.templates;
 
-import bigsky.notch.templates.command.*;
 import edu.montana.notch.templates.command.*;
 
 public final class BasicNotchTemplateCommands {

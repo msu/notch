@@ -1,7 +1,6 @@
 package edu.montana.notch.templates.token;
 
 import edu.montana.notch.Notch;
-import bigsky.notch.chisel.*;
 import edu.montana.notch.chisel.*;
 
 public class NotchTemplateTokenTypeCommand implements TokenType {

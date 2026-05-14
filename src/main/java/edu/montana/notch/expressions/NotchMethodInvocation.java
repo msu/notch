@@ -1,6 +1,5 @@
 package edu.montana.notch.expressions;
 
-import bigsky.notch.runtime.*;
 import edu.montana.notch.runtime.*;
 import edu.montana.notch.types.NotchJavaMethod;
 import edu.montana.notch.util.Text;
