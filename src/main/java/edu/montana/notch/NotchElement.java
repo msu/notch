@@ -1,0 +1,50 @@
+package edu.montana.notch;
+
+import edu.montana.notch.expressions.NotchErrorExpression;
+import edu.montana.notch.chisel.Location;
+import edu.montana.notch.chisel.Span;
+
+import java.util.*;
+
+public class NotchElement {
+    public final String fileId;
+    public final Location start, end;
+    private final List<NotchElement> children = new LinkedList<>();
+
+    public NotchElement(String fileId, Location start, Location end) {
+        this.fileId = Objects.requireNonNull(fileId, "file id was null");
+        this.start = Objects.requireNonNull(start, "start location must not be null");
+        this.end = Objects.requireNonNull(end, "end location must not be null");
+    }
+
+    protected <T extends NotchElement> T addChild(T child) {
+        if (child != null) children.add(child);
+        return child;
+    }
+
+    protected <V extends NotchElement, T extends Collection<V>> T addChildren(T children) {
+        if(children != null) {
+            for (V child : children) {
+                addChild(child);
+            }
+        }
+        return children;
+    }
+
+    public List<NotchElement> getChildren() {
+        return Collections.unmodifiableList(children);
+    }
+
+    public void collectErrors(List<NotchErrorExpression> out) {
+        if (this instanceof NotchErrorExpression bee) {
+            out.add(bee);
+        }
+        for (var child : getChildren()) {
+            child.collectErrors(out);
+        }
+    }
+
+    public Span span() {
+        return new Span(start, end);
+    }
+}

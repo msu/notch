@@ -1,0 +1,22 @@
+package edu.montana.notch.expressions;
+
+import edu.montana.notch.runtime.NotchRuntime;
+
+public class NotchFallback extends NotchExpression {
+    public final NotchExpression primary, fallback;
+
+    public NotchFallback(NotchExpression primary, NotchExpression fallback) {
+        super(primary.fileId, primary.start, fallback.end);
+        this.primary = addChild(primary);
+        this.fallback = addChild(fallback);
+    }
+
+    @Override
+    public Object evaluate(NotchRuntime runtime) {
+        var value = runtime.evaluate(primary);
+        if (runtime.isUndefined(value)) {
+            value = runtime.evaluate(fallback);
+        }
+        return value;
+    }
+}
