@@ -16,7 +16,7 @@ public class ElseIfCommand extends NotchTemplateCommand {
 
     @Override
     public void parse(Token commandName, NotchTemplateParser tmplParser, NotchParser commandParser) {
-        this.condition = commandParser.parseExpression();
+        this.condition = commandParser.requireExpression("expected condition after #elseif");
         commandParser.requireEnd("extra tokens after if condition");
     }
 

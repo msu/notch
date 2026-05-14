@@ -24,7 +24,7 @@ public class IfCommand extends NotchTemplateCommand {
     @Override
     public void parse(Token commandName, NotchTemplateParser tmplParser, NotchParser commandParser) {
         NotchTemplateContentBlock conditionalBlock;
-        NotchExpression condition = commandParser.parseExpression();
+        NotchExpression condition = commandParser.requireExpression("expected condition after #if");
         commandParser.requireEnd("extra tokens after if condition");
         conditionalBlock = tmplParser.parseContentBlock(EndCommand.class, ElseCommand.class, ElseIfCommand.class);
         addChildContent(conditionalBlock);

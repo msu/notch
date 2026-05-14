@@ -21,6 +21,11 @@ public class NotchRuntimeException extends RuntimeException implements Spanned {
     }
 
     @Override
+    public String getMessage() {
+        return diagnostic.plainMessage();
+    }
+
+    @Override
     public Span span() {
         return stackTrace.span();
     }

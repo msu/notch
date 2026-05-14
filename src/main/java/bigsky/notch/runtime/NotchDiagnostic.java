@@ -25,6 +25,23 @@ public class NotchDiagnostic {
         notes.add(note);
     }
 
+    /**
+     * A plain-text summary (title + notes, joined with semicolons) suitable for
+     * exception getMessage() output. Does not include source snippets or
+     * colors — use {@link #render} for the full diagnostic.
+     */
+    public String plainMessage() {
+        var sb = new StringBuilder();
+        if (title != null) {
+            sb.append(title);
+        }
+        for (var note : notes) {
+            if (sb.length() > 0) sb.append("; ");
+            sb.append(note);
+        }
+        return sb.toString();
+    }
+
     public String render(SourceProvider sp) {
         var out = new StringBuilder();
         render(sp, out);

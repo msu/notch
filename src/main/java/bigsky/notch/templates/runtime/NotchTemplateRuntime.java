@@ -109,6 +109,10 @@ public class NotchTemplateRuntime extends NotchRuntime {
     public void render(NotchTemplateCommand cmd, StringBuilder out) {
         try {
             cmd.render(this, out);
+        } catch (RenderException e) {
+            throw Exceptions.rethrow(e);
+        } catch (NotchRuntimeException e) {
+            throw new RenderException(cmd.span(), e);
         } catch (Exception e) {
             throw Exceptions.rethrow(e);
         }
