@@ -22,6 +22,7 @@ public final class BasicNotchTemplateCommands {
             new FragmentCommand(),
             new SetCommand(),
             new CommentCommand(),
+            new RequireCommand(),
     };
 
     public static void addTo(NotchTemplateRegistry templates) {
