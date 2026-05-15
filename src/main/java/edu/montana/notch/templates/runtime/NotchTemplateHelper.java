@@ -1,7 +1,6 @@
 package edu.montana.notch.templates.runtime;
 
 import edu.montana.notch.runtime.NotchBoundMethod;
-import bigsky.notch.types.*;
 import edu.montana.notch.types.NotchMethod;
 import edu.montana.notch.types.NotchProperty;
 import edu.montana.notch.types.NotchType;

@@ -1,27 +1,21 @@
 package edu.montana.notch.console.commands;
 
-import org.jline.reader.LineReader;
 import org.jline.terminal.Terminal;
+import picocli.CommandLine.Command;
 
-public class ExitCommand implements Command{
+@Command(name = "exit", description = "Exit the Notch shell.")
+public class ExitCommand implements Runnable {
 
+    private final Terminal terminal;
 
-    private final LineReader reader;
-
-    private ExitCommand(LineReader reader) {this.reader = reader;}
-
-    public void execute() {
-        Terminal terminal = reader.getTerminal();
-        terminal.writer().println("Goodbye!");
-        terminal.flush();
+    public ExitCommand(Terminal terminal) {
+        this.terminal = terminal;
     }
 
-    public static Command validate(LineReader reader) {
-        Object line = reader.getVariable("lastLine");
-        String lastLine = (line == null) ? "" : line.toString();
-        if (lastLine.split(" ")[0].equalsIgnoreCase("exit")) {
-            return new ExitCommand(reader);
-        }
-        return null;
+    @Override
+    public void run() {
+        terminal.writer().println("Goodbye!");
+        terminal.flush();
+        System.exit(0);
     }
 }

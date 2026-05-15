@@ -1,23 +1,13 @@
 package edu.montana.notch.console.commands;
 
 import edu.montana.notch.logging.NotchLogging;
-import org.jline.reader.LineReader;
+import picocli.CommandLine.Command;
 
-public class LogsCommand implements Command {
-
-    private LogsCommand (LineReader reader) {}
+@Command(name = "logs", description = "Show background-captured logs.")
+public class LogsCommand implements Runnable {
 
     @Override
-    public void execute() {
+    public void run() {
         System.out.println(NotchLogging.getConfig().takeBackgroundLogs());
-    }
-
-    public static Command validate(LineReader reader) {
-        Object line = reader.getVariable("lastLine");
-        String lastLine = (line == null) ? "" : line.toString();
-        if (lastLine.split(" ")[0].equalsIgnoreCase("logs")) {
-            return new LogsCommand(reader);
-        }
-        return null;
     }
 }

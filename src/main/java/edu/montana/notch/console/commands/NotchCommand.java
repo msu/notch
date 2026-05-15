@@ -8,49 +8,24 @@ import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.statements.NotchStatement;
 import edu.montana.notch.token.NotchTokenTypeKeyword;
+import edu.montana.notch.chisel.Location;
+import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.chisel.TokenStream;
 import edu.montana.notch.chisel.TokenizeException;
 import edu.montana.notch.chisel.Tokenizer;
-import bigsky.notch.chisel.type.*;
 import org.jline.reader.LineReader;
 
-public class NotchCommand implements Command {
+public final class NotchCommand {
 
-    private final LineReader reader;
-    private final NotchParser parser;
-    private final NotchRuntime runtime;
+    private static final String RUNTIME_VAR = "notchRuntime";
 
-    private NotchCommand(LineReader reader, TokenStream tokenStream) {
-        this.parser = new NotchParser(tokenStream);
-        this.reader = reader;
+    private NotchCommand() {}
 
-        Object runtime = reader.getVariable("runtime");
-        if (runtime instanceof NotchRuntime) {
-            this.runtime = (NotchRuntime) runtime;
-        } else {
-            this.runtime = new NotchRuntime("jackknife-cli");
-            reader.setVariable("notchRuntime", this.runtime);
-        }
-    }
+    public static void run(LineReader reader, String line) {
+        if (line == null || line.isEmpty()) return;
 
-    @Override
-    public void execute() {
-        try {
-            NotchElement notchElement = parser.parse();
-            if (notchElement instanceof NotchExpression expr) {
-                Object result = runtime.evaluate(expr);
-                System.out.println(result);
-            } else if (notchElement instanceof NotchStatement stmt) {
-                runtime.execute(stmt);
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
+        NotchRuntime runtime = lookupOrCreateRuntime(reader);
 
-    public static Command validate(LineReader reader) {
-        Object line = reader.getVariable("lastLine");
-        String notchCmd = (line == null) ? "" : line.toString();
         try {
             Tokenizer tokenizer = new Tokenizer()
                     .withTokenType(NotchTokenTypeKeyword.NOTCH_KEYWORD)
@@ -60,12 +35,36 @@ public class NotchCommand implements Command {
                     .withTokenType(TokenTypeInteger.INT)
                     .withTokenType(TokenTypeWhitespace.WHITESPACE)
                     .withTokenTypes(TokenTypePunct.common())
-                    .create("jackknife-cli", notchCmd);
+                    .create("jackknife-cli", line);
             TokenStream tokenStream = tokenizer.tokenize();
-            return new NotchCommand(reader, tokenStream);
+            NotchParser parser = new NotchParser(tokenStream);
+            NotchElement element = parser.parse();
+            if (element instanceof NotchExpression expr) {
+                Object result = runtime.evaluate(expr);
+                System.out.println(result);
+            } else if (element instanceof NotchStatement stmt) {
+                runtime.execute(stmt);
+            }
         } catch (TokenizeException e) {
+            System.out.println("error at " + e.start.display() + ": " + e.getMessage());
+            printCaret(line, e.start);
+        } catch (Exception e) {
             System.out.println(e.getMessage());
-            return null;
+            if (e instanceof Spanned s) printCaret(line, s.span().start());
         }
+    }
+
+    private static void printCaret(String line, Location loc) {
+        if (loc.isSentinel()) return;
+        System.out.println("  " + line);
+        System.out.println("  " + " ".repeat(Math.max(0, loc.column - 1)) + "^");
+    }
+
+    private static NotchRuntime lookupOrCreateRuntime(LineReader reader) {
+        Object existing = reader.getVariable(RUNTIME_VAR);
+        if (existing instanceof NotchRuntime nr) return nr;
+        NotchRuntime created = new NotchRuntime("jackknife-cli");
+        reader.setVariable(RUNTIME_VAR, created);
+        return created;
     }
 }

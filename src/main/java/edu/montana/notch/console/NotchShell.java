@@ -1,20 +1,20 @@
 package edu.montana.notch.console;
 
 import edu.montana.notch.console.commands.ClearCommand;
-import edu.montana.notch.console.commands.Command;
 import edu.montana.notch.console.commands.ExitCommand;
-import edu.montana.notch.console.commands.HelpCommand;
 import edu.montana.notch.console.commands.LogsCommand;
 import edu.montana.notch.console.commands.NotchCommand;
 import edu.montana.notch.console.syntaxhighlighter.TerminalSyntaxHighlighter;
 import edu.montana.notch.logging.NotchLogging;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.Parser;
 import org.jline.terminal.Attributes;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
 import static edu.montana.notch.util.Exceptions.safelyEval;
 
@@ -50,12 +50,20 @@ public class NotchShell {
     }
 
     private void startJLineTerminal(Terminal terminal) {
+        CommandLine commandLine = new CommandLine(new RootCommand())
+                .addSubcommand("exit",  new ExitCommand(terminal))
+                .addSubcommand("clear", new ClearCommand(terminal))
+                .addSubcommand("logs",  new LogsCommand())
+                .addSubcommand("help",  new CommandLine.HelpCommand())
+                .setCaseInsensitiveEnumValuesAllowed(true);
+
         LineReader reader = LineReaderBuilder.builder()
                 .terminal(terminal)
                 .variable(LineReader.HISTORY_SIZE, 500)
                 .option(LineReader.Option.CASE_INSENSITIVE, true)
                 .option(LineReader.Option.HISTORY_INCREMENTAL, true)
                 .highlighter(new TerminalSyntaxHighlighter())
+                .completer(new PicocliCompleter(commandLine))
                 .build();
 
         if (!immediate) {
@@ -66,28 +74,35 @@ public class NotchShell {
             reader.printAbove("Logs Available, type 'logs' to show them");
         });
 
-        String line;
-        Command command;
+        Parser parser = reader.getParser();
+        while (true) {
+            String line = reader.readLine("notch > ");
+            if (line == null) continue;
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) continue;
 
-        do {
-            line = reader.readLine("notch > ");
-            reader.setVariable("lastLine", line);
-            Command[] commands = {
-                    ExitCommand.validate(reader),
-                    ClearCommand.validate(reader),
-                    LogsCommand.validate(reader),
-                    HelpCommand.validate(reader),
-                    NotchCommand.validate(reader)
-            };
-
-            int i = 0;
-            do {
-                command = commands[i];
+            String[] argv = tokens(parser, line, trimmed);
+            if (argv.length > 0 && commandLine.getSubcommands().containsKey(argv[0])) {
+                commandLine.execute(argv);
+            } else {
+                NotchCommand.run(reader, line);
             }
-            while (command == null && ++i < commands.length);
-            if (command == null && !line.isEmpty()) terminal.writer().println("Command Not Found");
-            if (command != null) command.execute();
-        } while (!(command instanceof ExitCommand));
-        System.exit(0);
+        }
+    }
+
+    private static String[] tokens(Parser parser, String line, String fallback) {
+        try {
+            return parser.parse(line, 0).words().toArray(new String[0]);
+        } catch (Exception ignored) {
+            return fallback.split("\\s+");
+        }
+    }
+
+    @CommandLine.Command(name = "notch", description = "Notch interactive shell.")
+    static class RootCommand implements Runnable {
+        @Override
+        public void run() {
+            //Root cmd not executed needed for Command Specification
+        }
     }
 }

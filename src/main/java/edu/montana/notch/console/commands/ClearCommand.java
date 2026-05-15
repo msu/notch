@@ -1,28 +1,21 @@
 package edu.montana.notch.console.commands;
 
+import org.jline.terminal.Terminal;
 import org.jline.utils.InfoCmp;
-import org.jline.reader.LineReader;
+import picocli.CommandLine.Command;
 
-public class ClearCommand implements Command {
+@Command(name = "clear", description = "Clear the screen.")
+public class ClearCommand implements Runnable {
 
-    private final LineReader reader;
+    private final Terminal terminal;
 
-    private ClearCommand(LineReader reader) {
-        this.reader = reader;
+    public ClearCommand(Terminal terminal) {
+        this.terminal = terminal;
     }
 
-    public static Command validate(LineReader reader) {
-        Object line = reader.getVariable("lastLine");
-        String lastLine = (line == null) ? "" : line.toString();
-        if (lastLine.split(" ")[0].equalsIgnoreCase("clear")) {
-            return new ClearCommand(reader);
-        }
-        return null;
+    @Override
+    public void run() {
+        terminal.puts(InfoCmp.Capability.clear_screen);
+        terminal.flush();
     }
-
-    public void execute() {
-        reader.getTerminal().puts(InfoCmp.Capability.clear_screen);
-        reader.getTerminal().flush();
-    }
-
 }
