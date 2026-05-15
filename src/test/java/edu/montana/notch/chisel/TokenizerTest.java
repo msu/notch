@@ -1,6 +1,5 @@
 package edu.montana.notch.chisel;
 
-import bigsky.notch.chisel.type.*;
 import edu.montana.notch.chisel.type.*;
 import org.junit.jupiter.api.Test;
 

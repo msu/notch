@@ -1,7 +1,5 @@
 package edu.montana.notch.util;
 
-import edu.montana.notch.iter.BetterIterable;
-import edu.montana.notch.iter.JavaBIterable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -11,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class BIterableTest {
 
     private BetterIterable<Integer> createIterable(Integer... values) {
-        return new JavaBIterable<>(Arrays.asList(values));
+        return BetterIterable.better(Arrays.asList(values));
     }
 
     private BetterIterable<String> createStringIterable(String... values) {
-        return new JavaBIterable<>(Arrays.asList(values));
+        return BetterIterable.better(Arrays.asList(values));
     }
 
     // ========== map ==========
@@ -23,21 +21,21 @@ class BIterableTest {
     void testMap() {
         BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
 
-        BetterList<String> mapped = numbers.map(String::valueOf).toList();
+        BetterList<String> mapped = numbers.map(String::valueOf);
         assertEquals(Arrays.asList("1", "2", "3", "4", "5"), mapped);
 
-        BetterList<Integer> doubled = numbers.map(n -> n * 2).toList();
+        BetterList<Integer> doubled = numbers.map(n -> n * 2);
         assertEquals(Arrays.asList(2, 4, 6, 8, 10), doubled);
     }
 
     @Test
     void testMapEmpty() {
         BetterIterable<Integer> empty = createIterable();
-        BetterList<String> mapped = empty.map(String::valueOf).toList();
+        BetterList<String> mapped = empty.map(String::valueOf);
         assertEquals(0, mapped.size());
     }
 
-    // ========== inspect ==========
+    // ========== tap ==========
     @Test
     void testTap() {
         BetterIterable<Integer> numbers = createIterable(1, 2, 3);
@@ -65,32 +63,32 @@ class BIterableTest {
     void testFilter() {
         BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
-        BetterList<Integer> evenNumbers = numbers.filter(n -> n % 2 == 0).toList();
+        BetterList<Integer> evenNumbers = numbers.filter(n -> n % 2 == 0);
         assertEquals(Arrays.asList(2, 4, 6, 8, 10), evenNumbers);
 
-        BetterList<Integer> greaterThanFive = numbers.filter(n -> n > 5).toList();
+        BetterList<Integer> greaterThanFive = numbers.filter(n -> n > 5);
         assertEquals(Arrays.asList(6, 7, 8, 9, 10), greaterThanFive);
 
-        BetterList<Integer> noMatches = numbers.filter(n -> n > 20).toList();
+        BetterList<Integer> noMatches = numbers.filter(n -> n > 20);
         assertEquals(0, noMatches.size());
     }
 
     @Test
     void testFilterOutNull() {
         BetterIterable<String> withNulls = createStringIterable("hello", null, "world", null, "test");
-        BetterList<String> filtered = withNulls.filterOutNull().toList();
+        BetterList<String> filtered = withNulls.filterOutNull();
         assertEquals(Arrays.asList("hello", "world", "test"), filtered);
     }
 
     @Test
     void testFilterByClass() {
         List<Object> mixedObjects = Arrays.asList("hello", 42, "world", 3.14, 100, "test");
-        BetterIterable<Object> betterMixed = new JavaBIterable<>(mixedObjects);
+        BetterIterable<Object> betterMixed = BetterIterable.better(mixedObjects);
 
-        BetterList<String> strings = betterMixed.filter(String.class).toList();
+        BetterList<String> strings = betterMixed.filter(String.class);
         assertEquals(Arrays.asList("hello", "world", "test"), strings);
 
-        BetterList<Integer> integers = betterMixed.filter(Integer.class).toList();
+        BetterList<Integer> integers = betterMixed.filter(Integer.class);
         assertEquals(Arrays.asList(42, 100), integers);
     }
 
@@ -99,140 +97,87 @@ class BIterableTest {
     void testSkip() {
         BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
 
-        BetterList<Integer> skipped = numbers.skip(2).toList();
-        assertEquals(Arrays.asList(3, 4, 5), skipped);
-
-        BetterList<Integer> skipAll = numbers.skip(10).toList();
-        assertEquals(0, skipAll.size());
-
-        BetterList<Integer> skipNone = numbers.skip(0).toList();
-        assertEquals(Arrays.asList(1, 2, 3, 4, 5), skipNone);
+        assertEquals(Arrays.asList(3, 4, 5), numbers.skip(2));
+        assertEquals(0, numbers.skip(10).size());
+        assertEquals(Arrays.asList(1, 2, 3, 4, 5), numbers.skip(0));
     }
 
     @Test
     void testTake() {
         BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
 
-        BetterList<Integer> taken = numbers.take(3).toList();
-        assertEquals(Arrays.asList(1, 2, 3), taken);
-
-        BetterList<Integer> takeMore = numbers.take(10).toList();
-        assertEquals(Arrays.asList(1, 2, 3, 4, 5), takeMore);
-
-        BetterList<Integer> takeNone = numbers.take(0).toList();
-        assertEquals(0, takeNone.size());
+        assertEquals(Arrays.asList(1, 2, 3), numbers.take(3));
+        assertEquals(Arrays.asList(1, 2, 3, 4, 5), numbers.take(10));
+        assertEquals(0, numbers.take(0).size());
     }
 
     @Test
     void testSkipAndTake() {
         BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-
-        BetterList<Integer> result = numbers.skip(2).take(5).toList();
+        BetterList<Integer> result = numbers.skip(2).take(5);
         assertEquals(Arrays.asList(3, 4, 5, 6, 7), result);
     }
 
     // ========== reverse ==========
     @Test
     void testReverse() {
-        BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
-        BetterList<Integer> reversed = numbers.reverse().toList();
-        assertEquals(Arrays.asList(5, 4, 3, 2, 1), reversed);
+        assertEquals(Arrays.asList(5, 4, 3, 2, 1), createIterable(1, 2, 3, 4, 5).reverse());
+        assertEquals(0, createIterable().reverse().size());
+        assertEquals(Arrays.asList(42), createIterable(42).reverse());
     }
 
-    @Test
-    void testReverseEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        BetterList<Integer> reversed = empty.reverse().toList();
-        assertEquals(0, reversed.size());
-    }
-
-    @Test
-    void testReverseSingle() {
-        BetterIterable<Integer> single = createIterable(42);
-        BetterList<Integer> reversed = single.reverse().toList();
-        assertEquals(Arrays.asList(42), reversed);
-    }
-
-    // ========== unique and distinct ==========
+    // ========== unique / uniqueBy ==========
     @Test
     void testUnique() {
         BetterIterable<Integer> withDuplicates = createIterable(1, 2, 2, 3, 1, 4, 3, 5);
-        BetterList<Integer> unique = withDuplicates.unique().toList();
-        assertEquals(Arrays.asList(1, 2, 3, 4, 5), unique);
-    }
-
-    @Test
-    void testDistinct() {
-        BetterIterable<Integer> withDuplicates = createIterable(1, 2, 2, 3, 1, 4, 3, 5);
-        BetterList<Integer> distinct = withDuplicates.distinct().toList();
-        assertEquals(Arrays.asList(1, 2, 3, 4, 5), distinct);
+        assertEquals(Arrays.asList(1, 2, 3, 4, 5), withDuplicates.unique());
     }
 
     @Test
     void testUniqueBy() {
         BetterIterable<String> words = createStringIterable("cat", "car", "dog", "door", "cab");
-        BetterList<String> uniqueByFirstChar = words.uniqueBy(s -> s.charAt(0)).toList();
-        assertEquals(Arrays.asList("cat", "dog"), uniqueByFirstChar);
+        assertEquals(Arrays.asList("cat", "dog"), words.uniqueBy(s -> s.charAt(0)));
     }
 
     @Test
     void testUniqueByLength() {
         BetterIterable<String> words = createStringIterable("a", "bb", "ccc", "d", "ee", "fff");
-        BetterList<String> uniqueByLength = words.uniqueBy(String::length).toList();
-        assertEquals(Arrays.asList("a", "bb", "ccc"), uniqueByLength);
-    }
-
-    @Test
-    void testDistinctBy() {
-        BetterIterable<String> words = createStringIterable("cat", "car", "dog", "door", "cab");
-        BetterList<String> distinctByFirstChar = words.distinctBy(s -> s.charAt(0)).toList();
-        assertEquals(Arrays.asList("cat", "dog"), distinctByFirstChar);
+        assertEquals(Arrays.asList("a", "bb", "ccc"), words.uniqueBy(String::length));
     }
 
     // ========== sort ==========
     @Test
     void testSort() {
-        BetterIterable<Integer> numbers = createIterable(5, 2, 8, 1, 9, 3);
-        BetterList<Integer> sorted = numbers.sort();
-        assertEquals(Arrays.asList(1, 2, 3, 5, 8, 9), sorted);
-    }
-
-    @Test
-    void testSortStrings() {
-        BetterIterable<String> words = createStringIterable("zebra", "apple", "banana", "cherry");
-        BetterList<String> sorted = words.sort();
-        assertEquals(Arrays.asList("apple", "banana", "cherry", "zebra"), sorted);
+        assertEquals(Arrays.asList(1, 2, 3, 5, 8, 9), createIterable(5, 2, 8, 1, 9, 3).sorted());
+        assertEquals(Arrays.asList("apple", "banana", "cherry", "zebra"),
+                createStringIterable("zebra", "apple", "banana", "cherry").sorted());
     }
 
     @Test
     void testSortWithComparator() {
-        BetterIterable<Integer> numbers = createIterable(5, 2, 8, 1, 9, 3);
-        BetterList<Integer> sortedDesc = numbers.sort(Comparator.reverseOrder());
-        assertEquals(Arrays.asList(9, 8, 5, 3, 2, 1), sortedDesc);
+        assertEquals(Arrays.asList(9, 8, 5, 3, 2, 1),
+                createIterable(5, 2, 8, 1, 9, 3).sorted(Comparator.reverseOrder()));
     }
 
     @Test
     void testSortEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        BetterList<Integer> sorted = empty.sort();
-        assertEquals(0, sorted.size());
+        assertEquals(0, createIterable().sorted().size());
     }
 
     @Test
     void testSortBy() {
         BetterIterable<String> words = createStringIterable("zzz", "a", "bb", "cccc");
-        BetterList<String> sortedByLength = words.sortBy(String::length);
-        assertEquals(Arrays.asList("a", "bb", "zzz", "cccc"), sortedByLength);
+        assertEquals(Arrays.asList("a", "bb", "zzz", "cccc"), words.sortedBy(String::length));
     }
 
     @Test
     void testSortByWithComparator() {
         BetterIterable<String> words = createStringIterable("zzz", "a", "bb", "cccc");
-        BetterList<String> sortedByLengthDesc = words.sortBy(String::length, Comparator.reverseOrder());
-        assertEquals(Arrays.asList("cccc", "zzz", "bb", "a"), sortedByLengthDesc);
+        assertEquals(Arrays.asList("cccc", "zzz", "bb", "a"),
+                words.sortedBy(String::length, Comparator.reverseOrder()));
     }
 
-    // ========== toMap ==========
+    // ========== toMap (one-per-key) ==========
     @Test
     void testToMap() {
         BetterIterable<String> words = createStringIterable("cat", "dog", "car");
@@ -246,16 +191,24 @@ class BIterableTest {
 
     @Test
     void testToMapEmpty() {
-        BetterIterable<String> empty = createStringIterable();
-        BetterMap<Character, String> map = empty.toMap(s -> s.charAt(0));
+        BetterMap<Character, String> map = createStringIterable().toMap(s -> s.charAt(0));
         assertEquals(0, map.size());
     }
 
-    // ========== mapTo ==========
     @Test
-    void testMapTo() {
+    void testToMapWithValueFn() {
         BetterIterable<String> words = createStringIterable("cat", "dog", "bird");
-        BetterMap<String, Integer> map = words.mapTo(String::length);
+        BetterMap<Character, Integer> map = words.toMap(s -> s.charAt(0), String::length);
+        assertEquals(3, map.get('c'));
+        assertEquals(3, map.get('d'));
+        assertEquals(4, map.get('b'));
+    }
+
+    // ========== asMap (elements-as-keys) ==========
+    @Test
+    void testAsMap() {
+        BetterIterable<String> words = createStringIterable("cat", "dog", "bird");
+        BetterMap<String, Integer> map = words.asMap(String::length);
 
         assertEquals(3, map.size());
         assertEquals(3, map.get("cat"));
@@ -264,9 +217,8 @@ class BIterableTest {
     }
 
     @Test
-    void testMapToEmpty() {
-        BetterIterable<String> empty = createStringIterable();
-        BetterMap<String, Integer> map = empty.mapTo(String::length);
+    void testAsMapEmpty() {
+        BetterMap<String, Integer> map = createStringIterable().asMap(String::length);
         assertEquals(0, map.size());
     }
 
@@ -294,159 +246,99 @@ class BIterableTest {
 
     @Test
     void testGroupByEmpty() {
-        BetterIterable<String> empty = createStringIterable();
-        BetterMap<Character, BetterList<String>> grouped = empty.groupBy(s -> s.charAt(0));
+        BetterMap<Character, BetterList<String>> grouped = createStringIterable().groupBy(s -> s.charAt(0));
         assertEquals(0, grouped.size());
     }
 
     // ========== fold ==========
     @Test
     void testFold() {
-        BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
-        Integer sum = numbers.fold(0, Integer::sum);
-        assertEquals(15, sum);
-    }
-
-    @Test
-    void testFoldProduct() {
-        BetterIterable<Integer> numbers = createIterable(2, 3, 4);
-        Integer product = numbers.fold(1, (a, b) -> a * b);
-        assertEquals(24, product);
-    }
-
-    @Test
-    void testFoldConcat() {
-        BetterIterable<String> words = createStringIterable("hello", " ", "world");
-        String result = words.fold("", (acc, s) -> acc + s);
-        assertEquals("hello world", result);
-    }
-
-    @Test
-    void testFoldEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        Integer sum = empty.fold(100, Integer::sum);
-        assertEquals(100, sum);
+        assertEquals(15, createIterable(1, 2, 3, 4, 5).fold(0, Integer::sum));
+        assertEquals(24, createIterable(2, 3, 4).fold(1, (a, b) -> a * b));
+        assertEquals("hello world", createStringIterable("hello", " ", "world").fold("", (acc, s) -> acc + s));
+        assertEquals(100, createIterable().fold(100, Integer::sum));
     }
 
     // ========== count ==========
     @Test
     void testCount() {
-        BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
-        assertEquals(5, numbers.count());
+        assertEquals(5, createIterable(1, 2, 3, 4, 5).count());
+        assertEquals(0, createIterable().count());
+        assertEquals(5, createIterable(1, 2, 3, 4, 5, 6, 7, 8, 9, 10).filter(n -> n % 2 == 0).count());
     }
 
-    @Test
-    void testCountEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        assertEquals(0, empty.count());
-    }
-
-    @Test
-    void testCountAfterFilter() {
-        BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        assertEquals(5, numbers.filter(n -> n % 2 == 0).count());
-    }
-
-    // ========== first and last ==========
+    // ========== first / last (null on empty) and OrThrow variants ==========
     @Test
     void testFirst() {
-        BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
-        assertEquals(1, numbers.first());
+        assertEquals(1, createIterable(1, 2, 3, 4, 5).first());
+        assertNull(createIterable().first());
     }
 
     @Test
-    void testFirstThrowsOnEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        assertThrows(NoSuchElementException.class, empty::first);
-    }
-
-    @Test
-    void testFirstOrNull() {
-        BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
-        assertEquals(1, numbers.firstOrNull());
-    }
-
-    @Test
-    void testFirstOrNullEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        assertNull(empty.firstOrNull());
+    void testFirstOrThrow() {
+        assertEquals(1, createIterable(1, 2, 3, 4, 5).firstOrThrow());
+        assertThrows(NoSuchElementException.class, () -> createIterable().firstOrThrow());
     }
 
     @Test
     void testLast() {
-        BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
-        assertEquals(5, numbers.last());
+        assertEquals(5, createIterable(1, 2, 3, 4, 5).last());
+        assertNull(createIterable().last());
     }
 
     @Test
-    void testLastThrowsOnEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        assertThrows(NoSuchElementException.class, empty::last);
+    void testLastOrThrow() {
+        assertEquals(5, createIterable(1, 2, 3, 4, 5).lastOrThrow());
+        assertThrows(NoSuchElementException.class, () -> createIterable().lastOrThrow());
     }
 
-    @Test
-    void testLastOrNull() {
-        BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
-        assertEquals(5, numbers.lastOrNull());
-    }
-
-    @Test
-    void testLastOrNullEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        assertNull(empty.lastOrNull());
-    }
-
-    // ========== all, any, none ==========
+    // ========== all, hasMatch, hasNoMatch ==========
     @Test
     void testAll() {
-        BetterIterable<Integer> numbers = createIterable(2, 4, 6, 8, 10);
-        assertTrue(numbers.all(n -> n % 2 == 0));
-        assertFalse(numbers.all(n -> n > 5));
+        BetterIterable<Integer> evens = createIterable(2, 4, 6, 8, 10);
+        assertTrue(evens.all(n -> n % 2 == 0));
+        assertFalse(evens.all(n -> n > 5));
+        assertTrue(createIterable().all(n -> false)); // vacuous truth
     }
 
     @Test
-    void testAllEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        assertTrue(empty.all(n -> false)); // vacuous truth
-    }
-
-    @Test
-    void testAny() {
+    void testHasMatch() {
         BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
-        assertTrue(numbers.any(n -> n % 2 == 0));
-        assertTrue(numbers.any(n -> n > 4));
-        assertFalse(numbers.any(n -> n > 10));
+        assertTrue(numbers.hasMatch(n -> n % 2 == 0));
+        assertTrue(numbers.hasMatch(n -> n > 4));
+        assertFalse(numbers.hasMatch(n -> n > 10));
+        assertFalse(createIterable().hasMatch(n -> true));
     }
 
     @Test
-    void testAnyEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        assertFalse(empty.any(n -> true));
+    void testHasNoMatch() {
+        BetterIterable<Integer> odds = createIterable(1, 3, 5, 7, 9);
+        assertTrue(odds.hasNoMatch(n -> n % 2 == 0));
+        assertFalse(odds.hasNoMatch(n -> n > 5));
+        assertTrue(createIterable().hasNoMatch(n -> true)); // vacuous truth
+    }
+
+    // ========== indexOf ==========
+    @Test
+    void testIndexOfValue() {
+        assertEquals(0, createIterable(1, 2, 3, 4, 5).indexOf(1));
+        assertEquals(2, createIterable(1, 2, 3, 4, 5).indexOf(3));
+        assertEquals(-1, createIterable(1, 2, 3, 4, 5).indexOf(99));
     }
 
     @Test
-    void testNone() {
-        BetterIterable<Integer> numbers = createIterable(1, 3, 5, 7, 9);
-        assertTrue(numbers.none(n -> n % 2 == 0));
-        assertFalse(numbers.none(n -> n > 5));
-    }
-
-    @Test
-    void testNoneEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        assertTrue(empty.none(n -> true)); // vacuous truth
+    void testIndexOfPredicate() {
+        assertEquals(1, createIterable(1, 2, 3, 4, 5).indexOf((Integer n) -> n % 2 == 0));
+        assertEquals(-1, createIterable(1, 3, 5).indexOf((Integer n) -> n % 2 == 0));
     }
 
     // ========== chained operations ==========
     @Test
     void testChainedOperations() {
-        BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-
-        BetterList<Integer> result = numbers
+        BetterList<Integer> result = createIterable(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
                 .filter(n -> n % 2 == 0)
                 .map(n -> n * 2)
-                .take(3)
-                .toList();
+                .take(3);
 
         assertEquals(Arrays.asList(4, 8, 12), result);
     }
@@ -459,8 +351,7 @@ class BIterableTest {
                 .filter(s -> s.startsWith("a") || s.startsWith("b"))
                 .map(String::toUpperCase)
                 .unique()
-                .sort()
-                .toList();
+                .sorted();
 
         assertEquals(Arrays.asList("APPLE", "APRICOT", "AVOCADO", "BANANA", "BLUEBERRY"), result);
     }
@@ -482,38 +373,16 @@ class BIterableTest {
     // ========== toList ==========
     @Test
     void testToList() {
-        BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
-        BetterList<Integer> list = numbers.toList();
-
+        BetterList<Integer> list = createIterable(1, 2, 3, 4, 5).toList();
         assertEquals(Arrays.asList(1, 2, 3, 4, 5), list);
-        assertTrue(list instanceof BetterList);
-    }
-
-    @Test
-    void testToListEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        BetterList<Integer> list = empty.toList();
-        assertEquals(0, list.size());
+        assertEquals(0, createIterable().toList().size());
     }
 
     // ========== forEach ==========
     @Test
     void testForEach() {
-        BetterIterable<Integer> numbers = createIterable(1, 2, 3, 4, 5);
         List<Integer> collected = new ArrayList<>();
-
-        numbers.forEach(collected::add);
-
+        createIterable(1, 2, 3, 4, 5).forEach(collected::add);
         assertEquals(Arrays.asList(1, 2, 3, 4, 5), collected);
-    }
-
-    @Test
-    void testForEachEmpty() {
-        BetterIterable<Integer> empty = createIterable();
-        List<Integer> collected = new ArrayList<>();
-
-        empty.forEach(collected::add);
-
-        assertEquals(0, collected.size());
     }
 }

@@ -172,7 +172,7 @@ class BetterSetTest {
         assertTrue(filtered.contains(2));
         assertTrue(filtered.contains(4));
         
-        String joined = intSet.join(", ");
+        String joined = intSet.toString(", ");
         assertTrue(joined.contains("1"));
         assertTrue(joined.contains("2"));
         assertTrue(joined.contains("3"));
@@ -207,21 +207,21 @@ class BetterSetTest {
     @Test
     void testToMaps() {
         BetterSet<String> words = new BetterSet<>(Arrays.asList("cat", "dog", "car", "door", "cab"));
-        
-        Map<Integer, List<String>> byLength = words.toMap(String::length);
+
+        BetterMap<Integer, BetterList<String>> byLength = words.groupBy(String::length);
         assertEquals(2, byLength.size());
         assertEquals(4, byLength.get(3).size());
         assertEquals(1, byLength.get(4).size());
-        
-        TreeMap<Integer, List<String>> orderedByLength = words.toOrderedMap(String::length);
-        assertTrue(orderedByLength instanceof TreeMap);
-        
-        Map<Character, String> distinctByFirstChar = words.toDistinctMap(s -> s.charAt(0));
+
+        BetterMap<Integer, BetterList<String>> orderedByLength = words.groupBy(String::length, Comparator.naturalOrder());
+        assertEquals(Arrays.asList(3, 4), new ArrayList<>(orderedByLength.keySet()));
+
+        BetterMap<Character, String> distinctByFirstChar = words.toMap(s -> s.charAt(0));
         assertTrue(distinctByFirstChar.containsKey('c'));
         assertTrue(distinctByFirstChar.containsKey('d'));
-        
-        TreeMap<Character, String> orderedDistinctByFirstChar = words.toOrderedDistinctMap(s -> s.charAt(0));
-        assertTrue(orderedDistinctByFirstChar instanceof TreeMap);
+
+        BetterMap<Character, String> orderedDistinctByFirstChar = words.toMap(s -> s.charAt(0), Comparator.naturalOrder());
+        assertEquals(Arrays.asList('c', 'd'), new ArrayList<>(orderedDistinctByFirstChar.keySet()));
     }
 
     @Test
@@ -327,7 +327,7 @@ class BetterSetTest {
         assertNull(emptySet.firstWhere(s -> true));
         assertFalse(emptySet.hasMatch(s -> true));
         assertTrue(emptySet.hasNoMatch(s -> true));
-        assertEquals("", emptySet.join(","));
+        assertEquals("", emptySet.toString(","));
     }
 
     @Test

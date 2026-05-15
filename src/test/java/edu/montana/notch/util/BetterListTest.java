@@ -89,23 +89,23 @@ class BetterListTest {
     }
 
     @Test
-    void testDistinct() {
+    void testUnique() {
         BetterList<String> list = new BetterList<>();
         list.addAll(Arrays.asList("a", "b", "a", "c", "b", "d"));
-        BetterList<String> distinct = list.distinct();
-        
-        assertEquals(4, distinct.size());
-        assertEquals(Arrays.asList("a", "b", "c", "d"), distinct);
+        BetterList<String> unique = list.unique();
+
+        assertEquals(4, unique.size());
+        assertEquals(Arrays.asList("a", "b", "c", "d"), unique);
     }
 
     @Test
-    void testDistinctWithFunction() {
+    void testUniqueBy() {
         BetterList<String> words = new BetterList<>(Arrays.asList("cat", "dog", "car", "door"));
-        BetterList<String> distinctByLength = words.distinct(String::length);
-        
-        assertEquals(2, distinctByLength.size());
-        assertEquals("cat", distinctByLength.get(0));
-        assertEquals("door", distinctByLength.get(1));
+        BetterList<String> uniqueByLength = words.uniqueBy(String::length);
+
+        assertEquals(2, uniqueByLength.size());
+        assertEquals("cat", uniqueByLength.get(0));
+        assertEquals("door", uniqueByLength.get(1));
     }
 
     @Test
@@ -152,7 +152,7 @@ class BetterListTest {
         BetterList<Integer> filtered = intList.filter(n -> n % 2 == 0);
         assertEquals(Arrays.asList(2, 4), filtered);
         
-        String joined = intList.join(", ");
+        String joined = intList.toString(", ");
         assertEquals("1, 2, 3, 4, 5", joined);
         
         assertEquals(Integer.valueOf(1), intList.first());
@@ -175,21 +175,21 @@ class BetterListTest {
     @Test
     void testToMaps() {
         BetterList<String> words = new BetterList<>(Arrays.asList("cat", "dog", "car", "door", "cab"));
-        
-        Map<Integer, List<String>> byLength = words.toMap(String::length);
+
+        BetterMap<Integer, BetterList<String>> byLength = words.groupBy(String::length);
         assertEquals(2, byLength.size());
         assertEquals(Arrays.asList("cat", "dog", "car", "cab"), byLength.get(3));
         assertEquals(Arrays.asList("door"), byLength.get(4));
-        
-        TreeMap<Integer, List<String>> orderedByLength = words.toOrderedMap(String::length);
-        assertTrue(orderedByLength instanceof TreeMap);
-        
-        Map<Character, String> distinctByFirstChar = words.toDistinctMap(s -> s.charAt(0));
+
+        BetterMap<Integer, BetterList<String>> orderedByLength = words.groupBy(String::length, Comparator.naturalOrder());
+        assertEquals(Arrays.asList(3, 4), new ArrayList<>(orderedByLength.keySet()));
+
+        BetterMap<Character, String> distinctByFirstChar = words.toMap(s -> s.charAt(0));
         assertEquals("cab", distinctByFirstChar.get('c'));
         assertEquals("door", distinctByFirstChar.get('d'));
-        
-        TreeMap<Character, String> orderedDistinctByFirstChar = words.toOrderedDistinctMap(s -> s.charAt(0));
-        assertTrue(orderedDistinctByFirstChar instanceof TreeMap);
+
+        BetterMap<Character, String> orderedDistinctByFirstChar = words.toMap(s -> s.charAt(0), Comparator.naturalOrder());
+        assertEquals(Arrays.asList('c', 'd'), new ArrayList<>(orderedDistinctByFirstChar.keySet()));
     }
 
     @Test
