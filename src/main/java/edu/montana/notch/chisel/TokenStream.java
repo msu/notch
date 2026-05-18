@@ -2,16 +2,13 @@ package edu.montana.notch.chisel;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public class TokenStream {
-    protected String fileId;
-    protected CharSequence source;
+    protected Source source;
     protected List<Token> tokens;
-    protected int index = 0;
+    public int index = 0;
 
-    public TokenStream(String fileId, CharSequence source, List<Token> tokens) {
-        this.fileId = Objects.requireNonNull(fileId);
+    public TokenStream(Source source, List<Token> tokens) {
         this.source = source;
         this.tokens = tokens;
     }
@@ -21,29 +18,29 @@ public class TokenStream {
     }
 
     public Token peek() {
-        if (index >= tokens.size()) return Token.EOF;
+        if (index >= tokens.size()) return source.eoi;
         return tokens.get(index);
     }
 
     public Token prev() {
-        if (index - 1 < 0) return Token.SOF;
+        if (index - 1 < 0) return source.soi;
         if (index - 1 >= tokens.size()) return tokens.get(tokens.size() - 1);
         return tokens.get(index - 1);
     }
 
     public Token take() {
-        if (index >= tokens.size()) return Token.EOF;
+        if (index >= tokens.size()) return source.eoi;
         if (index < 0) {
             index = 0;
-            return Token.SOF;
+            return source.soi;
         }
         var token = tokens.get(index);
         index += 1;
         return token;
     }
 
-    public boolean match(Token token, TokenType... types) {
-        for (TokenType type : types) {
+    public boolean match(Token token, String... types) {
+        for (String type : types) {
             if (token.type.equals(type)) {
                 return true;
             }
@@ -51,12 +48,12 @@ public class TokenStream {
         return false;
     }
 
-    public boolean peek(TokenType... types) {
+    public boolean peek(String... types) {
         var token = peek();
         return match(token, types);
     }
 
-    public boolean take(TokenType... types) {
+    public boolean take(String... types) {
         var token = peek();
         if (match(token, types)) {
             take();
@@ -65,9 +62,9 @@ public class TokenStream {
         return false;
     }
 
-    public Token consume(TokenType... types) {
+    public Token consume(String... types) {
         var token = peek();
-        if (match(token ,types)) {
+        if (match(token, types)) {
             take();
             return token;
         }
@@ -80,19 +77,19 @@ public class TokenStream {
 
     public Location location() {
         var token = peek();
-        return token.start;
+        return token.span.start();
     }
 
-    public String getFileId() {
-        return fileId;
+    public Source getSource() {
+        return source;
     }
 
     public void reset() {
         index = 0;
     }
 
-    public CharSequence source() {
-        return source;
+    public CharSequence content() {
+        return source.content;
     }
 
     public Lookahead lookahead() {

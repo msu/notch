@@ -4,8 +4,8 @@ import java.util.Objects;
 import java.util.PrimitiveIterator;
 
 public final class Location {
-    public static final Location SOF = new Location(0, 0, 0);
-    public static final Location EOF = new Location(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+    public static final Location SOI = new Location(0, 0, 0);
+    public static final Location EOI = new Location(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
 
     public final int index, line, column;
 
@@ -44,13 +44,13 @@ public final class Location {
     }
 
     public boolean isSentinel() {
-        return this.equals(SOF) || this.equals(EOF);
+        return this.equals(SOI) || this.equals(EOI);
     }
 
     public String display() {
-        if (this.equals(EOF)) return "EOF";
-        if (this.equals(SOF)) return "SOF";
-        return "%d:%d".formatted(line, column);
+        if (this.equals(EOI)) return "EOF";
+        if (this.equals(SOI)) return "SOF";
+        return "%d:%d (%d)".formatted(line, column, index);
     }
 
     @Override

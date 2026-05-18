@@ -9,15 +9,15 @@ import java.util.Set;
 
 public class BasicParser {
     protected TokenStream tokens;
-    protected Set<TokenType> ignoredTokenTypes = new HashSet<>();
-    protected Set<TokenType> temporaryEndTokens = new HashSet<>();
+    protected Set<String> ignoredTokenTypes = new HashSet<>();
+    protected Set<String> temporaryEndTokens = new HashSet<>();
 
     public BasicParser(TokenStream tokens) {
         this.tokens = Objects.requireNonNull(tokens);
     }
 
-    public Location location() {
-        return tokens.location();
+    public Source source() {
+        return tokens.getSource();
     }
 
     protected void consumeIgnoredTokens() {
@@ -50,18 +50,31 @@ public class BasicParser {
         return _atEnd();
     }
 
-    public Token peek() {
+    public Token lastToken() {
+        int i = tokens.index - 1;
+        while (true) {
+            if (i < 0) return tokens.source.soi;
+
+            final var token = tokens.tokens.get(i);
+            if (!ignoredTokenTypes.contains(token.type)) {
+                return token;
+            }
+            i -= 1;
+        }
+    }
+
+    public Token currentToken() {
         consumeIgnoredTokens();
-        if (atEnd()) return Token.EOF;
+        if (atEnd()) return tokens.getSource().eoi;
         return tokens.peek();
     }
 
-    public boolean peek(TokenType... tokenTypes) {
+    public boolean peek(String... tokenTypes) {
         consumeIgnoredTokens();
         return tokens.peek(tokenTypes);
     }
 
-    public boolean peek(TokenType tokenType) {
+    public boolean peek(String tokenType) {
         consumeIgnoredTokens();
         if (atEnd()) return false;
         return tokens.peek(tokenType);
@@ -73,13 +86,13 @@ public class BasicParser {
         return tokens.take();
     }
 
-    public boolean take(TokenType tokenType) {
+    public boolean take(String tokenType) {
         if (!peek(tokenType)) return false;
         tokens.take();
         return true;
     }
 
-    public Token consume(TokenType... tokenTypes) {
+    public Token consume(String... tokenTypes) {
         if (peek(tokenTypes)) {
             return tokens.take();
         } else {
@@ -87,32 +100,40 @@ public class BasicParser {
         }
     }
 
-    public Token require(TokenType tokenType, String message) {
+    public Token require(String tokenType, String message) {
         if (!peek(tokenType)) {
-            throw new ParseException(fileId(), "%s: expected %s".formatted(message, Text.repr(tokenType)), location());
+            var diag = new Diagnostic()
+                    .note(message)
+                    .note("expected %s".formatted(Text.repr(tokenType)))
+                    .highlight(currentToken().span);
+            throw new ParseException(diag);
         }
         return take();
     }
 
     public String lex(Location start, Location end) {
-        var subseq = tokens.source.subSequence(start.index, end.index);
+        var subseq = tokens.content().subSequence(start.index, end.index);
         return subseq.toString();
     }
 
-    public String fileId() {
-        return tokens.getFileId();
+    public String sourceId() {
+        return tokens.getSource().id;
     }
 
     // "pushes" the types onto the ignored type stack until this closable closes
-    public IgnoredTypeGuard ignoreTypes(TokenType... types) {
+    public IgnoredTypeGuard ignoreTypes(String... types) {
         return new IgnoredTypeGuard(types);
     }
 
+    public Spanned restSpan() {
+        return currentToken().span().through(source().eoi);
+    }
+
     public class IgnoredTypeGuard implements SafeAutoClosable {
-        public final TokenType[] ignoredTypes;
+        public final String[] ignoredTypes;
         private final boolean[] preExistingTypes;
 
-        public IgnoredTypeGuard(TokenType[] ignoredTypes) {
+        public IgnoredTypeGuard(String[] ignoredTypes) {
             this.ignoredTypes = ignoredTypes;
             this.preExistingTypes = new boolean[ignoredTypes.length];
             for (int i = 0; i < ignoredTypes.length; i++) {

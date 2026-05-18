@@ -1,49 +1,53 @@
 package edu.montana.notch.chisel;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import bigsky.notch.util.BetterList;
+import bigsky.notch.util.Pair;
 
-import static edu.montana.notch.util.Text.repr;
+import java.util.*;
+
+import static edu.montana.bigsky.notch.util.Text.repr;
+import static edu.montana.bigsky.notch.util.Pair.pair;
 
 public class Tokenizer {
-    protected final String fileId;
-    protected final CharSequence src;
+    protected final Source source;
     protected Location loc = new Location();
-    protected List<TokenType> tokenTypes = new LinkedList<>();
+    protected Location start, end;
+    protected List<Pair<String, TokenType>> tokenTypes = new LinkedList<>();
 
     public Tokenizer() {
-        fileId = null;
-        src = null;
+        source = null;
     }
 
-    protected Tokenizer(String fileId, CharSequence src, Location location) {
-        this.fileId = Objects.requireNonNull(fileId);
-        this.src = Objects.requireNonNull(src);
+    protected Tokenizer(Source source, Location location) {
+        this.source = source;
         this.loc = location;
     }
 
-    public Tokenizer create(String fileId, CharSequence src) {
-        return create(fileId, src, new Location());
+    public Tokenizer create(Source source) {
+        return create(source, new Location());
     }
 
-    public Tokenizer create(String fileId, CharSequence src, Location start) {
-        var out = new Tokenizer(fileId, src, start);
+    public Tokenizer create(Source source, Location start) {
+        var out = new Tokenizer(source, start);
         out.tokenTypes.addAll(tokenTypes);
         return out;
     }
 
-    public Tokenizer withTokenType(TokenType type) {
+    public Tokenizer withTokenType(String name, TokenType type) {
         Objects.requireNonNull(type);
-        tokenTypes.add(type);
+        tokenTypes.add(pair(name, type));
         return this;
     }
 
-    public Tokenizer withTokenTypes(TokenType... types) {
+    public Tokenizer withTokenTypes(String name, TokenType... types) {
         for (TokenType type : types) {
-            withTokenType(type);
+            withTokenType(name, type);
         }
+        return this;
+    }
+
+    public Tokenizer withTokenTypes(Pair<String, TokenType>... types) {
+        tokenTypes.addAll(Arrays.asList(types));
         return this;
     }
 
@@ -52,19 +56,20 @@ public class Tokenizer {
     public Token nextToken() throws TokenizeException {
         if (peekedToken != null) {
             var out = peekedToken;
-            loc = out.end;
             peekedToken = null;
+            loc = out.end();
             return out;
         }
 
-        var start = loc;
+        Location start;
         for (var tt : tokenTypes) {
-            var token = tt.tokenize(this);
-            if (token != null) {
-                return token;
-            } else {
-                loc = start;
-            }
+            start = loc;
+
+            var tokenData = tt.second().tokenize(this);
+            if (tokenData == null) continue;
+
+            Token token = createToken(tt, start, tokenData);
+            return token;
         }
         return null;
     }
@@ -74,44 +79,62 @@ public class Tokenizer {
             return peekedToken;
         }
 
-        var start = loc;
+        Location start;
         for (var tt : tokenTypes) {
-            var token = tt.tokenize(this);
+            start = loc;
+
+            var tokenData = tt.second().tokenize(this);
+            if (tokenData == null) continue;
+
+            final var token = createToken(tt, start, tokenData);
+            peekedToken = token;
             loc = start;
-            if (token != null) {
-                peekedToken = token;
-                return token;
-            }
+            return token;
         }
         return null;
     }
 
-    public TokenStream tokenize(String fileId, CharSequence src, Location start, TokenType... terminalTypes) throws TokenizeException {
-        var tokenizer = create(fileId, src, start);
+    private Token createToken(Pair<String, TokenType> tt, Location start, TokenData data) {
+        Objects.requireNonNull(data, "cannot create a token with null data");
+        String tokenType = data.tokenType();
+        if (tokenType == null) tokenType = tt.first();
+        final var span = new Span(source, start, loc);
+        final var token = new Token(span, tokenType, data.value());
+        return token;
+    }
+
+    public TokenStream tokenize(Source source, Location start, String... terminalTypes) throws TokenizeException {
+        var tokenizer = create(source, start);
         return tokenizer.tokenize(terminalTypes);
     }
 
-    public TokenStream tokenize(String fileId, CharSequence src, TokenType... terminalTypes) throws TokenizeException {
-        var tokenizer = create(fileId, src);
+    public TokenStream tokenize(Source source, String... terminalTypes) throws TokenizeException {
+        var tokenizer = create(source);
         return tokenizer.tokenize(terminalTypes);
     }
 
-    public TokenStream tokenize(TokenType... terminalTokenTypes) throws TokenizeException {
-        if (src == null) {
-            throw new TokenizeException(Location.SOF, "this tokenizer is a template, it cannot tokenize things");
+    public TokenStream tokenize(String... terminalTokenTypes) throws TokenizeException {
+        if (source == null) {
+            final var diag = new Diagnostic();
+            diag.highlight(currentCharSpan());
+            diag.note("this is a template tokenizer, it cannot tokenize things");
+            throw new TokenizeException(diag);
         }
 
-        var out = new ArrayList<Token>();
+        var out = new BetterList<Token>();
 
-        var start = location();
+        var start = currentCharSpan();
         outer:
-        while (start.index < src.length()) {
+        while (start.start().index < source.content.length()) {
             var token = peekToken();
             if (token == null) {
-                throw new TokenizeException(start, "expected token, found " + repr(peek()));
+                final var diag = new Diagnostic();
+                diag.highlight(currentCharSpan());
+                diag.note("unexpected character " + repr(peek()));
+                throw new TokenizeException(diag);
             }
 
-            for (TokenType terminalType : terminalTokenTypes) {
+            for (String terminalType : terminalTokenTypes) {
                 if (token.type.equals(terminalType)) {
                     break outer;
                 }
@@ -120,14 +143,22 @@ public class Tokenizer {
             token = nextToken(); // it was peeked so we can just cache this, we should always get the same token
             out.add(token);
 
-            var loc = location();
-            if (start.index == loc.index) {
-                throw new TokenizeException(start, "infinite loop detected!");
+            var loc = currentCharSpan();
+            if (start.start().index == loc.start().index) {
+                final var diag = new Diagnostic();
+                diag.note("infinite loop detected");
+                diag.note("found a %s token here, but did not advance the input".formatted(repr(token.type)));
+                diag.note("here's the associated token data: %s".formatted(repr(token.data)));
+                throw new TokenizeException(diag, "infinite loop");
             }
             start = loc;
         }
 
-        return new TokenStream(fileId, src, out);
+        return new TokenStream(source, out);
+    }
+
+    public Span currentCharSpan() {
+        return new Span(source, loc, loc);
     }
 
     public Location location() {
@@ -139,12 +170,12 @@ public class Tokenizer {
     }
 
     public boolean atEnd() {
-        return loc.index >= src.length();
+        return loc.index >= content().length();
     }
 
     public char peek() {
         if (atEnd()) return 0;
-        return src.charAt(loc.index);
+        return content().charAt(loc.index);
     }
 
     public boolean peek(char... cs) {
@@ -156,9 +187,9 @@ public class Tokenizer {
     }
 
     public boolean peek(CharSequence cs) {
-        if (loc.index + cs.length() > src.length()) return false;
+        if (loc.index + cs.length() > content().length()) return false;
         for (int i = 0; i < cs.length(); ) {
-            char c = src.charAt(loc.index + i);
+            char c = content().charAt(loc.index + i);
             if (c != cs.charAt(i)) {
                 return false;
             }
@@ -169,7 +200,7 @@ public class Tokenizer {
 
     public char take() {
         if (atEnd()) return 0;
-        var c = src.charAt(loc.index);
+        var c = content().charAt(loc.index);
         loc = loc.next(c);
         return c;
     }
@@ -202,12 +233,12 @@ public class Tokenizer {
     }
 
     public boolean take(CharSequence cs) {
-        if (loc.index + cs.length() > src.length()) return false;
+        if (loc.index + cs.length() > content().length()) return false;
         Location end = loc;
         int i = 0;
         while (i < cs.length()) {
             char c = cs.charAt(i);
-            if (src.charAt(loc.index + i) != c) return false;
+            if (content().charAt(loc.index + i) != c) return false;
             i += Character.charCount(c);
             end = end.next(c);
         }
@@ -225,6 +256,7 @@ public class Tokenizer {
         return content.toString();
     }
 
+    /// returns null if end is not found
     public String trySeek(String end) {
         var content = new StringBuilder();
         while (!atEnd()) {
@@ -243,21 +275,24 @@ public class Tokenizer {
         return content.toString();
     }
 
-    public CharSequence source() {
-        return src;
+    public Source source() {
+        if (source == null) {
+            throw new IllegalStateException("this is a template tokenizer, it has not be instantiated with a source yet, please call .create!");
+        }
+        return source;
     }
 
-    public String fileId() {
-        return fileId;
+    public CharSequence content() {
+        return source().content;
     }
 
     @Override
     public String toString() {
-        String str = String.valueOf(src);
+        String str = String.valueOf(content());
         return str.substring(0, this.loc.index) + "*" + str.substring(this.loc.index);
     }
 
     public String lex(Location start, Location end) {
-        return src.subSequence(start.index, end.index).toString();
+        return source().content.subSequence(start.index, end.index).toString();
     }
 }

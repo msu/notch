@@ -1,34 +1,28 @@
 package edu.montana.notch.chisel;
 
 import edu.montana.notch.util.Text;
-import edu.montana.notch.chisel.type.TokenTypeBoundary;
 
 import java.util.Objects;
 
 public class Token implements Spanned {
-    public static final Token EOF = new Token(Location.EOF, Location.EOF, TokenTypeBoundary.EOF);
-    public static final Token SOF = new Token(Location.SOF, Location.SOF, TokenTypeBoundary.SOF);
-
-    public final Location start, end;
+    public final Span span;
     public final Object data;
-    public final TokenType type;
+    public final String type;
 
-    public Token(Location start, Location end, TokenType type) {
-        this.start = Objects.requireNonNull(start);
-        this.end = Objects.requireNonNull(end);
+    public Token(Span span, String type) {
+        this.span = Objects.requireNonNull(span);
         this.data = null;
         this.type = Objects.requireNonNull(type);
     }
 
-    public Token(Location start, Location end, TokenType type, Object data) {
-        this.start = Objects.requireNonNull(start);
-        this.end = Objects.requireNonNull(end);
+    public Token(Span span, String type, Object data) {
+        this.span = Objects.requireNonNull(span);
         this.data = data;
         this.type = Objects.requireNonNull(type);
     }
 
-    public Token withType(TokenType other) {
-        return new Token(start, end, other, data);
+    public Token withType(String tokenType) {
+        return new Token(span, tokenType, data);
     }
 
     public String str() {
@@ -45,11 +39,12 @@ public class Token implements Spanned {
 
     @Override
     public String toString() {
-        return "Token(at %s@%d %s@%d, %s, %s)".formatted(start.display(), start.index, end.display(), end.index, type, Text.repr("" + data));
+        return "Token(type=%s at %s@%d)".formatted(
+                Text.repr(type), span.source().id, span.start().index);
     }
 
     @Override
     public Span span() {
-        return new Span(start, end);
+        return span;
     }
 }

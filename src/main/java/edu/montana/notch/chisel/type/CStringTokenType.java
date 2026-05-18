@@ -1,18 +1,23 @@
 package edu.montana.notch.chisel.type;
 
+<<<<<<<< HEAD:src/main/java/edu/montana/notch/chisel/type/TokenTypeString.java
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.chisel.Tokenizer;
 import edu.montana.notch.chisel.TokenType;
 import edu.montana.notch.chisel.TokenizeException;
 import edu.montana.notch.util.Text;
+========
+import bigsky.notch.chisel.*;
+import bigsky.notch.util.Text;
+>>>>>>>> 00d0fae (new tokenizer api):src/main/java/edu/montana/notch/chisel/type/CStringTokenType.java
 
-public class TokenTypeString implements TokenType {
-    public static final TokenTypeString STR = new TokenTypeString();
+public class CStringTokenType implements TokenType {
+    public static final CStringTokenType STR = new CStringTokenType();
 
-    protected TokenTypeString() {}
+    protected CStringTokenType() {}
 
     @Override
-    public Token tokenize(Tokenizer t) throws TokenizeException {
+    public TokenData tokenize(Tokenizer t) throws TokenizeException {
         var start = t.location();
 
         if (!t.peek('"', '\'')) return null;
@@ -30,7 +35,10 @@ public class TokenTypeString implements TokenType {
                 content.append(c);
             } else {
                 if (t.atEnd()) {
-                    throw new TokenizeException(start, t.location(), "invalid escape, expected something after '\\'");
+                    final var diag = new Diagnostic();
+                    diag.highlight(new Span(t.source(), start, t.location()));
+                    diag.note("invalid escape, expected something after '\\'");
+                    throw new TokenizeException(diag);
                 }
 
                 c = t.take();
@@ -47,15 +55,21 @@ public class TokenTypeString implements TokenType {
                 } else if (c == '\'' && quote == '\'') {
                     content.append('\'');
                 } else {
-                    throw new TokenizeException(t.location(), "invalid escape " + Text.repr(c));
+                    final var diag = new Diagnostic();
+                    diag.highlight(new Span(t.source(), t.location()));
+                    diag.note("invalid escape " + Text.repr(c));
+                    throw new TokenizeException(diag);
                 }
             }
         }
 
         if (!t.take(quote)) {
-            throw new TokenizeException(start, t.location(), "unterminated string, expected the quote character " + quote);
+            final var diag = new Diagnostic();
+            diag.highlight(new Span(t.source(), t.location(), t.location()));
+            diag.note("unterminated string, expected the quote character " + quote);
+            throw new TokenizeException(diag);
         }
 
-        return new Token(start, t.location(), this, content.toString());
+        return new TokenData(content.toString());
     }
 }

@@ -1,13 +1,19 @@
 package edu.montana.notch.chisel.type;
 
+<<<<<<<< HEAD:src/main/java/edu/montana/notch/chisel/type/TokenTypeIdentifier.java
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.chisel.Tokenizer;
 import edu.montana.notch.chisel.TokenType;
+========
+import bigsky.notch.chisel.TokenData;
+import bigsky.notch.chisel.Tokenizer;
+import bigsky.notch.chisel.TokenType;
 
-public class TokenTypeIdentifier implements TokenType {
-    public static final TokenTypeIdentifier IDENT = new TokenTypeIdentifier();
+public class CIdentifierTokenType implements TokenType {
+    public static final CIdentifierTokenType IDENT = new CIdentifierTokenType();
+>>>>>>>> 00d0fae (new tokenizer api):src/main/java/edu/montana/notch/chisel/type/CIdentifierTokenType.java
 
-    private TokenTypeIdentifier() {}
+    private CIdentifierTokenType() {}
 
     protected boolean isStartChar(char c) {
         if (Character.isLetter(c)) return true;
@@ -24,9 +30,7 @@ public class TokenTypeIdentifier implements TokenType {
     }
 
     @Override
-    public Token tokenize(Tokenizer t) {
-        var start = t.location();
-
+    public TokenData tokenize(Tokenizer t) {
         if (!isStartChar(t.peek())) return null;
 
         var content = new StringBuilder();
@@ -34,11 +38,6 @@ public class TokenTypeIdentifier implements TokenType {
             content.append(t.take());
         } while (isChar(t.peek()));
 
-        return new Token(start, t.location(), this, content.toString());
-    }
-
-    @Override
-    public String toString() {
-        return "Identifier";
+        return new TokenData(content.toString());
     }
 }
