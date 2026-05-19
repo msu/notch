@@ -59,7 +59,9 @@ public class NotchShell {
 
         LineReader reader = LineReaderBuilder.builder()
                 .terminal(terminal)
+                .parser(new NotchJLineParser())
                 .variable(LineReader.HISTORY_SIZE, 500)
+                .variable(LineReader.SECONDARY_PROMPT_PATTERN, "      > ")
                 .option(LineReader.Option.CASE_INSENSITIVE, true)
                 .option(LineReader.Option.HISTORY_INCREMENTAL, true)
                 .highlighter(new TerminalSyntaxHighlighter())
@@ -102,7 +104,7 @@ public class NotchShell {
     static class RootCommand implements Runnable {
         @Override
         public void run() {
-            //Root cmd not executed needed for Command Specification
+            //Root cmd not executed, needed for Command Specification
         }
     }
 }

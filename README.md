@@ -33,21 +33,3 @@ yes, I did name this after another horse, sue me
 | stmt-then     | `block \| 'then' expr`                                 |                          |
 | if-statement  | `'if' expr if-then [stmt-fallback]`                    |                          |
 | for-statement | `'for' destruct 'in' expr [stmt-then] [stmt-fallback]` |                          |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

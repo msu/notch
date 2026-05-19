@@ -56,7 +56,9 @@ public final class NotchCommand {
 
     private static void printCaret(String line, Location loc) {
         if (loc.isSentinel()) return;
-        System.out.println("  " + line);
+        String[] lines = line.split("\n", -1);
+        int idx = Math.max(0, Math.min(loc.line - 1, lines.length - 1));
+        System.out.println("  " + lines[idx]);
         System.out.println("  " + " ".repeat(Math.max(0, loc.column - 1)) + "^");
     }
 
