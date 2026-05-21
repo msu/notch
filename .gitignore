@@ -1,3 +1,14 @@
 target/
 /tmp/
 /.idea/
+notch.sh
+
+# Jekyll docs site (notch/docs/)
+docs/_site/
+docs/.jekyll-cache/
+docs/.jekyll-metadata
+docs/Gemfile.lock
+docs/vendor/
+docs/.bundle/
+docs/.sass-cache/
+docs/node_modules/

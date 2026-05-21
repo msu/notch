@@ -2,8 +2,12 @@ package edu.montana.notch.console;
 
 import edu.montana.notch.console.commands.ClearCommand;
 import edu.montana.notch.console.commands.ExitCommand;
+import edu.montana.notch.console.commands.HistoryCommand;
 import edu.montana.notch.console.commands.LogsCommand;
 import edu.montana.notch.console.commands.NotchCommand;
+import edu.montana.notch.console.commands.ResetCommand;
+import edu.montana.notch.console.commands.SaveCommand;
+import edu.montana.notch.console.commands.WriteCommand;
 import edu.montana.notch.console.syntaxhighlighter.TerminalSyntaxHighlighter;
 import edu.montana.notch.logging.NotchLogging;
 import org.jline.reader.LineReader;
@@ -15,6 +19,8 @@ import org.jline.terminal.TerminalBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
+
+import java.nio.file.Paths;
 
 import static edu.montana.notch.util.Exceptions.safelyEval;
 
@@ -50,23 +56,34 @@ public class NotchShell {
     }
 
     private void startJLineTerminal(Terminal terminal) {
+        ShellContext ctx = new ShellContext(terminal);
+
         CommandLine commandLine = new CommandLine(new RootCommand())
-                .addSubcommand("exit",  new ExitCommand(terminal))
-                .addSubcommand("clear", new ClearCommand(terminal))
-                .addSubcommand("logs",  new LogsCommand())
-                .addSubcommand("help",  new CommandLine.HelpCommand())
+                .addSubcommand("exit",    new ExitCommand(ctx))
+                .addSubcommand("clear",   new ClearCommand(ctx))
+                .addSubcommand("logs",    new LogsCommand(ctx))
+                .addSubcommand("help",    new CommandLine.HelpCommand())
+                .addSubcommand("reset",   new ResetCommand(ctx))
+                .addSubcommand("history", new HistoryCommand(ctx))
+                .addSubcommand("save",    new SaveCommand(ctx))
+                .addSubcommand("write",   new WriteCommand(ctx))
                 .setCaseInsensitiveEnumValuesAllowed(true);
+        ctx.commandLine = commandLine;
 
         LineReader reader = LineReaderBuilder.builder()
                 .terminal(terminal)
                 .parser(new NotchJLineParser())
                 .variable(LineReader.HISTORY_SIZE, 500)
+                .variable(LineReader.HISTORY_FILE,
+                        Paths.get(System.getProperty("user.home"), ".notch_history"))
                 .variable(LineReader.SECONDARY_PROMPT_PATTERN, "      > ")
                 .option(LineReader.Option.CASE_INSENSITIVE, true)
                 .option(LineReader.Option.HISTORY_INCREMENTAL, true)
                 .highlighter(new TerminalSyntaxHighlighter())
                 .completer(new PicocliCompleter(commandLine))
                 .build();
+        ctx.reader = reader;
+        NotchCommand.storeContext(reader, ctx);
 
         if (!immediate) {
             log.info("Notch: Hit [enter] to start a terminal");

@@ -1,21 +1,21 @@
 package edu.montana.notch.console.commands;
 
-import org.jline.terminal.Terminal;
+import edu.montana.notch.console.ShellContext;
 import picocli.CommandLine.Command;
 
 @Command(name = "exit", description = "Exit the Notch shell.")
 public class ExitCommand implements Runnable {
 
-    private final Terminal terminal;
+    private final ShellContext ctx;
 
-    public ExitCommand(Terminal terminal) {
-        this.terminal = terminal;
+    public ExitCommand(ShellContext ctx) {
+        this.ctx = ctx;
     }
 
     @Override
     public void run() {
-        terminal.writer().println("Goodbye!");
-        terminal.flush();
+        ctx.terminal.writer().println("Goodbye!");
+        ctx.terminal.flush();
         System.exit(0);
     }
 }
