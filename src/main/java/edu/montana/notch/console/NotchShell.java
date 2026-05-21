@@ -3,6 +3,7 @@ package edu.montana.notch.console;
 import edu.montana.notch.console.commands.ClearCommand;
 import edu.montana.notch.console.commands.ExitCommand;
 import edu.montana.notch.console.commands.HistoryCommand;
+import edu.montana.notch.console.commands.LoadCommand;
 import edu.montana.notch.console.commands.LogsCommand;
 import edu.montana.notch.console.commands.NotchCommand;
 import edu.montana.notch.console.commands.ResetCommand;
@@ -67,6 +68,7 @@ public class NotchShell {
                 .addSubcommand("history", new HistoryCommand(ctx))
                 .addSubcommand("save",    new SaveCommand(ctx))
                 .addSubcommand("write",   new WriteCommand(ctx))
+                .addSubcommand("load",    new LoadCommand(ctx))
                 .setCaseInsensitiveEnumValuesAllowed(true);
         ctx.commandLine = commandLine;
 

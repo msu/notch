@@ -35,12 +35,20 @@ public final class NotchCommand {
     }
 
     public static void run(LineReader reader, String line) {
-        if (line == null || line.isEmpty()) return;
+        runWithFileId(reader, "jackknife-cli", line, true);
+    }
+
+    public static void runWithoutRecording(LineReader reader, String fileId, String content) {
+        runWithFileId(reader, fileId, content, false);
+    }
+
+    private static void runWithFileId(LineReader reader, String fileId, String content, boolean recordOnSuccess) {
+        if (content == null || content.isEmpty()) return;
 
         NotchRuntime runtime = lookupOrCreateRuntime(reader);
 
         try {
-            TokenStream tokenStream = Notch.TOKENIZER.create("jackknife-cli", line).tokenize();
+            TokenStream tokenStream = Notch.TOKENIZER.create(fileId, content).tokenize();
             NotchParser parser = new NotchParser(tokenStream);
             NotchElement element = parser.parse();
             if (element instanceof NotchExpression expr) {
@@ -49,13 +57,13 @@ public final class NotchCommand {
             } else if (element instanceof NotchStatement stmt) {
                 runtime.execute(stmt);
             }
-            appendIfRecording(reader, line);
+            if (recordOnSuccess) appendIfRecording(reader, content);
         } catch (TokenizeException e) {
             System.out.println("error at " + e.start.display() + ": " + e.getMessage());
-            printCaret(line, e.start);
+            printCaret(content, e.start);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if (e instanceof Spanned s) printCaret(line, s.span().start());
+            if (e instanceof Spanned s) printCaret(content, s.span().start());
         }
     }
 
