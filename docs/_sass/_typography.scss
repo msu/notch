@@ -1,0 +1,76 @@
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: var(--spacing);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.125rem; }
+h6 { font-size: 1rem; }
+
+p {
+  margin-top: 0;
+  margin-bottom: var(--spacing);
+}
+
+a {
+  color: var(--primary-inverse);
+  text-decoration: underline;
+  text-decoration-color: var(--primary-underline);
+  text-underline-offset: 0.125em;
+  transition: color var(--transition), text-decoration-color var(--transition);
+
+  &:hover {
+    color: var(--primary-inverse);
+    text-decoration-color: var(--primary-inverse);
+  }
+
+  &:visited {
+    color: var(--primary-inverse);
+  }
+}
+
+strong, b {
+  font-weight: 700;
+}
+
+em, i {
+  font-style: italic;
+}
+
+small {
+  font-size: 0.875em;
+}
+
+sub, sup {
+  font-size: 0.75em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+blockquote {
+  margin: var(--spacing) 0;
+  padding: var(--spacing) var(--spacing) var(--spacing) calc(var(--spacing) * 1.5);
+  border-left: 0.25rem solid var(--border-muted);
+  color: var(--text-muted);
+
+  footer {
+    margin-top: calc(var(--spacing) * 0.5);
+    font-size: 0.875em;
+  }
+}
+

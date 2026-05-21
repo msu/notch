@@ -1,0 +1,62 @@
+<header class="mobile-header">
+    {% if page.collection == 'syntax' %}
+    <a href="{{ '/syntax/' | relative_url }}" class="mobile-name">Syntax</a>
+    {% elsif page.collection == 'jvm' %}
+    <a href="{{ '/jvm/' | relative_url }}" class="mobile-name">JVM</a>
+    {% elsif page.collection == 'repl' %}
+    <a href="{{ '/repl/' | relative_url }}" class="mobile-name">REPL</a>
+    {% elsif page.collection == 'chisel' %}
+    <a href="{{ '/chisel/' | relative_url }}" class="mobile-name">Chisel</a>
+    {% else %}
+    <span class="mobile-name">{{ site.title }}</span>
+    {% endif %}
+    <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="main-nav">
+        <span></span>
+        <span></span>
+    </button>
+</header>
+
+<div class="nav-overlay" aria-hidden="true"></div>
+
+{%- comment -%}
+Collection order + display labels for the docs sidebar. Index-aligned arrays:
+each i in `docs_collections` pairs with i in `collection_labels` / `collection_first_url`.
+A single loop renders every collection so users can switch sections without
+returning to the home page (Stripe / Astro / Tailwind pattern).
+{%- endcomment -%}
+{% assign docs_collections = "syntax,jvm,repl,chisel,templates,json5" | split: "," %}
+{% assign collection_labels = "Syntax,JVM,REPL,Chisel,Templates,JSON5" | split: "," %}
+{% assign collection_first_url = "/syntax/overview/,/jvm/overview/,/repl/getting-started/,/chisel/overview/,/templates/overview/,/json5/overview/" | split: "," %}
+
+{% assign is_docs_page = false %}
+{% for coll in docs_collections %}
+  {% if page.collection == coll %}{% assign is_docs_page = true %}{% endif %}
+{% endfor %}
+
+{% if is_docs_page %}
+<nav id="main-nav" class="docs-nav" aria-label="Documentation navigation" role="navigation">
+    <div class="nav-content">
+        {% for coll in docs_collections %}
+            {% assign idx = forloop.index0 %}
+            {% assign label = collection_labels[idx] %}
+            {% assign first_url = collection_first_url[idx] %}
+            {% assign is_current_section = false %}
+            {% if page.collection == coll %}{% assign is_current_section = true %}{% endif %}
+            {% assign chapters = site[coll] | sort: "order" %}
+            <section class="docs-nav-section{% if is_current_section %} current{% endif %}">
+                <h2 class="name">
+                    <a href="{{ first_url | relative_url }}">{{ label }}</a>
+                </h2>
+                <ul class="docs-nav-list" role="menubar">
+                    {% for post in chapters %}
+                    <li class="docs-nav-chapter{% if page.url == post.url %} active{% endif %}" role="none">
+                        <a href="{{ post.url | relative_url }}" role="menuitem">{{ post.title }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endfor %}
+    </div>
+    <div class="sidebar-resize-indicator" aria-hidden="true"></div>
+</nav>
+{% endif %}

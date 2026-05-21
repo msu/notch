@@ -1,0 +1,24 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Notch",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Cross-platform (JVM)",
+  "description": "{{ site.description }}",
+  "url": "{{ site.url }}"
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+<link rel="icon" type="image/svg+xml" href="{{ '/assets/images/favicon.svg' | relative_url }}">
+
+<script>
+(function(){
+  var d=document.documentElement;
+  if(localStorage.getItem('sidebar-collapsed')==='true')d.classList.add('sidebar-collapsed');
+})();
+</script>

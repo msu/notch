@@ -1,0 +1,29 @@
+<div class="docs-toolbar" role="toolbar" aria-label="Documentation tools">
+  <button class="toolbar-btn sidebar-toggle" type="button" aria-label="Toggle sidebar" aria-expanded="true">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false">
+      <path d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/>
+    </svg>
+  </button>
+  <button class="toolbar-btn search-btn" type="button" aria-label="Search documentation">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false">
+      <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/>
+    </svg>
+  </button>
+  <a href="{{ '/' | relative_url }}" class="toolbar-home" aria-label="Notch home">
+    <svg class="brand-mark" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M3 3 H9 L12 9 L15 3 H21 V21 H3 Z" fill="#BC5215"/>
+    </svg>
+    <span class="brand-wordmark">Notch</span>
+  </a>
+</div>
+
+<div class="search-overlay" hidden role="dialog" aria-modal="true" aria-label="Search documentation">
+  <div class="search-container">
+    <div class="search-header">
+      <input type="search" class="search-input" placeholder="Search docs..." aria-label="Search documentation" autocomplete="off">
+      <kbd>Esc</kbd>
+    </div>
+    <ul class="search-results" aria-live="polite"></ul>
+    <div class="search-empty" hidden>No results found.</div>
+  </div>
+</div>

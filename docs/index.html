@@ -1,0 +1,48 @@
+---
+layout: default
+title: Notch
+---
+
+<section class="hero">
+  <h1>Notch</h1>
+  <p class="tagline">{{ site.tagline }}</p>
+  <p>
+    Notch is a powerful and customizable scripting and programming language. It was built for use with the Sunny templating engine but is not at all coupled with it.
+  </p>
+  <p>
+    It is intended to be used with the Java ecosystem and has sane integrations with JVM types.
+  </p>
+</section>
+
+<section class="design-goals">
+  <h2>Design goals</h2>
+  <ul>
+    <li>seamless JVM-type integration</li>
+    <li>simplicity for ease of reading and writing</li>
+    <li>sane <code>null</code> propagation and defined semantics for weird type interactions</li>
+    <li>outstanding developer experience</li>
+    <li>syntax extensibility</li>
+  </ul>
+</section>
+
+<section class="install">
+  <h2>Install</h2>
+  <p>Notch is a Maven project. Clone the repository and build with Maven:</p>
+  <pre><code>git clone https://github.com/msu/notch.git
+cd notch
+mvn package</code></pre>
+  <p>Then run the REPL:</p>
+  <pre><code>java -jar target/notch-1.0-SNAPSHOT.jar</code></pre>
+</section>
+
+<section class="reference-links">
+  <h2>Documentation</h2>
+  <ul>
+    <li><a href="{{ '/syntax/overview/' | relative_url }}">Syntax</a> - primary expressions, operators, statements, closures.</li>
+    <li><a href="{{ '/jvm/overview/' | relative_url }}">JVM integration</a> - calling Java methods, type coercions.</li>
+    <li><a href="{{ '/repl/getting-started/' | relative_url }}">REPL</a> - interactive shell, history, meta-commands.</li>
+    <li><a href="{{ '/chisel/overview/' | relative_url }}">Chisel</a> - the language-agnostic foundation Notch is built on.</li>
+    <li><a href="{{ '/templates/overview/' | relative_url }}">Templates</a> - the built-in template engine for rendering text with embedded Notch expressions.</li>
+    <li><a href="{{ '/json5/overview/' | relative_url }}">JSON5</a> - JSON5 parser and a small query language.</li>
+  </ul>
+</section>

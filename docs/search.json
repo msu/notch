@@ -1,0 +1,19 @@
+---
+layout: null
+---
+[
+{% assign sorted_syntax = site.syntax | sort: "order" %}
+{% assign sorted_jvm = site.jvm | sort: "order" %}
+{% assign sorted_repl = site.repl | sort: "order" %}
+{% assign sorted_chisel = site.chisel | sort: "order" %}
+{% assign sorted_templates = site.templates | sort: "order" %}
+{% assign sorted_json5 = site.json5 | sort: "order" %}
+{% assign all_docs = sorted_syntax | concat: sorted_jvm | concat: sorted_repl | concat: sorted_chisel | concat: sorted_templates | concat: sorted_json5 %}
+{% for doc in all_docs %}
+  {
+    "title": {{ doc.title | jsonify }},
+    "url": "{{ doc.url | relative_url }}",
+    "content": {{ doc.content | strip_html | normalize_whitespace | truncate: 5000 | jsonify }}
+  }{% unless forloop.last %},{% endunless %}
+{% endfor %}
+]

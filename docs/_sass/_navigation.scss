@@ -1,0 +1,254 @@
+#main-nav {
+  position: fixed;
+  // Sit below the docs toolbar (matches `.docs-toc-inner { top: 52px }`),
+  // so the left sidebar visually aligns with the right TOC.
+  top: var(--toolbar-height);
+  left: 0;
+  bottom: 0;
+  width: var(--nav-width);
+  // Tighter top/bottom padding since we no longer auto-center the list.
+  padding: 1.5rem 1rem 2rem;
+  // Transparent so the sidebar inherits the page bg. On collections with
+  // only a few chapters this hides the empty space below the list.
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  z-index: 100;
+}
+
+// Each collection (Syntax / JVM / REPL / Chisel) is rendered as its own
+// `.docs-nav-section`. Sections stack vertically with a small gap so the
+// section boundaries are scannable but quiet. Only the section matching the
+// current page's collection gets `.current` (visually emphasized heading).
+.docs-nav-section + .docs-nav-section {
+  margin-top: 1.25rem;
+}
+
+#main-nav .name {
+  // Small-caps muted heading, parallel to the right TOC's
+  // `.docs-toc-heading` ("ON THIS PAGE"). No background pill.
+  margin: 0;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+// Current section's heading: bump from muted to full text colour so users
+// can see at a glance which collection contains the page they're on.
+.docs-nav-section.current .name a {
+  color: var(--text) !important;
+}
+
+#main-nav ul {
+  flex-direction: column;
+  // No vertical auto-margin: the chapter list sits right under the heading
+  // instead of being pushed to the middle of the sidebar.
+  margin: 0;
+  padding: 0;
+}
+
+#main-nav li {
+  padding: 0.5rem 0;
+}
+
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--mobile-header-height);
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-muted);
+  z-index: 200;
+  padding: 0 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home-layout .mobile-header {
+  display: none !important;
+}
+
+.mobile-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.5rem;
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+  gap: 5px;
+
+  span {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background: var(--text);
+    transition: all var(--transition-state);
+    transform-origin: center;
+  }
+
+  &.active {
+    span:nth-child(1) {
+      transform: translateY(4px) rotate(45deg);
+    }
+    span:nth-child(2) {
+      transform: translateY(-4px) rotate(-45deg);
+    }
+  }
+}
+
+.nav-content {
+  display: contents;
+}
+
+.nav-overlay {
+  display: none;
+}
+
+// ===== SIDEBAR RESIZE HANDLE =====
+
+.sidebar-resize-indicator {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 200;
+
+  &:hover::after, &.dragging::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background: var(--primary-inverse);
+    opacity: 0.4;
+  }
+}
+
+// ===== RESPONSIVE NAV STYLES =====
+
+@media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  #main-nav {
+    width: 100%;
+    max-height: 70vh;
+    padding-top: var(--mobile-header-height);
+    border: none;
+    border-bottom: 1px solid var(--border-muted);
+    // Mobile dropdown needs a solid bg so it doesn't bleed through to the
+    // underlying page content (the desktop rule is transparent).
+    background: var(--bg);
+    transform: translateY(-100%);
+    transition: transform var(--transition-state);
+    overflow-y: auto;
+
+    &.open {
+      transform: translateY(0);
+    }
+  }
+
+  .nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 99;
+
+    &.visible {
+      display: block;
+    }
+  }
+
+  #main-nav ul {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    margin: 0;
+  }
+}
+
+// ===== SIDEBAR COLLAPSE (desktop) =====
+// When the hamburger collapses the left sidebar:
+//   - left sidebar slides off-screen (transform)
+//   - main loses its left margin so the toolbar expands to full viewport width
+//   - docs-layout caps at 1100px and centers, keeping content readable
+//   - right TOC hides too (both "sidebars" go away together)
+//
+// Footer is independent: it's already full-width via _sass/_footer.scss, so
+// no sidebar-collapsed override is needed for it.
+
+@media (min-width: 769px) {
+  // All elements that change between expanded/collapsed states share the
+  // same var(--transition-state) timing so the whole shift animates as a single visual
+  // motion.
+  //
+  // IMPORTANT: do not use `margin: 0 auto` for centering across the state
+  // change. CSS does not interpolate between numeric values and `auto`, so
+  // auto margins always snap instantly while main's margin-left animates.
+  // That snap is what felt like a jump on the content shift. Instead, the
+  // collapsed state uses horizontal padding on .docs-layout to push the
+  // content column inward by an animatable, numeric amount.
+  #main-nav {
+    transition: transform var(--transition-state);
+  }
+
+  .docs-page main {
+    transition: margin-left var(--transition-state);
+  }
+
+  .docs-layout {
+    transition: padding var(--transition-state);
+  }
+
+  html.sidebar-collapsed #main-nav {
+    transform: translateX(-100%);
+  }
+
+  html.sidebar-collapsed main {
+    margin-left: 0;
+  }
+
+  html.sidebar-collapsed .docs-toc {
+    display: none;
+  }
+
+  // Center the content column via padding (animatable) rather than
+  // max-width + auto margins (not animatable). The formula gives equal
+  // left/right padding equal to (parent width - reading column width) / 2,
+  // clamped at 0 so narrower viewports just fill to the edges.
+  // (var(--content-max-width) + 4rem) accounts for .docs-content's own
+  // horizontal padding so the inner prose ends up at exactly 72ch.
+  html.sidebar-collapsed .docs-layout {
+    padding-left: max(0px, calc((100% - var(--content-max-width) - 4rem) / 2));
+    padding-right: max(0px, calc((100% - var(--content-max-width) - 4rem) / 2));
+  }
+}

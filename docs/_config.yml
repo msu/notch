@@ -1,0 +1,98 @@
+# Site settings
+title: Notch
+tagline: "A powerful, customizable scripting and programming language for the JVM."
+description: "Notch is a powerful and customizable scripting and programming language built for the Java ecosystem. Seamless JVM integration, sane null propagation, syntax extensibility."
+author: Notch contributors
+
+# Build settings
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# URL settings
+url: "https://notch.cs.montana.edu"
+baseurl: ""
+
+# Build exclusions
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/
+  - .sass-cache/
+  - .jekyll-cache/
+  - README.md
+
+# Markdown settings - ASCII only enforced via smartquotes:false
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  smart_quotes: ["apos", "apos", "quot", "quot"]
+
+# Sass/SCSS settings
+sass:
+  style: compressed
+
+# Permalink structure
+permalink: pretty
+
+# Collections
+collections:
+  syntax:
+    output: true
+    permalink: /syntax/:name/
+  jvm:
+    output: true
+    permalink: /jvm/:name/
+  repl:
+    output: true
+    permalink: /repl/:name/
+  chisel:
+    output: true
+    permalink: /chisel/:name/
+  templates:
+    output: true
+    permalink: /templates/:name/
+  json5:
+    output: true
+    permalink: /json5/:name/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "syntax"
+    values:
+      layout: "docs"
+      collection: "syntax"
+  - scope:
+      path: ""
+      type: "jvm"
+    values:
+      layout: "docs"
+      collection: "jvm"
+  - scope:
+      path: ""
+      type: "repl"
+    values:
+      layout: "docs"
+      collection: "repl"
+  - scope:
+      path: ""
+      type: "chisel"
+    values:
+      layout: "docs"
+      collection: "chisel"
+  - scope:
+      path: ""
+      type: "templates"
+    values:
+      layout: "docs"
+      collection: "templates"
+  - scope:
+      path: ""
+      type: "json5"
+    values:
+      layout: "docs"
+      collection: "json5"

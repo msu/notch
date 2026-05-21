@@ -1,0 +1,218 @@
+// ===== DOCS NAV (replaces site nav on docs pages) =====
+
+#main-nav.docs-nav {
+  text-align: left;
+  overflow-y: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .name {
+    white-space: normal;
+
+    a {
+      // Inherit the small-caps muted-gray style from `#main-nav .name`.
+      color: var(--text-muted);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--text);
+        opacity: 1;
+      }
+    }
+  }
+}
+
+.docs-nav-list {
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+#main-nav .docs-nav-chapter {
+  padding: 0;
+
+  > a {
+    display: block;
+    // Tighter than 0.3rem to match the right TOC's compact item rhythm
+    // (`.docs-toc-list li a { padding: 0.2rem 0 0.2rem 0.75rem }`).
+    padding: 0.25rem 0.75rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    border-left: 3px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: var(--primary);
+      color: var(--text);
+    }
+  }
+
+  &.active > a {
+    border-left-color: var(--text);
+    background: var(--primary);
+    color: var(--text);
+    font-weight: 500;
+  }
+}
+
+// ===== CONTENT =====
+
+@media (min-width: 769px) {
+  body.docs-page {
+    padding: 0;
+  }
+}
+
+.docs-content {
+  // Fill the available flex space inside .docs-layout (instead of sizing to
+  // its intrinsic .docs-body width). This makes .docs-content's right edge
+  // sit at the TOC's left edge, so the next arrow's right padding gutter is
+  // visually adjacent to content rather than glued to the TOC. min-width:0
+  // is the standard flex-shrinking-correctly idiom -- without it, long
+  // unbreakable content (code blocks, tables) can blow out the column.
+  // Prose stays readable via .docs-body's own max-width: var(--content-max-width).
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 2rem clamp(1rem, 3vw, 2rem);
+  transition: max-width var(--transition-state), margin var(--transition-state);
+}
+
+.docs-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-muted);
+
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .docs-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 0;
+  }
+}
+
+.docs-body {
+  line-height: 1.8;
+  max-width: var(--content-max-width);
+
+  h2 {
+    margin-top: 2rem;
+  }
+
+  pre {
+    margin: 1rem 0;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    // Snippet blocks shouldn't stretch when the content is short.
+    max-width: max-content;
+    min-width: 0;
+  }
+
+  table {
+    margin: 1rem 0;
+  }
+
+  // Callout box for audience / aside notes inside docs prose.
+  // Usage: wrap a paragraph in `<div class="callout">...</div>`.
+  .callout {
+    border-left: 3px solid var(--callout-border);
+    background: var(--callout-bg);
+    padding: 0.75rem 1rem;
+    margin: 1.25rem 0;
+    border-radius: 0 var(--radius) var(--radius) 0;
+
+    > :first-child { margin-top: 0; }
+    > :last-child { margin-bottom: 0; }
+  }
+}
+
+// ===== RIGHT TOC =====
+
+.docs-layout {
+  display: flex;
+  gap: 0;
+}
+
+.docs-toc {
+  display: none;
+  flex: 0 0 220px;
+}
+
+.docs-toc-inner {
+  position: sticky;
+  top: var(--toolbar-height);
+  max-height: calc(100vh - var(--toolbar-height));
+  overflow-y: auto;
+  padding: 1.5rem 1rem 2rem;
+  border-left: 1px solid var(--border-muted);
+}
+
+.docs-toc-heading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.docs-toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    margin-bottom: 0;
+  }
+
+  li a {
+    display: block;
+    padding: 0.2rem 0 0.2rem 0.75rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+
+    &:hover { color: var(--text); }
+    // Match the left sidebar's active item: dark left border + light pill
+    // background + dark text. Keeps the two side rails visually parallel.
+    &.active {
+      color: var(--text);
+      background: var(--primary);
+      border-left-color: var(--text);
+      font-weight: 500;
+    }
+  }
+}
+
+// ===== RESPONSIVE TOC =====
+// Show the right-side TOC once the viewport is wide enough that the sidebar
+// (~250px) + content column (~72ch ~ 700px) + TOC (220px) still fit.
+
+@media (min-width: 1024px) {
+  .docs-toc {
+    display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .docs-content {
+    max-width: 100%;
+  }
+}
+
+// No prev/next pagination. The left sidebar (which now shows all four
+// collections + chapters) is the only chapter navigation; the right TOC
+// handles in-page anchors.

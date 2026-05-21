@@ -1,0 +1,6 @@
+export const CONFIG = {
+  BREAKPOINT: 768,
+  SEARCH_INDEX_URL: '/search.json',
+  SEARCH_MIN_CHARS: 2,
+  SEARCH_MAX_RESULTS: 10
+};

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% seo %}
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    {% include head.html %}
+  </head>
+  <body class="{% if page.layout == 'docs' or page.collection %}docs-page{% else %}home-layout{% endif %}">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    {% include navigation.html %}
+    <main id="main-content" tabindex="-1">
+      {{ content }}
+    </main>
+    {% include footer.html %}
+  </body>
+</html>

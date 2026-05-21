@@ -1,0 +1,235 @@
+.docs-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  margin-left: calc(-1 * var(--body-px));
+  margin-right: calc(-1 * var(--body-px));
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--toolbar-border);
+  transition: opacity 0.2s ease;
+
+  @media (max-width: 768px) {
+    top: var(--mobile-header-height);
+  }
+
+  @media (min-width: 769px) {
+    body.docs-page & {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+}
+
+html.sidebar-collapsed .docs-toolbar {
+  opacity: 0;
+
+  > * {
+    pointer-events: none;
+  }
+}
+
+html.sidebar-collapsed .docs-toolbar:hover {
+  opacity: 1;
+
+  > * {
+    pointer-events: auto;
+  }
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text);
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+  font-size: 1rem;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: var(--primary-hover);
+  }
+}
+
+.sidebar-toggle {
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+// Centered "Notch" home link in the docs toolbar.
+//
+// Position: fixed relative to the VIEWPORT (not absolute relative to the
+// toolbar). This keeps Notch at exactly viewport-center regardless of
+// sidebar state. If it were absolute-positioned inside the toolbar, the
+// toolbar would widen when main loses its left margin on sidebar-collapse
+// and Notch would shift horizontally along with it -- the user would see
+// the Notch text slide during the transition. Anchoring to the viewport
+// keeps it visually stable.
+//
+// Vertical: aligned within the toolbar band by matching top:0 + height to
+// the toolbar's effective height (toolbar-btn 36px + 0.5rem padding * 2).
+.toolbar-home {
+  position: fixed;
+  top: 0;
+  left: 50vw;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: var(--toolbar-height);
+  padding: 0 0.6rem;
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  color: var(--text);
+  text-decoration: none;
+  border-radius: var(--radius);
+  // Above the toolbar (z-index 50) so click target reliably hits the link
+  // and not a sibling button at the same coordinates.
+  z-index: 60;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: var(--primary-hover);
+  }
+}
+
+// The notch glyph: a square with a V-notch cut into its top edge, filled
+// with the orange code-text accent (`#BC5215`). Pairs with the lowercase
+// `notch` wordmark to give the toolbar real brand presence.
+.brand-mark {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.brand-wordmark {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+// Search overlay
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: var(--toolbar-height);
+
+  @media (max-width: 768px) {
+    padding-top: 112px;
+  }
+}
+
+.search-container {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-muted);
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.search-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-muted);
+
+  kbd {
+    flex-shrink: 0;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.7rem;
+    background: var(--kbd-bg);
+    color: var(--kbd-text);
+    border-radius: var(--radius);
+  }
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: var(--font-size-base);
+  color: var(--text);
+  font-family: var(--font-sans);
+
+  &::placeholder {
+    color: var(--input-placeholder);
+  }
+}
+
+.search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 50vh;
+  overflow-y: auto;
+
+  li {
+    border-bottom: 1px solid var(--border-muted);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  a {
+    display: block;
+    padding: 0.75rem;
+    color: var(--text);
+    text-decoration: none;
+    transition: background 0.1s ease;
+
+    &:hover,
+    &.active {
+      background: var(--primary-hover);
+    }
+  }
+
+  .search-result-title {
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    margin-bottom: 0.25rem;
+  }
+
+  .search-result-snippet {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  mark {
+    background: var(--mark-bg);
+    color: var(--mark-text);
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+}
+
+.search-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+

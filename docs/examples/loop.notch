@@ -1,0 +1,4 @@
+for x in [1, 2, 3] index i
+  print(i)
+  print(x)
+end
