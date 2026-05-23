@@ -262,7 +262,7 @@ class JSON5ParserTest {
     @Test
     void testParseMissingCommaInObject() {
         var ex = assertThrows(ParseException.class, () -> parse("{a: 1 b: 2}"));
-        assertTrue(ex.getMessage().contains("comma"), "Error message should mention comma");
+        assertContains("comma", ex.getMessage(), "Error message should mention comma");
     }
 
     @Test
@@ -274,7 +274,7 @@ class JSON5ParserTest {
     @Test
     void testParseInvalidMemberName() {
         var ex = assertThrows(ParseException.class, () -> parse("{123: \"value\"}"));
-        assertTrue(ex.getMessage().contains("member name"), "Error message should mention member name");
+        assertContains("member name", ex.getMessage(), "Error message should mention member name");
     }
 
     // ===== parseInteger() and parseDecimal() Tests =====

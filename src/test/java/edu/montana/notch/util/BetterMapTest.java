@@ -261,10 +261,10 @@ class BetterMapTest {
 
         String joined = map.map(entry -> entry.getKey() + "=" + entry.getValue())
                           .toString(", ");
-        assertTrue(joined.contains("one=1"));
-        assertTrue(joined.contains("two=2"));
-        assertTrue(joined.contains("three=3"));
-        assertTrue(joined.contains("four=4"));
+        assertContains("one=1", joined);
+        assertContains("two=2", joined);
+        assertContains("three=3", joined);
+        assertContains("four=4", joined);
     }
 
     @Test

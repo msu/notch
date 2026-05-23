@@ -18,4 +18,11 @@ public interface Spanned {
     default Source source() {
         return span().source();
     }
+
+    default String rawContent() {
+        final var span = span();
+        final var start = Math.max(0, span.start().index);
+        final var end = Math.min(source().content.length(), span.end().index);
+        return source().content.subSequence(start, end).toString();
+    }
 }

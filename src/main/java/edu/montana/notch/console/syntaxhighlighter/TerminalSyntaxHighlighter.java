@@ -1,16 +1,14 @@
 package edu.montana.notch.console.syntaxhighlighter;
 
+import edu.montana.notch.chisel.Source;
+import edu.montana.notch.chisel.type.WhitespaceTokenType;
 import edu.montana.notch.console.palettes.NerdFont;
-import edu.montana.notch.console.token.TokenTypeInteger;
-import edu.montana.notch.console.token.TokenTypePlain;
-import edu.montana.notch.console.token.TokenTypeString;
-import edu.montana.notch.console.token.TokenTypeTerminalKeyword;
 import edu.montana.notch.chisel.Token;
-import edu.montana.notch.chisel.TokenType;
 import edu.montana.notch.chisel.Tokenizer;
-import edu.montana.notch.chisel.type.TokenTypeBoolean;
-import edu.montana.notch.chisel.type.TokenTypeIdentifier;
-import edu.montana.notch.chisel.type.TokenTypeWhitespace;
+import edu.montana.notch.console.token.CStringTokenType;
+import edu.montana.notch.console.token.IntegerTokenType;
+import edu.montana.notch.console.token.PlainTokenType;
+import edu.montana.notch.console.token.TerminalKeywordTokenType;
 import org.jline.reader.Highlighter;
 import org.jline.reader.LineReader;
 import org.jline.utils.AttributedString;

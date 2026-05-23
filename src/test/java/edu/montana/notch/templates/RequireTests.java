@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,8 +37,8 @@ public class RequireTests extends NotchTemplateTestBase {
                 """);
         var ex = assertThrows(RuntimeException.class, () -> renderTemplateForError("m"));
         var msg = messageOf(ex);
-        assertTrue(msg.contains("missing required symbol"), msg);
-        assertTrue(msg.contains("\"name\""), msg);
+        assertContains("missing required symbol", msg, msg);
+        assertContains("\"name\"", msg, msg);
     }
 
     @Test
@@ -49,7 +50,7 @@ public class RequireTests extends NotchTemplateTestBase {
         var ex = assertThrows(RuntimeException.class,
                 () -> renderTemplateForError("m", "age", "not-an-int"));
         var msg = messageOf(ex);
-        assertTrue(msg.contains("not assignable to java.lang.Integer"), msg);
+        assertContains("not assignable to java.lang.Integer", msg, msg);
     }
 
     @Test
@@ -83,8 +84,8 @@ public class RequireTests extends NotchTemplateTestBase {
         var ex = assertThrows(RuntimeException.class,
                 () -> renderTemplateForError("m", "name", null));
         var msg = messageOf(ex);
-        assertTrue(msg.contains("must not be null"), msg);
-        assertTrue(msg.contains("\"name\""), msg);
+        assertContains("must not be null", msg, msg);
+        assertContains("\"name\"", msg, msg);
     }
 
     @Test
@@ -105,7 +106,7 @@ public class RequireTests extends NotchTemplateTestBase {
         var ex = assertThrows(RuntimeException.class,
                 () -> renderTemplateForError("m", "x", "anything"));
         var msg = messageOf(ex);
-        assertTrue(msg.contains("unknown type"), msg);
+        assertContains("unknown type", msg, msg);
     }
 
     @Test

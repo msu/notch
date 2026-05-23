@@ -71,7 +71,7 @@ public abstract class NotchTemplateTestBase {
 
         if (expectedMessageFragment != null) {
             String message = pe.getMessage();
-            assertTrue(message.contains(expectedMessageFragment), "Expected error message to contain '" + expectedMessageFragment + "' but got: " + message);
+            assertContains(expectedMessageFragment, message, "Expected error message to contain '" + expectedMessageFragment + "' but got: " + message);
         }
     }
 

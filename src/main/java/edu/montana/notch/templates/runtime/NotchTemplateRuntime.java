@@ -7,7 +7,6 @@ import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.util.Exceptions;
-import org.unbescape.html.HtmlEscape;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

@@ -1,5 +1,6 @@
 package edu.montana.notch.console.commands;
 
+import edu.montana.notch.chisel.Source;
 import edu.montana.notch.console.ShellContext;
 import edu.montana.notch.util.FS;
 import picocli.CommandLine.Command;
@@ -25,7 +26,8 @@ public class LoadCommand implements Runnable {
             return;
         }
         String content = FS.read(fileName);
-        NotchCommand.runWithoutRecording(ctx.reader, fileName, content);
+        final var source = new Source(fileName, content);
+        NotchCommand.runWithoutRecording(ctx.reader, source);
         System.out.println("loaded " + fileName);
     }
 }

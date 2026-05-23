@@ -69,6 +69,10 @@ public class BasicParser {
         return tokens.peek();
     }
 
+    public Token peek() {
+        return currentToken();
+    }
+
     public boolean peek(String... tokenTypes) {
         consumeIgnoredTokens();
         return tokens.peek(tokenTypes);
@@ -104,7 +108,7 @@ public class BasicParser {
         if (!peek(tokenType)) {
             var diag = new Diagnostic()
                     .note(message)
-                    .note("expected %s".formatted(Text.repr(tokenType)))
+                    .note("instead found %s".formatted(Text.repr(currentToken().type)))
                     .highlight(currentToken().span);
             throw new ParseException(diag);
         }

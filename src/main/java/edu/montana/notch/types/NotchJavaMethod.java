@@ -148,7 +148,7 @@ public class NotchJavaMethod implements NotchMethod {
 
     @Override
     public boolean isPublic() {
-        return javaMethods.hasAny((m) -> Modifier.isPublic(m.getModifiers()));
+        return javaMethods.hasMatch((m) -> Modifier.isPublic(m.getModifiers()));
     }
 
     @Override

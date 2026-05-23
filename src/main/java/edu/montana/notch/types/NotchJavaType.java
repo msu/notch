@@ -2,6 +2,7 @@ package edu.montana.notch.types;
 
 
 import edu.montana.notch.util.BetterList;
+import edu.montana.notch.util.Text;
 
 import java.lang.reflect.*;
 import java.util.Arrays;

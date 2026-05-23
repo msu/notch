@@ -36,8 +36,8 @@ public class LayoutTests extends NotchTemplateTestBase {
             assertContains("Hello World!", result);
             assertContains("</html>", result);
             // Verify proper HTML structure
-            assertTrue(result.contains("<body>"), "Body tag should be present");
-            assertTrue(result.contains("</body>"), "Closing body tag should be present");
+            assertContains("<body>", result, "Body tag should be present");
+            assertContains("</body>", result, "Closing body tag should be present");
             // Verify content is placed correctly
             assertTrue(result.indexOf("<body>") < result.indexOf("Hello World!"), "Content should be inside body");
             assertTrue(result.indexOf("Hello World!") < result.indexOf("</body>"), "Content should be inside body");
@@ -394,8 +394,8 @@ public class LayoutTests extends NotchTemplateTestBase {
             // Verify structure
             assertTrue(result.indexOf("<nav>") < result.indexOf("Child content"), "Nav should come before content");
             // Verify include and layout worked together
-            assertTrue(result.contains("<header>"), "Header should be present");
-            assertTrue(result.contains("<main>"), "Main should be present");
+            assertContains("<header>", result, "Header should be present");
+            assertContains("<main>", result, "Main should be present");
             // Verify no commands in output
             assertFalse(result.contains("#include"), "Include commands should not appear in output");
         }
@@ -563,10 +563,10 @@ public class LayoutTests extends NotchTemplateTestBase {
             assertContains("<article>", result);
             assertContains("Copyright 2024", result);
             // Verify complete HTML structure
-            assertTrue(result.contains("<html>"), "HTML tag should be present");
-            assertTrue(result.contains("</html>"), "Closing HTML tag should be present");
-            assertTrue(result.contains("<head>"), "Head tag should be present");
-            assertTrue(result.contains("<body>"), "Body tag should be present");
+            assertContains("<html>", result, "HTML tag should be present");
+            assertContains("</html>", result, "Closing HTML tag should be present");
+            assertContains("<head>", result, "Head tag should be present");
+            assertContains("<body>", result, "Body tag should be present");
             // Verify content blocks were properly replaced
             assertFalse(result.contains("Default Title"), "Default title should be replaced");
             assertFalse(result.contains("Default Header"), "Default header should be replaced");
@@ -575,7 +575,7 @@ public class LayoutTests extends NotchTemplateTestBase {
             assertTrue(result.indexOf("<header>") < result.indexOf("<main>"), "Header before main");
             assertTrue(result.indexOf("<main>") < result.indexOf("<footer>"), "Main before footer");
             // Verify meta tag from custom head content
-            assertTrue(result.contains("<meta"), "Meta tag should be present");
+            assertContains("<meta", result, "Meta tag should be present");
         }
 
         @Test

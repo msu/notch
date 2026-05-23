@@ -170,15 +170,15 @@ class BetterSetTest {
 
         BetterList<Integer> filtered = intSet.filter(n -> n % 2 == 0).toList();
         assertEquals(2, filtered.size());
-        assertTrue(filtered.contains(2));
-        assertTrue(filtered.contains(4));
+        assertContains(2, filtered);
+        assertContains(4, filtered);
         
         String joined = intSet.toString(", ");
-        assertTrue(joined.contains("1"));
-        assertTrue(joined.contains("2"));
-        assertTrue(joined.contains("3"));
-        assertTrue(joined.contains("4"));
-        assertTrue(joined.contains("5"));
+        assertContains("1", joined);
+        assertContains("2", joined);
+        assertContains("3", joined);
+        assertContains("4", joined);
+        assertContains("5", joined);
         
         Integer first = intSet.first();
         assertNotNull(first);
@@ -188,10 +188,10 @@ class BetterSetTest {
         assertNotNull(firstEven);
         assertTrue(firstEven % 2 == 0);
 
-        assertTrue(intSet.hasAny(n -> n > 3));
-        assertFalse(intSet.hasAny(n -> n > 10));
-        assertTrue(intSet.hasNone(n -> n > 10));
-        assertFalse(intSet.hasNone(n -> n > 3));
+        assertTrue(intSet.hasMatch(n -> n > 3));
+        assertFalse(intSet.hasMatch(n -> n > 10));
+        assertTrue(intSet.hasNoMatch(n -> n > 10));
+        assertFalse(intSet.hasNoMatch(n -> n > 3));
     }
 
     @Test
@@ -199,10 +199,10 @@ class BetterSetTest {
         BetterSet<String> set = new BetterSet<>(Arrays.asList("a", "b", "c"));
         String result = set.toString("|");
         assertEquals(5, result.length());
-        assertTrue(result.contains("a"));
-        assertTrue(result.contains("b"));
-        assertTrue(result.contains("c"));
-        assertTrue(result.contains("|"));
+        assertContains("a", result);
+        assertContains("b", result);
+        assertContains("c", result);
+        assertContains("|", result);
     }
 
     @Test

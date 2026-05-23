@@ -1,7 +1,7 @@
 package edu.montana.notch.templates.command;
 
 import edu.montana.notch.NotchParser;
-import edu.montana.notch.runtime.NotchDiagnostic;
+import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplateParser;
@@ -14,33 +14,26 @@ import edu.montana.notch.util.Text;
 import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.chisel.Token;
 
-import static edu.montana.notch.chisel.type.TokenTypePunct.BANG;
-import static edu.montana.notch.chisel.type.TokenTypePunct.COLON;
-import static edu.montana.notch.chisel.type.TokenTypePunct.COMMA;
-
-public class RequireCommand extends NotchTemplateCommand implements NotchTemplateCommand.Global {
+public class RequireCommand extends NotchTemplateCommand {
     public RequireCommand() {
         super("require");
+        isGlobal = true;
     }
 
     private final BetterList<Requirement> requirements = new BetterList<>();
 
     @Override
-    public void parse(Token commandName, NotchTemplateParser tmplParser, NotchParser commandParser) {
+    public void parseCommand(NotchParser parser) {
         while (true) {
-            Token name = commandParser.requireIdent("expected symbol name");
-            commandParser.require(COLON, "expected ':' after symbol name");
-            QualifiedIdent type = QualifiedIdent.parse(commandParser);
-            if (type == null) {
-                throw new ParseException("expected type after ':'", fileId, commandParser.location());
-            }
-            boolean nonNull = commandParser.take(BANG);
+            Token name = parser.requireIdent("expected symbol name");
+            parser.require(":", "expected ':' after symbol name");
+            var type = parser.requireQualifiedIdent("expected type after ':'");
+            boolean nonNull = parser.take("!");
             requirements.add(new Requirement(name, type, nonNull));
-            if (!commandParser.take(COMMA)) {
+            if (!parser.take(",")) {
                 break;
             }
         }
-        commandParser.requireEnd("extra tokens after #require");
     }
 
     @Override
@@ -101,8 +94,8 @@ public class RequireCommand extends NotchTemplateCommand implements NotchTemplat
     }
 
     private NotchRuntimeException diagnose(NotchTemplateRuntime runtime, Token at, String message) {
-        var d = new NotchDiagnostic();
-        d.highlight(fileId, at.span());
+        var d = new Diagnostic();
+        d.highlight(at);
         d.note(message);
         return new NotchRuntimeException(runtime.currentStackTrace(), d);
     }

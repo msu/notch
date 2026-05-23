@@ -23,7 +23,7 @@ public class NotchRuntimeException extends RuntimeException implements Spanned {
 
     @Override
     public String getMessage() {
-        return diagnostic.plainMessage();
+        return diagnostic.render();
     }
 
     @Override

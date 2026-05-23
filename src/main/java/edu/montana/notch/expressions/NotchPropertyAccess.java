@@ -49,7 +49,7 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
                 }
             }
 
-            return rootValue;
+            return UNDEFINED;
         }
 
         NotchType runtimeType = TypeSystem.getRuntimeType(rootValue);

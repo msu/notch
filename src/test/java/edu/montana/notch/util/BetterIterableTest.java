@@ -1,6 +1,5 @@
 package edu.montana.notch.util;
 
-import edu.montana.notch.iter.BetterIterable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -44,9 +43,9 @@ class BetterIterableTest {
         
         BetterSet<String> result = betterIterable.toSet();
         assertEquals(3, result.size());
-        assertTrue(result.contains("a"));
-        assertTrue(result.contains("b"));
-        assertTrue(result.contains("c"));
+        assertContains("a", result);
+        assertContains("b", result);
+        assertContains("c", result);
     }
 
     @Test
@@ -199,14 +198,14 @@ class BetterIterableTest {
         List<Integer> numbers = Arrays.asList(1, 3, 5, 7, 9);
         BetterIterable<Integer> betterNumbers = BetterIterable.better(numbers);
 
-        assertTrue(betterNumbers.hasAny(n -> n > 5));
-        assertTrue(betterNumbers.hasAny(n -> n == 1));
-        assertFalse(betterNumbers.hasAny(n -> n % 2 == 0));
-        assertFalse(betterNumbers.hasAny(n -> n > 20));
+        assertTrue(betterNumbers.hasMatch(n -> n > 5));
+        assertTrue(betterNumbers.hasMatch(n -> n == 1));
+        assertFalse(betterNumbers.hasMatch(n -> n % 2 == 0));
+        assertFalse(betterNumbers.hasMatch(n -> n > 20));
 
         List<Integer> emptyList = Arrays.asList();
         BetterIterable<Integer> betterEmpty = BetterIterable.better(emptyList);
-        assertFalse(betterEmpty.hasAny(n -> true));
+        assertFalse(betterEmpty.hasMatch(n -> true));
     }
 
     @Test
@@ -214,14 +213,14 @@ class BetterIterableTest {
         List<Integer> numbers = Arrays.asList(1, 3, 5, 7, 9);
         BetterIterable<Integer> betterNumbers = BetterIterable.better(numbers);
 
-        assertTrue(betterNumbers.hasNone(n -> n % 2 == 0));
-        assertTrue(betterNumbers.hasNone(n -> n > 20));
-        assertFalse(betterNumbers.hasNone(n -> n > 5));
-        assertFalse(betterNumbers.hasNone(n -> n == 1));
+        assertTrue(betterNumbers.hasNoMatch(n -> n % 2 == 0));
+        assertTrue(betterNumbers.hasNoMatch(n -> n > 20));
+        assertFalse(betterNumbers.hasNoMatch(n -> n > 5));
+        assertFalse(betterNumbers.hasNoMatch(n -> n == 1));
 
         List<Integer> emptyList = Arrays.asList();
         BetterIterable<Integer> betterEmpty = BetterIterable.better(emptyList);
-        assertTrue(betterEmpty.hasNone(n -> true));
+        assertTrue(betterEmpty.hasNoMatch(n -> true));
     }
 
     @Test

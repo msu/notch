@@ -159,10 +159,10 @@ class BetterListTest {
         assertEquals(Integer.valueOf(1), intList.first());
         assertEquals(Integer.valueOf(2), intList.firstWhere(n -> n % 2 == 0));
 
-        assertTrue(intList.hasAny(n -> n > 3));
-        assertFalse(intList.hasAny(n -> n > 10));
-        assertTrue(intList.hasNone(n -> n > 10));
-        assertFalse(intList.hasNone(n -> n > 3));
+        assertTrue(intList.hasMatch(n -> n > 3));
+        assertFalse(intList.hasMatch(n -> n > 10));
+        assertTrue(intList.hasNoMatch(n -> n > 10));
+        assertFalse(intList.hasNoMatch(n -> n > 3));
     }
 
     @Test

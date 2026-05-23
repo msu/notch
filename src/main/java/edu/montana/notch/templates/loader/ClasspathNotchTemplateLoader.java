@@ -1,9 +1,6 @@
 package edu.montana.notch.templates.loader;
-<<<<<<<< HEAD:src/main/java/edu/montana/notch/templates/loader/NotchTemplateClasspathLoader.java
-========
 
 import edu.montana.notch.chisel.Source;
->>>>>>>> e3ae36d (new tokenizer api, move namespace, & template updates):src/main/java/edu/montana/notch/templates/loader/ClasspathNotchTemplateLoader.java
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

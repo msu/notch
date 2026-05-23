@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static edu.montana.notch.NotchTestUtils.eval;
 import static edu.montana.notch.NotchTestUtils.evalNoCatch;
+import static edu.montana.notch.runtime.NotchRuntime.UNDEFINED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -45,7 +46,7 @@ public class NotchMethodInvocationTest {
     @Test
     public void testNullPropertyAccessIsNullSafe() {
         Object result = eval("foo.instanceProperty", "foo", null);
-        assertEquals(null, result);
+        assertEquals(UNDEFINED, result);
     }
 
     @Test
@@ -75,7 +76,7 @@ public class NotchMethodInvocationTest {
     @Test
     public void testNullPropertyInChainReturnsNull() {
         Object result = eval("foo.get_null.instanceProperty", "foo", new SampleClass());
-        assertEquals(NotchRuntime.UNDEFINED, result);
+        assertEquals(UNDEFINED, result);
     }
 
     @Test

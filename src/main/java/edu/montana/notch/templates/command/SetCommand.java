@@ -3,11 +3,8 @@ package edu.montana.notch.templates.command;
 import edu.montana.notch.NotchParser;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.templates.NotchTemplateCommand;
-import edu.montana.notch.templates.NotchTemplateParser;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.chisel.Token;
-
-import static edu.montana.notch.chisel.type.TokenTypePunct.EQ;
 
 public class SetCommand extends NotchTemplateCommand {
     public SetCommand() {
@@ -18,11 +15,11 @@ public class SetCommand extends NotchTemplateCommand {
     private NotchExpression value;
 
     @Override
-    public void parse(Token commandName, NotchTemplateParser tmplParser, NotchParser commandParser) {
-        name = commandParser.requireIdent("expected variable name");
-        commandParser.require(EQ, "expected '=' after variable name");
-        value = commandParser.requireExpression("expected expression for #set value");
-        commandParser.requireEnd("extra tokens after #set expression");
+    public void parseCommand(NotchParser parser) {
+        name = parser.requireIdent("expected variable name");
+        parser.require("=", "expected '=' after variable name");
+        value = parser.requireExpression("expected expression for #set value");
+        parser.requireEnd("extra tokens after #set expression");
     }
 
     @Override

@@ -17,8 +17,6 @@ public class TerseStringTokenType implements TokenType {
 
     @Override
     public TokenData tokenize(Tokenizer t) throws TokenizeException {
-        var start = t.location();
-
         if (!t.take(':')) return null;
 
         var lex = new StringBuilder();
@@ -26,6 +24,8 @@ public class TerseStringTokenType implements TokenType {
             char c = t.take();
             lex.append(c);
         }
+
+        if (lex.isEmpty()) return null;
 
         return new TokenData(lex.toString());
     }

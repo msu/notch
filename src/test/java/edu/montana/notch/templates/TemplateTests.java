@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static edu.montana.notch.util.Text.repr;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -57,7 +58,7 @@ public class TemplateTests extends NotchTemplateTestBase {
         // Verify false condition produces empty output
         assertFalse(content.contains("goodbye"), "False condition should not render");
         // Verify true condition produces output
-        assertTrue(content.contains("hello"), "True condition should render");
+        assertContains("hello", content, "True condition should render");
         // Verify line structure
         assertEquals(2, content.lines().count(), "Should have exactly 2 lines");
     }
@@ -75,15 +76,15 @@ public class TemplateTests extends NotchTemplateTestBase {
 
     @Test
     public void testHelper() {
-        assertEquals("bigsky.notch.templates.TemplateTests$BasicHelper", BasicHelper.class.getName());
+        assertEquals("edu.montana.notch.templates.TemplateTests$BasicHelper", BasicHelper.class.getName());
         var tmpl = """
-                #helper bigsky.notch.templates.TemplateTests$BasicHelper
+                #helper edu.montana.notch.templates.TemplateTests$BasicHelper
                 Hello, ${name}
                 """;
         var content = renderString(tmpl);
         assertEquals("Hello, friend\n", content);
         // Verify helper resolved the variable
-        assertTrue(content.contains("friend"), "Helper should resolve 'name' to 'friend'");
+        assertContains("friend", content, "Helper should resolve 'name' to 'friend'");
         assertFalse(content.contains("${"), "No unresolved variables");
         assertFalse(content.contains("#helper"), "Command should not appear in output");
     }
@@ -207,7 +208,7 @@ public class TemplateTests extends NotchTemplateTestBase {
         var result = renderString(tmpl);
         assertEquals("Hi!\n", result);
         // Verify else block executed
-        assertTrue(result.contains("Hi!"), "Else block should execute for empty list");
+        assertContains("Hi!", result, "Else block should execute for empty list");
         // Verify no loop iterations occurred
         assertEquals(1, result.lines().count(), "Should have exactly 1 line from else block");
         assertFalse(result.contains("#"), "No commands in output");
@@ -226,8 +227,8 @@ public class TemplateTests extends NotchTemplateTestBase {
         assertEquals("Hello, welcome to &lt;script&gt;alert(&apos;pwn!!&apos;);&lt;/alert&gt;\n\n", output);
         // Verify dangerous characters are escaped
         assertFalse(output.contains("<script>"), "Script tags should be escaped");
-        assertTrue(output.contains("&lt;script&gt;"), "Should contain escaped script tag");
-        assertTrue(output.contains("&apos;"), "Single quotes should be escaped");
+        assertContains("&lt;script&gt;", output, "Should contain escaped script tag");
+        assertContains("&apos;", output, "Single quotes should be escaped");
         // Verify no actual executable script
         assertFalse(output.matches(".*<script[^>]*>.*"), "No executable script tags");
     }
@@ -288,9 +289,9 @@ public class TemplateTests extends NotchTemplateTestBase {
                 </div>
                 """, result);
         // Verify each card has unique ID
-        assertTrue(result.contains("Card #1!!"), "Should have card with ID 1");
-        assertTrue(result.contains("Card #2!!"), "Should have card with ID 2");
-        assertTrue(result.contains("Card #3!!"), "Should have card with ID 3");
+        assertContains("Card #1!!", result, "Should have card with ID 1");
+        assertContains("Card #2!!", result, "Should have card with ID 2");
+        assertContains("Card #3!!", result, "Should have card with ID 3");
         // Verify correct ordering
         assertTrue(result.indexOf("Card #1") < result.indexOf("Card #2"), "Card 1 should come before Card 2");
         assertTrue(result.indexOf("Card #2") < result.indexOf("Card #3"), "Card 2 should come before Card 3");

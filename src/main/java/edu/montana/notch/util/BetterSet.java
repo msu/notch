@@ -1,9 +1,5 @@
 package edu.montana.notch.util;
 
-import edu.montana.notch.iter.BIterator;
-import edu.montana.notch.iter.BetterIterable;
-import edu.montana.notch.iter.JavaBIterator;
-
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -17,6 +13,11 @@ public class BetterSet<T> extends AbstractSet<T> implements BetterIterable<T> {
     //=================================================================
     public BetterSet() {
         this(new LinkedHashSet<>());
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return delegate.iterator();
     }
 
     public BetterSet(Collection<? extends T> c) {
@@ -42,11 +43,6 @@ public class BetterSet<T> extends AbstractSet<T> implements BetterIterable<T> {
     //=================================================================
     // Set implementation
     //=================================================================
-
-    @Override
-    public BIterator<T> iterator() {
-        return new JavaBIterator<>(delegate.iterator());
-    }
 
     @Override
     public int size() {

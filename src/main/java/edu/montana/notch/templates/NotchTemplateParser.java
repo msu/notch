@@ -103,6 +103,66 @@ public class NotchTemplateParser extends BasicParser {
         return item;
     }
 
+    public NotchTemplateContentBlock parseSterileContentBlock(NotchTemplateCommand... terminalCommands) {
+        final var start = currentToken().span;
+        var items = new ArrayList<NotchTemplateContentItem>();
+        NotchTemplateCommand endCommand = null;
+
+        outer:
+        while (!atEnd()) {
+            var text = parseText();
+            if (text != null) {
+                items.add(text);
+                continue;
+            }
+
+            if (peek("command")) {
+                final var token = peek();
+                var data = (NotchTemplateTokenTypeCommand.Data) token.data;
+
+                boolean isTerminal = false;
+                for (final var cmd : terminalCommands) {
+                    if (data.commandName().str().equals(cmd.commandName)) {
+                        isTerminal = true;
+                        break;
+                    }
+                }
+
+                // we convert non-terminal commands into text
+                if (isTerminal) {
+                    final var cmd = parseCommand(terminalCommands);
+                    assert cmd != null;
+                    endCommand = cmd.command;
+                    break;
+                }
+
+                text = new NotchTemplateContentText(token.span);
+                items.add(text);
+                continue;
+            }
+
+            var expr = parseExpression();
+            if (expr != null) {
+                items.add(expr);
+                continue;
+            }
+
+            final var diag = new Diagnostic().note("unexpected token %s".formatted(repr(currentToken().type))).highlight(currentToken());
+            throw new ParseException(diag);
+        }
+
+        if (terminalCommands.length > 0 && endCommand == null) {
+            final var names = Arrays.stream(terminalCommands)
+                    .map(c -> "#%s".formatted(c.commandName))
+                    .collect(Collectors.joining(", "));
+            final var diag = new Diagnostic()
+                    .note("unterminated block content, expected %s".formatted(names))
+                    .highlight(currentToken());
+            throw new ParseException(diag);
+        }
+
+        return new NotchTemplateContentBlock(start.through(currentToken()), items, endCommand);
+    }
     public NotchTemplateContentBlock parseContentBlock(NotchTemplateCommand... terminalCommands) {
         final var start = currentToken().span;
         var items = new ArrayList<NotchTemplateContentItem>();

@@ -24,9 +24,6 @@ public class ParseException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        var out = new StringBuilder("\n");
-        out.append("A parse exception occurred...\n");
-        diagnostic.render(out);
-        return out.toString();
+        return diagnostic.render();
     }
 }

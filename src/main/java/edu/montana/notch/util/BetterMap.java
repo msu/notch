@@ -1,13 +1,6 @@
 package edu.montana.notch.util;
 
-import edu.montana.notch.iter.BIterator;
-import edu.montana.notch.iter.BetterIterable;
-import edu.montana.notch.iter.JavaBIterator;
-
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -59,11 +52,6 @@ public class BetterMap<K, V> extends AbstractMap<K, V> implements BetterIterable
     @Override
     public V remove(Object key) {
         return delegate.remove(key);
-    }
-
-    @Override
-    public BIterator<Entry<K, V>> iterator() {
-        return new JavaBIterator<>(delegate.entrySet().iterator());
     }
 
     @Override
@@ -134,4 +122,8 @@ public class BetterMap<K, V> extends AbstractMap<K, V> implements BetterIterable
         return betterMap;
     }
 
+    @Override
+    public Iterator<Entry<K, V>> iterator() {
+        return delegate.entrySet().iterator();
+    }
 }

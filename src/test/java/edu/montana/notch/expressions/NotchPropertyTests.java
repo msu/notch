@@ -21,22 +21,19 @@ public class NotchPropertyTests {
     }
 
     @Test
-    public void nullCoalesceIsJustNull() {
+    public void nullCoalesceIsUndefined() {
         var value = eval("foo.bar", "foo", null);
-        assertNull(value);
+        assertEquals(UNDEFINED, value);
     }
 
     @Test
     public void invokingNullIsUndefined() {
-        //var ex = assertThrows(RuntimeException.class, () -> eval("foo.bar()", "foo", null));
-        //assertContains("unable to call \"bar\", \"foo\" was null", ex.getMessage());
         final var value = eval("foo.bar()", "foo", null);
         assertEquals(UNDEFINED, value);
     }
 
     @Test
     public void noSuchMethodIsUndefined() {
-        // TODO: "did you mean \"baz\"?"
         final var value = eval("foo.bar()", new Foo());
         assertEquals(UNDEFINED, value);
     }

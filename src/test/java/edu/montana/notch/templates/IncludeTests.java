@@ -60,8 +60,8 @@ public class IncludeTests extends NotchTemplateTestBase {
             assertContains("<header>", result);
             assertContains("<h1>My Website</h1>", result);
             // Verify proper HTML structure
-            assertTrue(result.contains("<!DOCTYPE html>"), "Doctype should be present");
-            assertTrue(result.contains("</header>"), "Closing header tag should be present");
+            assertContains("<!DOCTYPE html>", result, "Doctype should be present");
+            assertContains("</header>", result, "Closing header tag should be present");
             // Verify include is positioned correctly in HTML
             assertTrue(result.indexOf("<!DOCTYPE") < result.indexOf("<header>"), "Header should be after doctype");
             assertTrue(result.indexOf("</header>") < result.indexOf("<body>"), "Header should be before body");
@@ -88,7 +88,7 @@ public class IncludeTests extends NotchTemplateTestBase {
             assertTrue(result.indexOf("<header>") < result.indexOf("<main>"), "Header should come before main");
             assertTrue(result.indexOf("<main>") < result.indexOf("<footer>"), "Main should come before footer");
             // Verify all three sections present
-            assertTrue(result.contains("Content"), "Main content should be present");
+            assertContains("Content", result, "Main content should be present");
             // Verify each element appears once
             assertEquals(1, result.split("<header>").length - 1, "Header should appear once");
             assertEquals(1, result.split("<footer>").length - 1, "Footer should appear once");
@@ -112,9 +112,9 @@ public class IncludeTests extends NotchTemplateTestBase {
             long count = result.lines().filter(line -> line.contains("<hr />")).count();
             assertEquals(2, count);
             // Verify all three sections present
-            assertTrue(result.contains("Section 1"), "Section 1 should be present");
-            assertTrue(result.contains("Section 2"), "Section 2 should be present");
-            assertTrue(result.contains("Section 3"), "Section 3 should be present");
+            assertContains("Section 1", result, "Section 1 should be present");
+            assertContains("Section 2", result, "Section 2 should be present");
+            assertContains("Section 3", result, "Section 3 should be present");
             // Verify dividers are between sections
             int firstHr = result.indexOf("<hr />");
             int secondHr = result.lastIndexOf("<hr />");
@@ -627,8 +627,8 @@ public class IncludeTests extends NotchTemplateTestBase {
             assertContains("&lt;script&gt;", result);
             assertFalse(result.contains("<script>"));
             // Verify full escaping
-            assertTrue(result.contains("&lt;/script&gt;"), "Closing script tag should be escaped");
-            assertTrue(result.contains("&apos;"), "Single quotes should be escaped");
+            assertContains("&lt;/script&gt;", result, "Closing script tag should be escaped");
+            assertContains("&apos;", result, "Single quotes should be escaped");
             // Verify no executable script remains
             assertFalse(result.matches(".*<script[^>]*>.*"), "No executable script tags");
         }

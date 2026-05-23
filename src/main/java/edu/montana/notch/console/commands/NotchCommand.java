@@ -3,14 +3,11 @@ package edu.montana.notch.console.commands;
 import edu.montana.notch.Notch;
 import edu.montana.notch.NotchElement;
 import edu.montana.notch.NotchParser;
+import edu.montana.notch.chisel.*;
 import edu.montana.notch.console.ShellContext;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.statements.NotchStatement;
-import edu.montana.notch.chisel.Location;
-import edu.montana.notch.chisel.Spanned;
-import edu.montana.notch.chisel.TokenStream;
-import edu.montana.notch.chisel.TokenizeException;
 import org.jline.reader.LineReader;
 
 import java.io.BufferedWriter;
@@ -35,20 +32,18 @@ public final class NotchCommand {
     }
 
     public static void run(LineReader reader, String line) {
-        runWithFileId(reader, "jackknife-cli", line, true);
+        runWithFileId(reader, new Source("jackknife-cli", line), true);
     }
 
-    public static void runWithoutRecording(LineReader reader, String fileId, String content) {
-        runWithFileId(reader, fileId, content, false);
+    public static void runWithoutRecording(LineReader reader, Source source) {
+        runWithFileId(reader, source, false);
     }
 
-    private static void runWithFileId(LineReader reader, String fileId, String content, boolean recordOnSuccess) {
-        if (content == null || content.isEmpty()) return;
-
+    private static void runWithFileId(LineReader reader, Source source, boolean recordOnSuccess) {
         NotchRuntime runtime = lookupOrCreateRuntime(reader);
 
         try {
-            TokenStream tokenStream = Notch.TOKENIZER.create(fileId, content).tokenize();
+            TokenStream tokenStream = Notch.TOKENIZER.create(source).tokenize();
             NotchParser parser = new NotchParser(tokenStream);
             NotchElement element = parser.parse();
             if (element instanceof NotchExpression expr) {
@@ -57,22 +52,18 @@ public final class NotchCommand {
             } else if (element instanceof NotchStatement stmt) {
                 runtime.execute(stmt);
             }
-            if (recordOnSuccess) appendIfRecording(reader, content);
-        } catch (TokenizeException e) {
-            System.out.println("error at " + e.start.display() + ": " + e.getMessage());
-            printCaret(content, e.start);
+            if (recordOnSuccess) appendIfRecording(reader, source);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            if (e instanceof Spanned s) printCaret(content, s.span().start());
         }
     }
 
-    private static void appendIfRecording(LineReader reader, String line) {
+    private static void appendIfRecording(LineReader reader, Source source) {
         ShellContext ctx = getContext(reader);
         if (ctx == null || ctx.recording == null) return;
         try (BufferedWriter writer = Files.newBufferedWriter(
                 ctx.recording, StandardOpenOption.APPEND)) {
-            writer.write(line);
+            writer.write(source.content.toString());
             writer.newLine();
             ctx.recordingCount++;
         } catch (IOException e) {
@@ -91,7 +82,7 @@ public final class NotchCommand {
     private static NotchRuntime lookupOrCreateRuntime(LineReader reader) {
         Object existing = reader.getVariable(RUNTIME_VAR);
         if (existing instanceof NotchRuntime nr) return nr;
-        NotchRuntime created = new NotchRuntime("jackknife-cli");
+        NotchRuntime created = new NotchRuntime(new Source("jackknife-cli", ""));
         reader.setVariable(RUNTIME_VAR, created);
         return created;
     }

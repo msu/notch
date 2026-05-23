@@ -1,9 +1,5 @@
 package edu.montana.notch.util;
 
-import edu.montana.notch.iter.BIterator;
-import edu.montana.notch.iter.BetterIterable;
-import edu.montana.notch.iter.JavaBIterator;
-
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;

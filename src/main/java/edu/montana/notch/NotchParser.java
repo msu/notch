@@ -698,4 +698,15 @@ public class NotchParser extends BasicParser {
     public QualifiedIdent parseQualifiedIdent() {
         return QualifiedIdent.parse(this);
     }
+
+    public QualifiedIdent requireQualifiedIdent(String errorMessage) {
+        final var ident = parseQualifiedIdent();
+        if (ident == null) {
+            final var diag = new Diagnostic()
+                    .highlight(currentToken())
+                    .note(errorMessage);
+            throw new ParseException(diag);
+        }
+        return ident;
+    }
 }
