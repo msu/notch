@@ -1,35 +1,23 @@
-# Notch Yet Another Scripting Language
+# Notch - Yet Another Scripting Language
 
-yes, I did name this after another horse, sue me
 
-| Precedence | Operators                                           |
-|------------|-----------------------------------------------------|
-| expr(0)    | int, boolean, string, ident, parens, list, map, set |
-| expr(10)   | call, index                                         |
-| expr(20)   | negate, inverse                                     | 
-| expr(30)   | multiplication, division, remainder                 | 
-| expr(40)   | addition, subtraction                               | 
-| expr(50)   | less, greater, lessequal, greaterequal              |
-| expr(60)   | equality                                            |
-| expr(70)   | logical and                                         |
-| expr(80)   | logical or                                          |
-| expr(90)   | fallback                                            | 
-| expr(100)  | conditional                                         |
 
-### Custom Operators
+## Semantics
 
-| Name        | Syntax                                        |
-|-------------|-----------------------------------------------|
-| fallback    | `expr(89) '?:' expr(90)`                      |
-| conditional | `expr(99) 'when' expr(99) ['else' expr(100)]` |
+The semantics of the language.
 
-### Destructuring
+### Variable, Property, & Invocation Semantics
 
-### Statements
+We deliberated for a long time on what we thought were the proper semantics. We want the
+language to be easy to iterate on and slow to cause errors. We decided to implement
+null-coalescence instead of "undefined variable/property/method on ..."
 
-| Name          | Syntax                                                 | Notes                    |
-|---------------|--------------------------------------------------------|--------------------------|
-| stmt-fallback | `'else' block 'end' \| 'otherwise' expr`               | Block vs Expression else |
-| stmt-then     | `block \| 'then' expr`                                 |                          |
-| if-statement  | `'if' expr if-then [stmt-fallback]`                    |                          |
-| for-statement | `'for' destruct 'in' expr [stmt-then] [stmt-fallback]` |                          |
+```notch
+foo             # --> <UNDEFINED>
+foo!            # error: no variable "foo"
+foo.bar         # --> <UNDEFINED>
+foo.bar!        # error: no property "bar" on <UNDEFINED>
+foo.bar()       # --> <UNDFINED>
+foo.bar!()      # error: no method "bar" on <UNDEFINED>
+foo.bar.baz.bad # --> <UNDEFINED>
+```
