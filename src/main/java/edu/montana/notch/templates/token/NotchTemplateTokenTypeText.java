@@ -1,6 +1,6 @@
 package edu.montana.notch.templates.token;
 
-import edu.montana.notch.chisel.Token;
+import edu.montana.notch.chisel.TokenData;
 import edu.montana.notch.chisel.TokenType;
 import edu.montana.notch.chisel.Tokenizer;
 
@@ -11,7 +11,7 @@ public class NotchTemplateTokenTypeText implements TokenType {
     }
 
     @Override
-    public Token tokenize(Tokenizer t) {
+    public TokenData tokenize(Tokenizer t) {
         var start = t.location();
 
         var content = new StringBuilder();
@@ -29,6 +29,6 @@ public class NotchTemplateTokenTypeText implements TokenType {
         }
 
         String data = content.toString();
-        return new Token(start, t.location(), this, data);
+        return new TokenData(data);
     }
 }

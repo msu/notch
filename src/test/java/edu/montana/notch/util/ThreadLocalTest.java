@@ -9,8 +9,9 @@ public class ThreadLocalTest {
     static boolean useThreadLocal = true;
     static ThreadLocal<String> threadLocal = useThreadLocal ? new ThreadLocal<>() : null;
     static String foo = "foo";
+
     public static void main(String[] args) {
-        if(threadLocal != null) {
+        if (threadLocal != null) {
             threadLocal.set(foo);
         }
         PrintStream out = new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8);
@@ -25,7 +26,7 @@ public class ThreadLocalTest {
 
     private static String getString() {
         if (threadLocal == null) {
-           return foo;
+            return foo;
         } else {
             return threadLocal.get();
         }

@@ -1,16 +1,14 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.chisel.Location;
-
-import java.util.Objects;
 
 public class NotchNotExpression extends NotchExpression {
     public final NotchExpression expression;
 
-    public NotchNotExpression(Location start, NotchExpression expression, Location end) {
-        super(expression.fileId, start, end);
-        this.expression = Objects.requireNonNull(expression);
+    public NotchNotExpression(Span span, NotchExpression expression) {
+        super(span);
+        this.expression = expression;
     }
 
     @Override

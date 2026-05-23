@@ -2,7 +2,6 @@ package edu.montana.notch.json5.query;
 
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.json5.JSON5Object;
-import edu.montana.notch.json5.JSON5TokenTypeIdent;
 import edu.montana.notch.json5.JSON5TokenTypeString;
 import edu.montana.notch.json5.JSON5Value;
 
@@ -13,7 +12,7 @@ public class FieldAccessExpression extends QueryExpression {
     public final Token field;
 
     public FieldAccessExpression(QueryExpression root, Token field) {
-        super(root.fileId, root.start, field.end);
+        super(root.span.through(field));
         this.root = Objects.requireNonNull(root);
         this.field = Objects.requireNonNull(field);
     }
@@ -28,7 +27,7 @@ public class FieldAccessExpression extends QueryExpression {
         String prop;
         if (field.data instanceof JSON5TokenTypeString.StringValue sv) {
             prop = sv.value();
-        } else if (field.type instanceof JSON5TokenTypeIdent) {
+        } else if (field.type.equals("ident")) {
             prop = field.str();
         } else {
             throw new RuntimeException("field was not a string");

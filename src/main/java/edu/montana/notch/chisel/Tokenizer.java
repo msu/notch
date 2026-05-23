@@ -1,26 +1,29 @@
 package edu.montana.notch.chisel;
 
-import bigsky.notch.util.BetterList;
-import bigsky.notch.util.Pair;
+import edu.montana.notch.util.BetterList;
+import edu.montana.notch.util.Pair;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 
-import static edu.montana.bigsky.notch.util.Text.repr;
-import static edu.montana.bigsky.notch.util.Pair.pair;
+import static edu.montana.notch.util.Pair.pair;
+import static edu.montana.notch.util.Text.repr;
 
 public class Tokenizer {
     protected final Source source;
-    protected Location loc = new Location();
-    protected Location start, end;
+    protected Location loc;
     protected List<Pair<String, TokenType>> tokenTypes = new LinkedList<>();
 
     public Tokenizer() {
         source = null;
+        loc = new Location();
     }
 
-    protected Tokenizer(Source source, Location location) {
+    protected Tokenizer(Source source, Location start) {
         this.source = source;
-        this.loc = location;
+        this.loc = start;
     }
 
     public Tokenizer create(Source source) {
@@ -84,12 +87,14 @@ public class Tokenizer {
             start = loc;
 
             var tokenData = tt.second().tokenize(this);
-            if (tokenData == null) continue;
+            if (tokenData == null) {
+                loc = start;
+                continue;
+            }
 
-            final var token = createToken(tt, start, tokenData);
-            peekedToken = token;
+            peekedToken = createToken(tt, start, tokenData);
             loc = start;
-            return token;
+            return peekedToken;
         }
         return null;
     }

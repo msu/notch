@@ -1,6 +1,6 @@
 package edu.montana.notch.expressions;
 
-import edu.montana.notch.runtime.NotchDiagnostic;
+import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.util.BetterMath;
@@ -10,7 +10,7 @@ public class NotchAdditiveExpression extends NotchExpression {
     private final NotchExpression rhs;
 
     public NotchAdditiveExpression(NotchExpression lhs, NotchExpression rhs) {
-        super(lhs.fileId, lhs.start, rhs.end);
+        super(lhs.span.through(rhs));
         this.lhs = addChild(lhs);
         this.rhs = addChild(rhs);
     }
@@ -31,8 +31,8 @@ public class NotchAdditiveExpression extends NotchExpression {
             return BetterMath.safeAdd(lv, rv);
         }
 
-        var diag = new NotchDiagnostic();
-        diag.highlight(fileId, span());
+        var diag = new Diagnostic();
+        diag.highlight(span());
         diag.note("cannot add %s to %s".formatted(NotchRuntime.className(lhsVal), NotchRuntime.className(rhsVal)));
         throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
     }

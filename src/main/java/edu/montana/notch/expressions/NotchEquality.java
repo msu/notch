@@ -1,7 +1,7 @@
 package edu.montana.notch.expressions;
 
-import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.runtime.NotchRuntime;
 
 import java.util.Objects;
 
@@ -10,7 +10,7 @@ public class NotchEquality extends NotchExpression {
     private final Token op;
 
     public NotchEquality(Token op, NotchExpression lhs, NotchExpression rhs) {
-        super(lhs.fileId, lhs.start, rhs.end);
+        super(lhs.span.through(rhs));
         this.op = op;
         this.lhs = addChild(lhs);
         this.rhs = addChild(rhs);

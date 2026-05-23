@@ -1,9 +1,14 @@
 package edu.montana.notch.util;
 
+import edu.montana.notch.iter.BIterator;
+import edu.montana.notch.iter.BetterIterable;
+import edu.montana.notch.iter.JavaBIterator;
+
 import java.util.*;
 import java.util.function.Predicate;
 
 public class BetterSet<T> extends AbstractSet<T> implements BetterIterable<T> {
+
 
     private final Set<T> delegate;
 
@@ -15,7 +20,7 @@ public class BetterSet<T> extends AbstractSet<T> implements BetterIterable<T> {
     }
 
     public BetterSet(Collection<? extends T> c) {
-        if(c instanceof Set s) {
+        if (c instanceof Set s) {
             delegate = s;
         } else {
             delegate = new HashSet<>(c);
@@ -39,8 +44,8 @@ public class BetterSet<T> extends AbstractSet<T> implements BetterIterable<T> {
     //=================================================================
 
     @Override
-    public Iterator<T> iterator() {
-        return delegate.iterator();
+    public BIterator<T> iterator() {
+        return new JavaBIterator<>(delegate.iterator());
     }
 
     @Override
@@ -96,7 +101,7 @@ public class BetterSet<T> extends AbstractSet<T> implements BetterIterable<T> {
     public BetterSet<T> intersect(BetterSet<T> other) {
         BetterSet<T> betterSet = new BetterSet<>();
         for (T t : this) {
-            if(other.contains(t)) {
+            if (other.contains(t)) {
                 betterSet.add(t);
             }
         }

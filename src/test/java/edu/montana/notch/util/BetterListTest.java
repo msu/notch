@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BetterListTest {
@@ -31,7 +32,7 @@ class BetterListTest {
     @Test
     void testBasicListOperations() {
         BetterList<String> list = new BetterList<>();
-        
+
         assertTrue(list.add("first"));
         assertEquals(1, list.size());
         assertEquals("first", list.get(0));
@@ -55,23 +56,23 @@ class BetterListTest {
         BetterList<String> list = new BetterList<>();
         list.addAll(Arrays.asList("a", "b", "c", "d"));
         Collection<String> toRemove = Arrays.asList("b", "d");
-        
+
         assertTrue(list.removeAll(toRemove));
         assertEquals(2, list.size());
         assertFalse(list.contains("b"));
         assertFalse(list.contains("d"));
-        assertTrue(list.contains("a"));
-        assertTrue(list.contains("c"));
+        assertContains("a", list);
+        assertContains("c", list);
     }
 
     @Test
     void testLast() {
         BetterList<String> list = new BetterList<>();
         assertNull(list.last());
-        
+
         list.add("first");
         assertEquals("first", list.last());
-        
+
         list.add("second");
         assertEquals("second", list.last());
     }
@@ -80,10 +81,10 @@ class BetterListTest {
     void testLastWhere() {
         BetterList<String> list = new BetterList<>();
         list.addAll(Arrays.asList("apple", "banana", "apricot", "cherry"));
-        
+
         Predicate<String> startsWithA = s -> s.startsWith("a");
         assertEquals("apricot", list.lastWhere(startsWithA));
-        
+
         Predicate<String> startsWithZ = s -> s.startsWith("z");
         assertNull(list.lastWhere(startsWithZ));
     }
@@ -113,11 +114,11 @@ class BetterListTest {
         BetterList<String> list = new BetterList<>();
         list.addAll(Arrays.asList("a", "b", "c"));
         BetterList<String> copy = list.copy();
-        
+
         assertEquals(list.size(), copy.size());
         assertEquals(list, copy);
         assertNotSame(list, copy);
-        
+
         copy.add("d");
         assertEquals(3, list.size());
         assertEquals(4, copy.size());
@@ -128,11 +129,11 @@ class BetterListTest {
         BetterList<String> list = new BetterList<>();
         list.addAll(Arrays.asList("a", "b"));
         BetterList<String> other = new BetterList<>(Arrays.asList("c", "d"));
-        
+
         BetterList<String> result = list.concat(other);
         assertEquals(4, result.size());
         assertEquals(Arrays.asList("a", "b", "c", "d"), result);
-        
+
         assertEquals(2, list.size());
         assertEquals(2, other.size());
     }
@@ -141,27 +142,27 @@ class BetterListTest {
     void testBetterIterableMethods() {
         BetterList<Integer> intList = new BetterList<>();
         intList.addAll(Arrays.asList(1, 2, 3, 4, 5));
-        
-        BetterList<String> mapped = intList.map(String::valueOf);
+
+        BetterList<String> mapped = intList.map(String::valueOf).toList();
         assertEquals(Arrays.asList("1", "2", "3", "4", "5"), mapped);
-        
+
         Set<Integer> set = intList.toSet();
         assertEquals(5, set.size());
-        assertTrue(set.contains(3));
-        
-        BetterList<Integer> filtered = intList.filter(n -> n % 2 == 0);
+        assertContains(3, set);
+
+        BetterList<Integer> filtered = intList.filter(n -> n % 2 == 0).toList();
         assertEquals(Arrays.asList(2, 4), filtered);
         
         String joined = intList.toString(", ");
         assertEquals("1, 2, 3, 4, 5", joined);
-        
+
         assertEquals(Integer.valueOf(1), intList.first());
         assertEquals(Integer.valueOf(2), intList.firstWhere(n -> n % 2 == 0));
-        
-        assertTrue(intList.hasMatch(n -> n > 3));
-        assertFalse(intList.hasMatch(n -> n > 10));
-        assertTrue(intList.hasNoMatch(n -> n > 10));
-        assertFalse(intList.hasNoMatch(n -> n > 3));
+
+        assertTrue(intList.hasAny(n -> n > 3));
+        assertFalse(intList.hasAny(n -> n > 10));
+        assertTrue(intList.hasNone(n -> n > 10));
+        assertFalse(intList.hasNone(n -> n > 3));
     }
 
     @Test
@@ -196,25 +197,25 @@ class BetterListTest {
     void testListInterfaceCompatibility() {
         BetterList<String> betterList = new BetterList<>();
         List<String> javaList = betterList;
-        
+
         javaList.add("test1");
         javaList.add("test2");
         assertEquals(2, javaList.size());
-        
+
         javaList.addAll(Arrays.asList("test3", "test4"));
         assertEquals(4, javaList.size());
-        
-        assertTrue(javaList.contains("test1"));
+
+        assertContains("test1", javaList);
         assertFalse(javaList.isEmpty());
-        
+
         Iterator<String> iterator = javaList.iterator();
         assertTrue(iterator.hasNext());
         assertEquals("test1", iterator.next());
-        
+
         String[] array = javaList.toArray(new String[0]);
         assertEquals(4, array.length);
         assertEquals("test1", array[0]);
-        
+
         javaList.clear();
         assertTrue(javaList.isEmpty());
     }
@@ -223,19 +224,19 @@ class BetterListTest {
     void testCollectionInterfaceCompatibility() {
         BetterList<String> betterList = new BetterList<>();
         Collection<String> collection = betterList;
-        
+
         assertTrue(collection.add("item"));
         assertTrue(collection.addAll(Arrays.asList("a", "b", "c")));
         assertEquals(4, collection.size());
-        
-        assertTrue(collection.contains("item"));
+
+        assertContains("item", collection);
         assertTrue(collection.containsAll(Arrays.asList("a", "b")));
-        
+
         assertFalse(collection.remove("nonexistent"));
         assertTrue(collection.remove("item"));
         assertEquals(3, collection.size());
-        
-       assertTrue(collection.retainAll(Arrays.asList("a", "c")));
+
+        assertTrue(collection.retainAll(Arrays.asList("a", "c")));
         assertEquals(2, collection.size());
         assertFalse(collection.contains("b"));
     }
@@ -244,13 +245,13 @@ class BetterListTest {
     void testIteratorAndForEach() {
         BetterList<String> list = new BetterList<>();
         list.addAll(Arrays.asList("x", "y", "z"));
-        
+
         List<String> collected = new ArrayList<>();
         for (String item : list) {
             collected.add(item);
         }
         assertEquals(Arrays.asList("x", "y", "z"), collected);
-        
+
         collected.clear();
         list.forEach(collected::add);
         assertEquals(Arrays.asList("x", "y", "z"), collected);
@@ -261,7 +262,7 @@ class BetterListTest {
         BetterList<String> list1 = new BetterList<>(Arrays.asList("a", "b", "c"));
         BetterList<String> list2 = new BetterList<>(Arrays.asList("a", "b", "c"));
         List<String> regularList = Arrays.asList("a", "b", "c");
-        
+
         assertEquals(list1, list2);
         assertEquals(list1, regularList);
         assertEquals(list1.hashCode(), list2.hashCode());
@@ -271,11 +272,11 @@ class BetterListTest {
     void testIndexOperations() {
         BetterList<String> list = new BetterList<>();
         list.addAll(Arrays.asList("a", "b", "c", "b", "d"));
-        
+
         assertEquals(1, list.indexOf("b"));
         assertEquals(3, list.lastIndexOf("b"));
         assertEquals(-1, list.indexOf("nonexistent"));
-        
+
         List<String> sublist = list.subList(1, 4);
         assertEquals(Arrays.asList("b", "c", "b"), sublist);
     }
@@ -284,11 +285,11 @@ class BetterListTest {
     void testListIterator() {
         BetterList<String> list = new BetterList<>();
         list.addAll(Arrays.asList("a", "b", "c"));
-        
+
         ListIterator<String> listIterator = list.listIterator();
         assertTrue(listIterator.hasNext());
         assertEquals("a", listIterator.next());
-        
+
         ListIterator<String> listIteratorFromIndex = list.listIterator(1);
         assertEquals("b", listIteratorFromIndex.next());
     }

@@ -1,13 +1,10 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.NotchBoundMethod;
-import edu.montana.notch.runtime.NotchDiagnostic;
 import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.types.*;
 import edu.montana.notch.util.Text;
-import edu.montana.notch.chisel.Location;
-import edu.montana.notch.chisel.Token;
 
 import java.util.Map;
 
@@ -17,10 +14,21 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
     private Token property;
     private NotchExpression root;
     private boolean favorMethods;
-    private String dotPath;
+    private final String dotPath;
 
-    public NotchPropertyAccess(String fileId, Location start, Location end) {
-        super(fileId, start, end);
+    public NotchPropertyAccess(NotchExpression root, Token property) {
+        super(root.span.through(property.end()));
+        this.root = addChild(root);
+        this.property = property;
+
+        String dotPath = null;
+        if (root instanceof DotPathMember dpm) {
+            String rootDotPath = dpm.getDotPath();
+            if (rootDotPath != null) {
+                dotPath = "%s.%s".formatted(rootDotPath, property.str());
+            }
+        }
+        this.dotPath = dotPath;
     }
 
     @Override
@@ -34,6 +42,13 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
 
         Object rootValue = runtime.evaluate(root);
         if (rootValue == null || runtime.isUndefined(rootValue)) {
+            if (dotPath != null) {
+                var type = TypeSystem.getType(dotPath);
+                if (type != null) {
+                    return type;
+                }
+            }
+
             return rootValue;
         }
 
@@ -43,14 +58,11 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
             if (method != null) {
                 return method;
             }
-            // fall through: no matching method, try properties / map entries /
-            // property-missing, so that e.g. `view.content()` on a map can
-            // resolve `content` to a callable stored as a map value.
         }
 
-        if(rootValue instanceof NotchType notchType) {
+        if (rootValue instanceof NotchType notchType) {
             NotchProperty staticProperty = notchType.getStaticProperty(property.str());
-            if(staticProperty != null) {
+            if (staticProperty != null) {
                 return staticProperty.get(null);
             }
         }
@@ -79,27 +91,27 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
         }
 
         // check if this dot path is an inner class
-        if(rootValue instanceof NotchType notchType && isADotPathComponent()) {
+        if (rootValue instanceof NotchType notchType && isADotPathComponent()) {
             // TODO - move into runtime to support imports
             NotchType type = TypeSystem.getType(notchType.getDisplayName() + "$" + property.str());
-            if(type != null) {
+            if (type != null) {
                 return type;
             }
         }
 
-        var error = new NotchDiagnostic();
-        error.highlight(fileId, span());
-        String hint;
-        if (rootValue instanceof NotchType notchType) {
-            hint = resolveClosestFeatureName(notchType);
-        } else {
-            hint = resolveClosestFeatureName(runtimeType);
-        }
-        error.note("no such property/method named %s on %s (%s)%s".formatted(Text.repr(getProperty()),
-                Text.repr(getParentDotPath()),
-                runtimeType.getDisplayName(), hint));
-        throw new NotchRuntimeException(runtime.currentStackTrace(), error);
-
+//        var error = new Diagnostic();
+//        error.highlight(span());
+//        String hint;
+//        if (rootValue instanceof NotchType notchType) {
+//            hint = resolveClosestFeatureName(notchType);
+//        } else {
+//            hint = resolveClosestFeatureName(runtimeType);
+//        }
+//        error.note("no property/method named %s on %s (%s)%s".formatted(Text.repr(getProperty()),
+//                Text.repr(getParentDotPath()),
+//                runtimeType.getDisplayName(), hint));
+//        throw new NotchRuntimeException(runtime.currentStackTrace(), error);
+        return UNDEFINED;
     }
 
     private String resolveClosestFeatureName(NotchType runtimeType) {
@@ -137,9 +149,9 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
     }
 
     private NotchBoundMethod resolveBoundMethod(Object rootValue, NotchType runtimeType) {
-        if(rootValue instanceof NotchType notchType) {
+        if (rootValue instanceof NotchType notchType) {
             NotchMethod staticMethod = notchType.getStaticMethod(property.str());
-            if(staticMethod != null) {
+            if (staticMethod != null) {
                 return new NotchBoundMethod(null, staticMethod);
             }
         }
@@ -155,18 +167,9 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
         return dotPath != null;
     }
 
-    public void setProperty(Token propName) {
-        this.property = propName;
-    }
-
-    public void setRoot(NotchExpression root) {
-        if(root instanceof DotPathMember dpm) {
-            String rootDotPath = dpm.getDotPath();
-            if (rootDotPath != null) {
-                this.dotPath = rootDotPath + DotPathMember.DOT + this.property.str();
-            }
-        }
-        this.root = addChild(root);
+    @Override
+    public String getDotPath() {
+        return dotPath;
     }
 
     public NotchExpression getRoot() {
@@ -175,11 +178,6 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
 
     public void setFavorMethods(boolean favorMethods) {
         this.favorMethods = favorMethods;
-    }
-
-    @Override
-    public String getDotPath() {
-        return this.dotPath;
     }
 
     public String getProperty() {

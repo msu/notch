@@ -1,15 +1,15 @@
 package edu.montana.notch.expressions;
 
 import edu.montana.notch.NotchElement;
+import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.chisel.Location;
 
 import java.util.Map;
 
 public abstract class NotchExpression extends NotchElement {
 
-    public NotchExpression(String fileId, Location start, Location end) {
-        super(fileId, start, end);
+    public NotchExpression(Span span) {
+        super(span);
     }
 
     public abstract Object evaluate(NotchRuntime runtime);
@@ -19,7 +19,7 @@ public abstract class NotchExpression extends NotchElement {
     }
 
     public final Object evaluate(Map<String, Object> symbols) {
-        var runtime = new NotchRuntime(fileId, symbols);
+        var runtime = new NotchRuntime(span.source(), symbols);
         return runtime.evaluate(this);
     }
 

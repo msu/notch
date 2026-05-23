@@ -6,7 +6,7 @@ public final class NotchTemplateContentExpression extends NotchTemplateContentIt
     public final NotchExpression expression;
 
     public NotchTemplateContentExpression(NotchExpression expression) {
-        super(expression.start, expression.end);
+        super(expression.span());
         this.expression = expression;
     }
 }

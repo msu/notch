@@ -1,9 +1,10 @@
 package edu.montana.notch.templates;
 
-import edu.montana.notch.templates.loader.NotchTemplateLoader;
+import edu.montana.notch.chisel.ParseException;
+import edu.montana.notch.chisel.Source;
+import edu.montana.notch.templates.loader.InMemoryNotchTemplateLoader;
 import edu.montana.notch.templates.runtime.RenderException;
 import edu.montana.notch.util.Exceptions;
-import edu.montana.notch.util.Text;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
@@ -11,11 +12,12 @@ import org.junit.jupiter.api.TestInfo;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
+
+import static edu.montana.notch.AssertContains.assertContains;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class NotchTemplateTestBase {
-    protected Map<String, String> templates = new HashMap<>();
-    protected TestTemplateLoader loader = new TestTemplateLoader();
+    protected Map<String, Source> templates = new HashMap<>();
     protected TestInfo testInfo;
 
     @BeforeEach
@@ -24,28 +26,27 @@ public abstract class NotchTemplateTestBase {
         this.templates = new HashMap<>();
     }
 
-    protected String renderTemplate(String mainTemplate, Object... vars) {
+    protected String renderTemplate(String uri, Object... vars) {
         try {
-            return renderTemplateForError(mainTemplate, vars);
+            return renderTemplateForError(uri, vars);
         } catch (RenderException e) {
-            var msg = e.render(loader);
-            System.out.println(msg);
-            Assertions.fail(e);
+            var msg = e.render();
+            Assertions.fail(msg, e);
             throw Exceptions.rethrow(e);
         }
     }
 
-    protected String renderTemplateForError(String mainTemplate, Object... vars) {
+    protected String renderTemplateForError(String uri, Object... vars) {
         var varMap = new LinkedHashMap<String, Object>();
         assert vars.length % 2 == 0;
         for (int i = 0; i < vars.length; i += 2) {
             varMap.put((String) vars[i], vars[i + 1]);
         }
 
-        var sunnyTemplates = new NotchTemplateRegistry(loader);
+        final var loader = new InMemoryNotchTemplateLoader(templates);
+        var sunnyTemplates = new NotchTemplates(loader);
         BasicNotchTemplateCommands.addTo(sunnyTemplates);
-
-        return sunnyTemplates.renderTemplate(mainTemplate, varMap);
+        return sunnyTemplates.renderTemplate(uri, varMap);
     }
 
     protected String renderString(String content, Object... vars) {
@@ -54,17 +55,46 @@ public abstract class NotchTemplateTestBase {
     }
 
     protected void registerTemplate(String name, String content) {
-        templates.put(name, content);
+        templates.put(name, new Source(name, content));
     }
 
-    protected String getTemplate(String name) {
-        return Objects.requireNonNull(templates.get(name), "no such template " + Text.repr(name));
-    }
+    void expectParseError(String uri, String expectedMessageFragment) {
+        var templ = new NotchTemplates(new InMemoryNotchTemplateLoader(templates));
+        BasicNotchTemplateCommands.addTo(templ);
 
-    public class TestTemplateLoader extends NotchTemplateLoader {
-        @Override
-        public String loadTemplate(String path) {
-            return getTemplate(path);
+        var ex = assertThrows(RenderException.class, () -> {
+            templ.renderTemplate(uri, new LinkedHashMap<>());
+        });
+
+        assertFalse(ex.getChildren().isEmpty());
+        var pe = assertInstanceOf(ParseException.class, ex.getChildren().get(0));
+
+        if (expectedMessageFragment != null) {
+            String message = pe.getMessage();
+            assertTrue(message.contains(expectedMessageFragment), "Expected error message to contain '" + expectedMessageFragment + "' but got: " + message);
         }
     }
+
+    void expectRenderError(String templateUri, String expectedMessageFragment, Object... args) {
+        var argMap = new LinkedHashMap<String, Object>();
+        for (int i = 0; i < args.length; i += 2) {
+            var name = (String) args[i];
+            var value = args[i + 1];
+            argMap.put(name, value);
+        }
+
+        var templ = new NotchTemplates(new InMemoryNotchTemplateLoader(templates));
+        BasicNotchTemplateCommands.addTo(templ);
+
+        RenderException ex = assertThrows(RenderException.class, () -> {
+            templ.renderTemplate(templateUri, argMap);
+        }, "Expected RenderException but template rendered successfully");
+
+
+        if (expectedMessageFragment != null) {
+            String message = ex.getMessage();
+            assertContains(expectedMessageFragment, message);
+        }
+    }
+
 }

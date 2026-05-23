@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.event.Level;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 class NotchLoggingConfigSanitizationTest {
@@ -18,15 +19,15 @@ class NotchLoggingConfigSanitizationTest {
     @Test
     void testSanitizationEnabledByDefault() {
         String message = config.formatMessage(
-            "TestLogger",
-            Level.INFO,
-            null,
-            "User login: password={}",
-            new Object[]{"secret123"},
-            null
+                "TestLogger",
+                Level.INFO,
+                null,
+                "User login: password={}",
+                new Object[]{"secret123"},
+                null
         );
 
-        assertTrue(message.contains("password=***REDACTED***"));
+        assertContains("password=***REDACTED***", message);
         assertFalse(message.contains("secret123"));
     }
 
@@ -35,15 +36,15 @@ class NotchLoggingConfigSanitizationTest {
         config.disableSanitization();
 
         String message = config.formatMessage(
-            "TestLogger",
-            Level.INFO,
-            null,
-            "User login: password={}",
-            new Object[]{"secret123"},
-            null
+                "TestLogger",
+                Level.INFO,
+                null,
+                "User login: password={}",
+                new Object[]{"secret123"},
+                null
         );
 
-        assertTrue(message.contains("password=secret123"));
+        assertContains("password=secret123", message);
         assertFalse(message.contains("***REDACTED***"));
     }
 
@@ -53,48 +54,48 @@ class NotchLoggingConfigSanitizationTest {
         config.enableSanitization();
 
         String message = config.formatMessage(
-            "TestLogger",
-            Level.INFO,
-            null,
-            "User login: password={}",
-            new Object[]{"secret123"},
-            null
+                "TestLogger",
+                Level.INFO,
+                null,
+                "User login: password={}",
+                new Object[]{"secret123"},
+                null
         );
 
-        assertTrue(message.contains("password=***REDACTED***"));
+        assertContains("password=***REDACTED***", message);
         assertFalse(message.contains("secret123"));
     }
 
     @Test
     void testSanitizeFormParamMapLogging() {
         String message = config.formatMessage(
-            "TestLogger",
-            Level.INFO,
-            null,
-            "Form values: {}",
-            new Object[]{"{password=[secret], username=[john]}"},
-            null
+                "TestLogger",
+                Level.INFO,
+                null,
+                "Form values: {}",
+                new Object[]{"{password=[secret], username=[john]}"},
+                null
         );
 
-        assertTrue(message.contains("password=***REDACTED***"));
-        assertTrue(message.contains("username=[john]"));
+        assertContains("password=***REDACTED***", message);
+        assertContains("username=[john]", message);
         assertFalse(message.contains("secret"));
     }
 
     @Test
     void testSanitizeMultipleSensitiveFields() {
         String message = config.formatMessage(
-            "TestLogger",
-            Level.INFO,
-            null,
-            "Auth data: password={} token={} apikey={}",
-            new Object[]{"pass123", "tok456", "key789"},
-            null
+                "TestLogger",
+                Level.INFO,
+                null,
+                "Auth data: password={} token={} apikey={}",
+                new Object[]{"pass123", "tok456", "key789"},
+                null
         );
 
-        assertTrue(message.contains("password=***REDACTED***"));
-        assertTrue(message.contains("token=***REDACTED***"));
-        assertTrue(message.contains("apikey=***REDACTED***"));
+        assertContains("password=***REDACTED***", message);
+        assertContains("token=***REDACTED***", message);
+        assertContains("apikey=***REDACTED***", message);
         assertFalse(message.contains("pass123"));
         assertFalse(message.contains("tok456"));
         assertFalse(message.contains("key789"));
@@ -103,16 +104,16 @@ class NotchLoggingConfigSanitizationTest {
     @Test
     void testNonSensitiveDataNotSanitized() {
         String message = config.formatMessage(
-            "TestLogger",
-            Level.INFO,
-            null,
-            "User data: username={} email={}",
-            new Object[]{"john", "john@example.com"},
-            null
+                "TestLogger",
+                Level.INFO,
+                null,
+                "User data: username={} email={}",
+                new Object[]{"john", "john@example.com"},
+                null
         );
 
-        assertTrue(message.contains("username=john"));
-        assertTrue(message.contains("email=john@example.com"));
+        assertContains("username=john", message);
+        assertContains("email=john@example.com", message);
         assertFalse(message.contains("***REDACTED***"));
     }
 
@@ -120,18 +121,18 @@ class NotchLoggingConfigSanitizationTest {
     void testSanitizationWithDifferentLogLevels() {
         for (Level level : new Level[]{Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR}) {
             String message = config.formatMessage(
-                "TestLogger",
-                level,
-                null,
-                "password={}",
-                new Object[]{"secret"},
-                null
+                    "TestLogger",
+                    level,
+                    null,
+                    "password={}",
+                    new Object[]{"secret"},
+                    null
             );
 
             assertTrue(message.contains("password=***REDACTED***"),
-                "Sanitization should work at level " + level);
+                    "Sanitization should work at level " + level);
             assertFalse(message.contains("secret"),
-                "Secret should be redacted at level " + level);
+                    "Secret should be redacted at level " + level);
         }
     }
 
@@ -141,28 +142,28 @@ class NotchLoggingConfigSanitizationTest {
         config.showFullLoggerName();
 
         String message = config.formatMessage(
-            "bigsky.jackknife.TestLogger",
-            Level.INFO,
-            null,
-            "password={}",
-            new Object[]{"secret"},
-            null
+                "bigsky.jackknife.TestLogger",
+                Level.INFO,
+                null,
+                "password={}",
+                new Object[]{"secret"},
+                null
         );
 
-        assertTrue(message.contains("INFO"));
-        assertTrue(message.contains("bigsky.jackknife.TestLogger"));
-        assertTrue(message.contains("password=***REDACTED***"));
+        assertContains("INFO", message);
+        assertContains("bigsky.jackknife.TestLogger", message);
+        assertContains("password=***REDACTED***", message);
     }
 
     @Test
     void testSanitizationWithEmptyMessage() {
         String message = config.formatMessage(
-            "TestLogger",
-            Level.INFO,
-            null,
-            "",
-            new Object[]{},
-            null
+                "TestLogger",
+                Level.INFO,
+                null,
+                "",
+                new Object[]{},
+                null
         );
 
         assertNotNull(message);
@@ -172,15 +173,15 @@ class NotchLoggingConfigSanitizationTest {
     @Test
     void testSanitizationWithEmptyArguments() {
         String message = config.formatMessage(
-            "TestLogger",
-            Level.INFO,
-            null,
-            "Simple message",
-            new Object[]{},
-            null
+                "TestLogger",
+                Level.INFO,
+                null,
+                "Simple message",
+                new Object[]{},
+                null
         );
 
-        assertTrue(message.contains("Simple message"));
+        assertContains("Simple message", message);
         assertFalse(message.contains("***REDACTED***"));
     }
 }

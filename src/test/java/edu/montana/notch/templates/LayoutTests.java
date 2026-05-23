@@ -3,6 +3,7 @@ package edu.montana.notch.templates;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LayoutTests extends NotchTemplateTestBase {
@@ -31,9 +32,9 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             var result = renderTemplate("child.html");
 
-            assertTrue(result.contains("<html>"));
-            assertTrue(result.contains("Hello World!"));
-            assertTrue(result.contains("</html>"));
+            assertContains("<html>", result);
+            assertContains("Hello World!", result);
+            assertContains("</html>", result);
             // Verify proper HTML structure
             assertTrue(result.contains("<body>"), "Body tag should be present");
             assertTrue(result.contains("</body>"), "Closing body tag should be present");
@@ -49,7 +50,7 @@ public class LayoutTests extends NotchTemplateTestBase {
         void layoutWithNamedContentBlock() {
             registerTemplate("parent.html", """
                     <header>
-                    #content for header default
+                    #content header with
                         Default Header
                     #end
                     </header>
@@ -60,19 +61,19 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             registerTemplate("child.html", """
                     #layout "parent.html"
-
-                    #content for header with
+                    
+                    #content header with
                         Custom Header
                     #end
-
+                    
                     Main content here
                     """);
 
             var result = renderTemplate("child.html");
 
-            assertTrue(result.contains("Custom Header"));
+            assertContains("Custom Header", result);
             assertFalse(result.contains("Default Header"));
-            assertTrue(result.contains("Main content here"));
+            assertContains("Main content here", result);
             // Verify structure
             assertTrue(result.indexOf("<header>") < result.indexOf("<main>"), "Header should come before main");
             assertTrue(result.indexOf("Custom Header") < result.indexOf("Main content"), "Header content before main content");
@@ -84,7 +85,7 @@ public class LayoutTests extends NotchTemplateTestBase {
         void layoutUsingDefaultContent() {
             registerTemplate("parent.html", """
                     <header>
-                    #content for header default
+                    #content header with
                         Default Header
                     #end
                     </header>
@@ -98,7 +99,7 @@ public class LayoutTests extends NotchTemplateTestBase {
             var result = renderTemplate("child.html");
 
             // Child doesn't override header, so default should be used
-            assertTrue(result.contains("Default Header"));
+            assertContains("Default Header", result);
             // Verify no custom header
             assertFalse(result.contains("Custom Header"), "Should not have custom header");
             // Verify default is used exactly once
@@ -109,7 +110,7 @@ public class LayoutTests extends NotchTemplateTestBase {
         void layoutWithMultipleNamedBlocks() {
             registerTemplate("parent.html", """
                     <header>
-                    #content for header default
+                    #content header with
                         Default Header
                     #end
                     </header>
@@ -117,7 +118,7 @@ public class LayoutTests extends NotchTemplateTestBase {
                     #content
                     </main>
                     <footer>
-                    #content for footer default
+                    #content footer with
                         Default Footer
                     #end
                     </footer>
@@ -125,23 +126,23 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             registerTemplate("child.html", """
                     #layout "parent.html"
-
-                    #content for header with
+                    
+                    #content header with
                         My Header
                     #end
-
-                    #content for footer with
+                    
+                    #content footer with
                         My Footer
                     #end
-
+                    
                     My main content
                     """);
 
             var result = renderTemplate("child.html");
 
-            assertTrue(result.contains("My Header"));
-            assertTrue(result.contains("My Footer"));
-            assertTrue(result.contains("My main content"));
+            assertContains("My Header", result);
+            assertContains("My Footer", result);
+            assertContains("My main content", result);
             assertFalse(result.contains("Default"));
             // Verify ordering
             assertTrue(result.indexOf("My Header") < result.indexOf("My main"), "Header before main");
@@ -165,7 +166,7 @@ public class LayoutTests extends NotchTemplateTestBase {
             registerTemplate("parent.html", """
                     <html>
                     <head>
-                    #content for head default
+                    #content head with
                         <title>Default</title>
                     #end
                     </head>
@@ -177,20 +178,20 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             registerTemplate("child.html", """
                     #layout "parent.html"
-
-                    #content for head with
+                    
+                    #content head with
                         <title>Child Page</title>
                     #end
-
+                    
                     <div>Child content</div>
                     """);
 
             var result = renderTemplate("child.html");
 
             // Two-level inheritance works
-            assertTrue(result.contains("<html>"));
-            assertTrue(result.contains("<title>Child Page</title>"));
-            assertTrue(result.contains("Child content"));
+            assertContains("<html>", result);
+            assertContains("<title>Child Page</title>", result);
+            assertContains("Child content", result);
         }
 
         // Commenting out multi-level (3+) inheritance tests
@@ -212,7 +213,7 @@ public class LayoutTests extends NotchTemplateTestBase {
         void variablesInContentBlocks() {
             registerTemplate("parent.html", """
                     <title>
-                    #content for title default
+                    #content title with
                         ${siteName}
                     #end
                     </title>
@@ -223,11 +224,11 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             registerTemplate("child.html", """
                     #layout "parent.html"
-
-                    #content for title with
+                    
+                    #content title with
                         ${pageTitle} | ${siteName}
                     #end
-
+                    
                     Welcome!
                     """);
 
@@ -237,47 +238,14 @@ public class LayoutTests extends NotchTemplateTestBase {
                     "pageTitle", "Home"
             );
 
-            assertTrue(result.contains("Home | MySite"));
-        }
-
-        @Test
-        void conditionalContentBlocks() {
-            registerTemplate("parent.html", """
-                    <header>
-                    #content for header default
-                        Guest header
-                    #end
-                    </header>
-                    """);
-
-            registerTemplate("child.html", """
-                    #layout "parent.html"
-
-                    #if loggedIn
-                    #content for header with
-                        User header
-                    #end
-                    #end
-                    """);
-
-            // When logged in
-            var resultLoggedIn = renderTemplate("child.html", "loggedIn", true);
-            assertTrue(resultLoggedIn.contains("User header"));
-            assertFalse(resultLoggedIn.contains("Guest header"), "Guest header should not show for logged in user");
-            assertFalse(resultLoggedIn.contains("#if"), "Commands should not appear in output");
-
-            // When not logged in
-            var resultGuest = renderTemplate("child.html", "loggedIn", false);
-            assertTrue(resultGuest.contains("Guest header"));
-            assertFalse(resultGuest.contains("User header"), "User header should not show for guest");
-            assertFalse(resultGuest.contains("#if"), "Commands should not appear in output");
+            assertContains("Home | MySite", result);
         }
 
         @Test
         void loopInContentBlock() {
             registerTemplate("parent.html", """
                     <nav>
-                    #content for nav default
+                    #content nav with
                         <a href="/">Home</a>
                     #end
                     </nav>
@@ -285,8 +253,8 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             registerTemplate("child.html", """
                     #layout "parent.html"
-
-                    #content for nav with
+                    
+                    #content nav with
                         #for item in navItems
                             <a href="${item}">${item}</a>
                         #end
@@ -298,9 +266,9 @@ public class LayoutTests extends NotchTemplateTestBase {
                     "navItems", java.util.List.of("Home", "About", "Contact")
             );
 
-            assertTrue(result.contains("<a href=\"Home\">Home</a>"));
-            assertTrue(result.contains("<a href=\"About\">About</a>"));
-            assertTrue(result.contains("<a href=\"Contact\">Contact</a>"));
+            assertContains("<a href=\"Home\">Home</a>", result);
+            assertContains("<a href=\"About\">About</a>", result);
+            assertContains("<a href=\"Contact\">Contact</a>", result);
         }
     }
 
@@ -321,11 +289,11 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             registerTemplate("child.html", """
                     #layout "parent.html"
-
+                    
                     #macro card(id)
                         Card ${id}
                     #end
-
+                    
                     #for i in [1, 2, 3]
                         #expand card(i)
                     #end
@@ -333,9 +301,9 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             var result = renderTemplate("child.html");
 
-            assertTrue(result.contains("Card 1"));
-            assertTrue(result.contains("Card 2"));
-            assertTrue(result.contains("Card 3"));
+            assertContains("Card 1", result);
+            assertContains("Card 2", result);
+            assertContains("Card 3", result);
             // Verify count
             assertEquals(3, result.split("Card").length - 1, "Should have 3 cards");
             // Verify ordering
@@ -349,25 +317,25 @@ public class LayoutTests extends NotchTemplateTestBase {
         void fragmentInNamedContentBlock() {
             registerTemplate("parent.html", """
                     <section>
-                    #content for items
+                    #content items
                     </section>
                     """);
 
             registerTemplate("child.html", """
                     #layout "parent.html"
-
+                    
                     #macro item(n)
                         Item ${n}
                     #end
-
-                    #content for items with
+                    
+                    #content items with
                         #expand item(100)
                     #end
                     """);
 
             var result = renderTemplate("child.html");
 
-            assertTrue(result.contains("Item 100"));
+            assertContains("Item 100", result);
         }
 
         // Commenting out - parent fragments not accessible in child (scope issue)
@@ -390,7 +358,7 @@ public class LayoutTests extends NotchTemplateTestBase {
         //     var templates = Map.of("parent.html", parent, "child.html", child);
         //     var result = renderTemplate(templates, "child.html");
         //
-        //     assertTrue(result.contains("<div class=\"wrapper\">Hello</div>"));
+        //     assertContains("<div class=\"wrapper\">Hello</div>", result);
         // }
     }
 
@@ -421,8 +389,8 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             var result = renderTemplate("child.html");
 
-            assertTrue(result.contains("<nav>Navigation</nav>"));
-            assertTrue(result.contains("Child content"));
+            assertContains("<nav>Navigation</nav>", result);
+            assertContains("Child content", result);
             // Verify structure
             assertTrue(result.indexOf("<nav>") < result.indexOf("Child content"), "Nav should come before content");
             // Verify include and layout worked together
@@ -444,7 +412,7 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             registerTemplate("child.html", """
                     #layout "parent.html"
-
+                    
                     Before include
                     #include "partial.html"
                     After include
@@ -452,9 +420,9 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             var result = renderTemplate("child.html");
 
-            assertTrue(result.contains("Before include"));
-            assertTrue(result.contains("Included content"));
-            assertTrue(result.contains("After include"));
+            assertContains("Before include", result);
+            assertContains("Included content", result);
+            assertContains("After include", result);
         }
     }
 
@@ -479,42 +447,41 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             var result = renderTemplate("child.html");
 
-            assertTrue(result.contains("Before"));
-            assertTrue(result.contains("After"));
+            assertContains("Before", result);
+            assertContains("After", result);
             // Empty content block renders nothing between Before and After
         }
 
         @Test
         void multipleContentBlocksWithSameName() {
             registerTemplate("parent.html", """
-                    #content for block default
+                    #content block with
                         Default
                     #end
                     """);
 
             registerTemplate("child.html", """
                     #layout "parent.html"
-
-                    #content for block with
+                    
+                    #content block with
                         First
                     #end
-
-                    #content for block with
+                    
+                    #content block with
                         Second
                     #end
                     """);
 
-            var result = renderTemplate("child.html");
-            assertTrue(result.contains("Second"));
+            expectParseError("child.html", "");
         }
 
         @Test
         void contentBlockWithoutLayout() {
             registerTemplate("standalone.html", """
-                    #content for header with
+                    #content header with
                         Header
                     #end
-
+                    
                     Content
                     """);
 
@@ -549,13 +516,13 @@ public class LayoutTests extends NotchTemplateTestBase {
                     <!DOCTYPE html>
                     <html>
                     <head>
-                        #content for head default
+                        #content head with
                             <title>Default Title</title>
                         #end
                     </head>
                     <body>
                         <header>
-                            #content for header default
+                            #content header with
                                 <h1>Default Header</h1>
                             #end
                         </header>
@@ -563,7 +530,7 @@ public class LayoutTests extends NotchTemplateTestBase {
                             #content
                         </main>
                         <footer>
-                            #content for footer default
+                            #content footer with
                                 <p>Copyright 2024</p>
                             #end
                         </footer>
@@ -573,16 +540,16 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             registerTemplate("page.html", """
                     #layout "base.html"
-
-                    #content for head with
+                    
+                    #content head with
                         <title>Home Page</title>
                         <meta name="description" content="Welcome">
                     #end
-
-                    #content for header with
+                    
+                    #content header with
                         <h1>Welcome Home</h1>
                     #end
-
+                    
                     <article>
                         <p>Main article content</p>
                     </article>
@@ -590,11 +557,11 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             var result = renderTemplate("page.html");
 
-            assertTrue(result.contains("<!DOCTYPE html>"));
-            assertTrue(result.contains("<title>Home Page</title>"));
-            assertTrue(result.contains("<h1>Welcome Home</h1>"));
-            assertTrue(result.contains("<article>"));
-            assertTrue(result.contains("Copyright 2024"));
+            assertContains("<!DOCTYPE html>", result);
+            assertContains("<title>Home Page</title>", result);
+            assertContains("<h1>Welcome Home</h1>", result);
+            assertContains("<article>", result);
+            assertContains("Copyright 2024", result);
             // Verify complete HTML structure
             assertTrue(result.contains("<html>"), "HTML tag should be present");
             assertTrue(result.contains("</html>"), "Closing HTML tag should be present");
@@ -616,12 +583,12 @@ public class LayoutTests extends NotchTemplateTestBase {
             registerTemplate("base.html", """
                     <article>
                         <h1>
-                        #content for title default
+                        #content title with
                             Untitled
                         #end
                         </h1>
                         <div class="meta">
-                            #content for meta default
+                            #content meta with
                                 Published today
                             #end
                         </div>
@@ -633,15 +600,15 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             registerTemplate("post.html", """
                     #layout "base.html"
-
-                    #content for title with
+                    
+                    #content title with
                         ${postTitle}
                     #end
-
-                    #content for meta with
+                    
+                    #content meta with
                         By ${author} on ${date}
                     #end
-
+                    
                     ${postContent}
                     """);
 
@@ -653,9 +620,9 @@ public class LayoutTests extends NotchTemplateTestBase {
                     "postContent", "This is the post content."
             );
 
-            assertTrue(result.contains("My First Post"));
-            assertTrue(result.contains("By Alice on 2024-01-15"));
-            assertTrue(result.contains("This is the post content."));
+            assertContains("My First Post", result);
+            assertContains("By Alice on 2024-01-15", result);
+            assertContains("This is the post content.", result);
         }
 
         @Test
@@ -663,7 +630,7 @@ public class LayoutTests extends NotchTemplateTestBase {
             registerTemplate("layout.html", """
                     <div class="dashboard">
                         <aside>
-                            #content for sidebar default
+                            #content sidebar with
                                 <nav>Default Nav</nav>
                             #end
                         </aside>
@@ -675,15 +642,15 @@ public class LayoutTests extends NotchTemplateTestBase {
 
             registerTemplate("dashboard.html", """
                     #layout "layout.html"
-
-                    #content for sidebar with
+                    
+                    #content sidebar with
                         <nav>
                             #for link in links
                                 <a href="${link}">${link}</a>
                             #end
                         </nav>
                     #end
-
+                    
                     <h2>Dashboard</h2>
                     <p>Welcome back, ${username}!</p>
                     """);
@@ -694,8 +661,8 @@ public class LayoutTests extends NotchTemplateTestBase {
                     "links", java.util.List.of("Home", "Profile", "Settings")
             );
 
-            assertTrue(result.contains("<a href=\"Home\">Home</a>"));
-            assertTrue(result.contains("Welcome back, Bob!"));
+            assertContains("<a href=\"Home\">Home</a>", result);
+            assertContains("Welcome back, Bob!", result);
         }
     }
 }

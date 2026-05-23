@@ -1,24 +1,25 @@
 package edu.montana.notch.console.token;
 
 import edu.montana.notch.chisel.Location;
-import edu.montana.notch.chisel.Token;
+import edu.montana.notch.chisel.TokenData;
 import edu.montana.notch.chisel.TokenizeException;
 import edu.montana.notch.chisel.Tokenizer;
 
-public class TokenTypeString extends edu.montana.notch.chisel.type.TokenTypeString {
-    public static final TokenTypeString STR = new TokenTypeString();
+public class CStringTokenType extends edu.montana.notch.chisel.type.CStringTokenType {
+    public static final CStringTokenType STR = new CStringTokenType();
 
-    protected TokenTypeString() {}
+    protected CStringTokenType() {
+    }
 
     @Override
-    public Token tokenize(Tokenizer t) throws TokenizeException {
+    public TokenData tokenize(Tokenizer t) throws TokenizeException {
         Location start = t.location();
         try {
             return super.tokenize(t);
         } catch (TokenizeException e) {
             Location end = t.location();
             String content = t.lex(start, end);
-            return new Token(start, end, this, content);
+            return new TokenData(content);
         }
     }
 }

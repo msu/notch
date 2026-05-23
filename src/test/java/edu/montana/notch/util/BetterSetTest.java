@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BetterSetTest {
@@ -16,12 +17,12 @@ class BetterSetTest {
         List<String> sourceList = Arrays.asList("a", "b", "c", "a");
         BetterSet<String> fromCollection = new BetterSet<>(sourceList);
         assertEquals(3, fromCollection.size());
-        assertTrue(fromCollection.contains("a"));
+        assertContains("a", fromCollection);
 
         String[] array = {"x", "y", "z", "x"};
         BetterSet<String> fromArray = new BetterSet<>(array);
         assertEquals(3, fromArray.size());
-        assertTrue(fromArray.contains("x"));
+        assertContains("x", fromArray);
 
         BetterSet<String> betterFactory = BetterSet.better(sourceList);
         assertEquals(3, betterFactory.size());
@@ -30,10 +31,10 @@ class BetterSetTest {
     @Test
     void testBasicSetOperations() {
         BetterSet<String> set = new BetterSet<>();
-        
+
         assertTrue(set.add("first"));
         assertEquals(1, set.size());
-        assertTrue(set.contains("first"));
+        assertContains("first", set);
 
         assertFalse(set.add("first"));
         assertEquals(1, set.size());
@@ -54,13 +55,13 @@ class BetterSetTest {
         BetterSet<String> set = new BetterSet<>();
         set.addAll(Arrays.asList("a", "b", "c", "d"));
         Collection<String> toRemove = Arrays.asList("b", "d", "e");
-        
+
         assertTrue(set.removeAll(toRemove));
         assertEquals(2, set.size());
         assertFalse(set.contains("b"));
         assertFalse(set.contains("d"));
-        assertTrue(set.contains("a"));
-        assertTrue(set.contains("c"));
+        assertContains("a", set);
+        assertContains("c", set);
     }
 
     @Test
@@ -68,11 +69,11 @@ class BetterSetTest {
         BetterSet<String> set = new BetterSet<>();
         set.addAll(Arrays.asList("a", "b", "c"));
         BetterSet<String> copy = set.copy();
-        
+
         assertEquals(set.size(), copy.size());
         assertEquals(set, copy);
         assertNotSame(set, copy);
-        
+
         copy.add("d");
         assertEquals(3, set.size());
         assertEquals(4, copy.size());
@@ -82,15 +83,15 @@ class BetterSetTest {
     void testUnion() {
         BetterSet<String> set1 = new BetterSet<>(Arrays.asList("a", "b", "c"));
         BetterSet<String> set2 = new BetterSet<>(Arrays.asList("c", "d", "e"));
-        
+
         BetterSet<String> union = set1.union(set2);
         assertEquals(5, union.size());
-        assertTrue(union.contains("a"));
-        assertTrue(union.contains("b"));
-        assertTrue(union.contains("c"));
-        assertTrue(union.contains("d"));
-        assertTrue(union.contains("e"));
-        
+        assertContains("a", union);
+        assertContains("b", union);
+        assertContains("c", union);
+        assertContains("d", union);
+        assertContains("e", union);
+
         assertEquals(3, set1.size());
         assertEquals(3, set2.size());
     }
@@ -99,14 +100,14 @@ class BetterSetTest {
     void testIntersect() {
         BetterSet<String> set1 = new BetterSet<>(Arrays.asList("a", "b", "c", "d"));
         BetterSet<String> set2 = new BetterSet<>(Arrays.asList("c", "d", "e", "f"));
-        
+
         BetterSet<String> intersection = set1.intersect(set2);
         assertEquals(2, intersection.size());
-        assertTrue(intersection.contains("c"));
-        assertTrue(intersection.contains("d"));
+        assertContains("c", intersection);
+        assertContains("d", intersection);
         assertFalse(intersection.contains("a"));
         assertFalse(intersection.contains("e"));
-        
+
         assertEquals(4, set1.size());
         assertEquals(4, set2.size());
     }
@@ -115,7 +116,7 @@ class BetterSetTest {
     void testIntersectWithEmptySet() {
         BetterSet<String> set1 = new BetterSet<>(Arrays.asList("a", "b", "c"));
         BetterSet<String> emptySet = new BetterSet<>();
-        
+
         BetterSet<String> intersection = set1.intersect(emptySet);
         assertEquals(0, intersection.size());
         assertTrue(intersection.isEmpty());
@@ -125,7 +126,7 @@ class BetterSetTest {
     void testIntersectWithNoOverlap() {
         BetterSet<String> set1 = new BetterSet<>(Arrays.asList("a", "b", "c"));
         BetterSet<String> set2 = new BetterSet<>(Arrays.asList("x", "y", "z"));
-        
+
         BetterSet<String> intersection = set1.intersect(set2);
         assertEquals(0, intersection.size());
         assertTrue(intersection.isEmpty());
@@ -134,22 +135,22 @@ class BetterSetTest {
     @Test
     void testFilterAsSet() {
         BetterSet<Integer> intSet = new BetterSet<>(Arrays.asList(1, 2, 3, 4, 5, 6));
-        
+
         BetterSet<Integer> evenNumbers = intSet.filterAsSet(n -> n % 2 == 0);
         assertEquals(3, evenNumbers.size());
-        assertTrue(evenNumbers.contains(2));
-        assertTrue(evenNumbers.contains(4));
-        assertTrue(evenNumbers.contains(6));
+        assertContains(2, evenNumbers);
+        assertContains(4, evenNumbers);
+        assertContains(6, evenNumbers);
         assertFalse(evenNumbers.contains(1));
         assertFalse(evenNumbers.contains(3));
         assertFalse(evenNumbers.contains(5));
-        
+
         BetterSet<Integer> greaterThanThree = intSet.filterAsSet(n -> n > 3);
         assertEquals(3, greaterThanThree.size());
-        assertTrue(greaterThanThree.contains(4));
-        assertTrue(greaterThanThree.contains(5));
-        assertTrue(greaterThanThree.contains(6));
-        
+        assertContains(4, greaterThanThree);
+        assertContains(5, greaterThanThree);
+        assertContains(6, greaterThanThree);
+
         BetterSet<Integer> noMatches = intSet.filterAsSet(n -> n > 10);
         assertEquals(0, noMatches.size());
         assertTrue(noMatches.isEmpty());
@@ -158,16 +159,16 @@ class BetterSetTest {
     @Test
     void testBetterIterableMethods() {
         BetterSet<Integer> intSet = new BetterSet<>(Arrays.asList(1, 2, 3, 4, 5));
-        
-        BetterList<String> mapped = intSet.map(String::valueOf);
+
+        BetterList<String> mapped = intSet.map(String::valueOf).toList();
         assertEquals(5, mapped.size());
-        assertTrue(mapped.contains("3"));
-        
+        assertContains("3", mapped);
+
         Set<Integer> toSet = intSet.toSet();
         assertEquals(5, toSet.size());
-        assertTrue(toSet.contains(3));
-        
-        BetterList<Integer> filtered = intSet.filter(n -> n % 2 == 0);
+        assertContains(3, toSet);
+
+        BetterList<Integer> filtered = intSet.filter(n -> n % 2 == 0).toList();
         assertEquals(2, filtered.size());
         assertTrue(filtered.contains(2));
         assertTrue(filtered.contains(4));
@@ -181,16 +182,16 @@ class BetterSetTest {
         
         Integer first = intSet.first();
         assertNotNull(first);
-        assertTrue(intSet.contains(first));
-        
+        assertContains(first, intSet);
+
         Integer firstEven = intSet.firstWhere(n -> n % 2 == 0);
         assertNotNull(firstEven);
         assertTrue(firstEven % 2 == 0);
-        
-        assertTrue(intSet.hasMatch(n -> n > 3));
-        assertFalse(intSet.hasMatch(n -> n > 10));
-        assertTrue(intSet.hasNoMatch(n -> n > 10));
-        assertFalse(intSet.hasNoMatch(n -> n > 3));
+
+        assertTrue(intSet.hasAny(n -> n > 3));
+        assertFalse(intSet.hasAny(n -> n > 10));
+        assertTrue(intSet.hasNone(n -> n > 10));
+        assertFalse(intSet.hasNone(n -> n > 3));
     }
 
     @Test
@@ -228,25 +229,25 @@ class BetterSetTest {
     void testSetInterfaceCompatibility() {
         BetterSet<String> betterSet = new BetterSet<>();
         Set<String> javaSet = betterSet;
-        
+
         assertTrue(javaSet.add("test1"));
         assertFalse(javaSet.add("test1"));
         assertEquals(1, javaSet.size());
-        
+
         javaSet.addAll(Arrays.asList("test2", "test3", "test1"));
         assertEquals(3, javaSet.size());
-        
-        assertTrue(javaSet.contains("test1"));
+
+        assertContains("test1", javaSet);
         assertFalse(javaSet.isEmpty());
-        
+
         Iterator<String> iterator = javaSet.iterator();
         assertTrue(iterator.hasNext());
         String first = iterator.next();
         assertNotNull(first);
-        
+
         String[] array = javaSet.toArray(new String[0]);
         assertEquals(3, array.length);
-        
+
         javaSet.clear();
         assertTrue(javaSet.isEmpty());
     }
@@ -255,19 +256,19 @@ class BetterSetTest {
     void testCollectionInterfaceCompatibility() {
         BetterSet<String> betterSet = new BetterSet<>();
         Collection<String> collection = betterSet;
-        
+
         assertTrue(collection.add("item"));
         assertFalse(collection.add("item"));
         assertTrue(collection.addAll(Arrays.asList("a", "b", "c", "a")));
         assertEquals(4, collection.size());
-        
-        assertTrue(collection.contains("item"));
+
+        assertContains("item", collection);
         assertTrue(collection.containsAll(Arrays.asList("a", "b")));
-        
+
         assertFalse(collection.remove("nonexistent"));
         assertTrue(collection.remove("item"));
         assertEquals(3, collection.size());
-        
+
         assertTrue(collection.retainAll(Arrays.asList("a", "c", "x")));
         assertEquals(2, collection.size());
         assertFalse(collection.contains("b"));
@@ -276,16 +277,16 @@ class BetterSetTest {
     @Test
     void testIteratorAndForEach() {
         BetterSet<String> set = new BetterSet<>(Arrays.asList("x", "y", "z"));
-        
+
         Set<String> collected = new HashSet<>();
         for (String item : set) {
             collected.add(item);
         }
         assertEquals(3, collected.size());
-        assertTrue(collected.contains("x"));
-        assertTrue(collected.contains("y"));
-        assertTrue(collected.contains("z"));
-        
+        assertContains("x", collected);
+        assertContains("y", collected);
+        assertContains("z", collected);
+
         collected.clear();
         set.forEach(collected::add);
         assertEquals(3, collected.size());
@@ -296,7 +297,7 @@ class BetterSetTest {
         BetterSet<String> set1 = new BetterSet<>(Arrays.asList("a", "b", "c"));
         BetterSet<String> set2 = new BetterSet<>(Arrays.asList("c", "b", "a"));
         Set<String> regularSet = new HashSet<>(Arrays.asList("a", "b", "c"));
-        
+
         assertEquals(set1, set2);
         assertEquals(set1, regularSet);
         assertEquals(set1.hashCode(), set2.hashCode());
@@ -305,21 +306,21 @@ class BetterSetTest {
     @Test
     void testSetUniquenessBehavior() {
         BetterSet<String> set = new BetterSet<>();
-        
+
         assertTrue(set.add("duplicate"));
         assertFalse(set.add("duplicate"));
         assertEquals(1, set.size());
-        
+
         set.addAll(Arrays.asList("duplicate", "unique", "duplicate"));
         assertEquals(2, set.size());
-        assertTrue(set.contains("duplicate"));
-        assertTrue(set.contains("unique"));
+        assertContains("duplicate", set);
+        assertContains("unique", set);
     }
 
     @Test
     void testEmptySetBehavior() {
         BetterSet<String> emptySet = new BetterSet<>();
-        
+
         assertEquals(0, emptySet.size());
         assertTrue(emptySet.isEmpty());
         assertFalse(emptySet.contains("anything"));
@@ -333,11 +334,11 @@ class BetterSetTest {
     @Test
     void testSetOperationsWithSelf() {
         BetterSet<String> set = new BetterSet<>(Arrays.asList("a", "b", "c"));
-        
+
         BetterSet<String> unionWithSelf = set.union(set);
         assertEquals(3, unionWithSelf.size());
         assertEquals(set, unionWithSelf);
-        
+
         BetterSet<String> intersectWithSelf = set.intersect(set);
         assertEquals(3, intersectWithSelf.size());
         assertEquals(set, intersectWithSelf);

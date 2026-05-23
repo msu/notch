@@ -3,7 +3,8 @@ package edu.montana.notch.util;
 import java.io.IOException;
 
 public final class BetterProcess {
-    private BetterProcess() {}
+    private BetterProcess() {
+    }
 
     public static void run(String... args) {
         try {

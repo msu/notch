@@ -1,29 +1,31 @@
 package edu.montana.notch.json5;
 
-import edu.montana.notch.chisel.Token;
-import edu.montana.notch.chisel.TokenType;
-import edu.montana.notch.chisel.TokenizeException;
-import edu.montana.notch.chisel.Tokenizer;
+import edu.montana.notch.chisel.*;
 
 public class JSON5TokenTypeComment implements TokenType {
     public static final JSON5TokenTypeComment JSON5_COMMENT = new JSON5TokenTypeComment();
 
-    private JSON5TokenTypeComment() {}
+    private JSON5TokenTypeComment() {
+    }
 
     @Override
-    public Token tokenize(Tokenizer t) throws TokenizeException {
+    public TokenData tokenize(Tokenizer t) throws TokenizeException {
         final var start = t.location();
 
         if (t.take("//")) {
-            t.seek('\n');
-            return new Token(start, t.location(), this, null);
+            final var content = t.seek('\n');
+            return new TokenData(content);
         }
 
         if (t.take("/*")) {
-            if (null == t.trySeek("*/")) {
-                throw new TokenizeException(start, t.location(), "expected '*/' in tokens");
+            final var content = t.trySeek("*/");
+            if (content == null) {
+                final var diag = new Diagnostic();
+                diag.highlight(new Span(t.source(), start, t.location()));
+                diag.note("expected '*/' in tokens");
+                throw new TokenizeException(diag);
             }
-            return new Token(start, t.location(), this, null);
+            return new TokenData(content);
         }
 
         return null;

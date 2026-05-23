@@ -1,9 +1,7 @@
 package edu.montana.notch.templates.runtime;
 
-import edu.montana.notch.templates.NotchTemplateCommand;
-
 import java.util.Map;
 
-public interface NotchTemplateImportable extends NotchTemplateCommand.Global {
+public interface NotchTemplateImportable {
     Map<String, Object> getExportedValues();
 }

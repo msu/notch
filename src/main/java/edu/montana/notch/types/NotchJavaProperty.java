@@ -2,7 +2,10 @@ package edu.montana.notch.types;
 
 import edu.montana.notch.util.Text;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import static edu.montana.notch.util.Exceptions.rethrow;
 
@@ -69,7 +72,7 @@ public class NotchJavaProperty implements NotchProperty {
             if (matchesStaticFlag(field)) {
                 return new FieldAccessor(field);
             }
-        } catch (NoSuchFieldException nfe){
+        } catch (NoSuchFieldException nfe) {
             // ignore
         }
         return null;
@@ -113,8 +116,11 @@ public class NotchJavaProperty implements NotchProperty {
 
     private interface Getter {
         Object get(Object root);
+
         Class getType();
+
         Setter resolveSetter();
+
         boolean isStatic();
     }
 
@@ -124,6 +130,7 @@ public class NotchJavaProperty implements NotchProperty {
 
     private class MethodGetter implements Getter {
         private final Method method;
+
         public MethodGetter(Method method) {
             this.method = method;
         }
@@ -192,7 +199,7 @@ public class NotchJavaProperty implements NotchProperty {
         public void set(Object root, Object value) {
             try {
                 field.set(root, value);
-            }  catch (IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 throw rethrow(e);
             }
         }

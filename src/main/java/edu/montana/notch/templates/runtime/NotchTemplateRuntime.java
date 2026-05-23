@@ -1,34 +1,36 @@
 package edu.montana.notch.templates.runtime;
 
+import edu.montana.notch.chisel.Source;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
-import edu.montana.notch.templates.NotchTemplateRegistry;
+import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.util.Exceptions;
+import org.unbescape.html.HtmlEscape;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class NotchTemplateRuntime extends NotchRuntime {
     private LinkedHashMap<String, Object> config = new LinkedHashMap<>();
-    private final NotchTemplateRegistry templates;
+    private final NotchTemplates templates;
     private Helper helper = null;
 
     public NotchTemplateRuntime(
-            String fileId,
-            NotchTemplateRegistry templates,
+            Source source,
+            NotchTemplates templates,
             Map<String, Object> entry
     ) {
-        super(fileId, entry);
+        super(source, entry);
         this.templates = templates;
     }
 
     public NotchTemplateRuntime(
-            String fileId,
+            Source source,
             NotchTemplateRuntime parent
     ) {
-        super(fileId, parent);
+        super(source, parent);
         this.templates = parent.templates;
         this.config = parent.config;
         this.helper = parent.helper;
@@ -56,28 +58,8 @@ public class NotchTemplateRuntime extends NotchRuntime {
         }
     }
 
-    public NotchTemplateRegistry templates() {
+    public NotchTemplates templates() {
         return templates;
-    }
-
-    public <T> T storage(StorageKey<T> key) {
-        return (T) config.get(key.name);
-    }
-
-    public <T> void storage(StorageKey<T> key, T value) {
-        if (value == null) {
-            config.remove(key.name);
-        } else {
-            config.put(key.name, value);
-        }
-    }
-
-    public void storage(String name, Object value) {
-        if (value == null) {
-            config.remove(name);
-        } else {
-            config.put(name, value);
-        }
     }
 
     public String escapeText(String text) {
@@ -107,23 +89,15 @@ public class NotchTemplateRuntime extends NotchRuntime {
     }
 
     public void render(NotchTemplateCommand cmd, StringBuilder out) {
-        try {
-            cmd.render(this, out);
-        } catch (RenderException e) {
-            throw Exceptions.rethrow(e);
-        } catch (NotchRuntimeException e) {
-            throw new RenderException(cmd.span(), e);
-        } catch (Exception e) {
-            throw Exceptions.rethrow(e);
-        }
+        cmd.render(this, out);
     }
 
     public void render(NotchExpression expression, StringBuilder out) {
-        try (var ignoredTrace = trace(expression.fileId, expression.span(), "<expression>")) {
+        try (var ignoredTrace = trace(expression, source.id)) {
             var value = evaluate(expression);
             if (!isUndefined(value)) {
                 String text;
-                if(value instanceof RawString ss) {
+                if (value instanceof RawString ss) {
                     text = ss.rawString();
                 } else {
                     String stringValue = value == null ? "" : value.toString();
@@ -134,7 +108,7 @@ public class NotchTemplateRuntime extends NotchRuntime {
         } catch (RenderException e) {
             throw Exceptions.rethrow(e);
         } catch (NotchRuntimeException e) {
-            throw new RenderException(expression.span(), e);
+            throw new RenderException(e);
         }
     }
 
@@ -171,6 +145,4 @@ public class NotchTemplateRuntime extends NotchRuntime {
             return UNDEFINED;
         }
     }
-
-    public record StorageKey<T>(Class<T> clazz, String name) {}
 }

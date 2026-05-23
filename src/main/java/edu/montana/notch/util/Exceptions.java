@@ -37,7 +37,8 @@ public class Exceptions {
     public static void ignore(Runnable runnable) {
         try {
             runnable.run();
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
     }
 
     public static <T> T safelyEval(Callable<T> callable) {
@@ -85,6 +86,19 @@ public class Exceptions {
             index--;
         }
         return newStackTrace.toArray(StackTraceElement[]::new);
+    }
+
+    public static BetterList<StackTraceElement> localizeStackTrace(StackTraceElement[] stackTrace) {
+        final var current = Thread.currentThread().getStackTrace();
+        int off = 0;
+        while (
+                off < stackTrace.length &&
+                        off < current.length &&
+                        current[current.length - off - 1].equals(stackTrace[stackTrace.length - off - 1])
+        ) {
+            off += 1;
+        }
+        return BetterList.better(Arrays.asList(stackTrace).subList(0, stackTrace.length - off));
     }
 
     public interface ProducerWithException<T> {

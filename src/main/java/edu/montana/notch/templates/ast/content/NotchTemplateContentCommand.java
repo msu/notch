@@ -7,12 +7,12 @@ public final class NotchTemplateContentCommand extends NotchTemplateContentItem 
     public final NotchTemplateCommand command;
 
     public NotchTemplateContentCommand(NotchTemplateCommand command) {
-        super(command.getStart(), command.getEnd());
+        super(command.span());
         this.command = command;
     }
 
     @Override
     public String toString() {
-        return "Command(%s)".formatted(Text.repr(command.name));
+        return "Command(%s)".formatted(Text.repr(command.commandName));
     }
 }

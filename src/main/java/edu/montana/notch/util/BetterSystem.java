@@ -6,7 +6,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 
 public final class BetterSystem {
-    private BetterSystem() {}
+    private BetterSystem() {
+    }
 
     public enum Arch {
         X86,
@@ -61,8 +62,8 @@ public final class BetterSystem {
 
     public static int findOpenPort(int targetPort) {
         var port = targetPort;
-        while(port < 65536) {
-            if(isPortAvailable(port)) {
+        while (port < 65536) {
+            if (isPortAvailable(port)) {
                 return port;
             }
             port++;
@@ -71,7 +72,7 @@ public final class BetterSystem {
     }
 
     public static boolean isPortAvailable(int port) {
-        try(ServerSocket ignored = new ServerSocket(port)) {
+        try (ServerSocket ignored = new ServerSocket(port)) {
             return true;
         } catch (IOException e) {
             return false;

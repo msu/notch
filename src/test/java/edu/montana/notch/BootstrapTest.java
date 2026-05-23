@@ -14,7 +14,8 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
-import static edu.montana.notch.NotchTestUtils.*;
+import static edu.montana.notch.NotchTestUtils.eval;
+import static edu.montana.notch.NotchTestUtils.exec;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BootstrapTest {
@@ -113,7 +114,7 @@ public class BootstrapTest {
 
     @Test
     public void bootstrapClosureAsArgument() {
-        String result = exec("print( ['a', 'ab', 'abc'].map(\\ s -> s.length) )");
+        String result = exec("print( ['a', 'ab', 'abc'].map(\\ s -> s.length).toList() )");
         assertEquals("[1, 2, 3]\n", result);
     }
 

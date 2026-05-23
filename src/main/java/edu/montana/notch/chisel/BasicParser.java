@@ -129,6 +129,17 @@ public class BasicParser {
         return currentToken().span().through(source().eoi);
     }
 
+    public Token expect(String tokenType, String errorMessage) {
+        Token token = consume(tokenType);
+        if (token == null) {
+            final var diag = new Diagnostic()
+                    .highlight(currentToken())
+                    .note(errorMessage);
+            throw new ParseException(diag);
+        }
+        return token;
+    }
+
     public class IgnoredTypeGuard implements SafeAutoClosable {
         public final String[] ignoredTypes;
         private final boolean[] preExistingTypes;

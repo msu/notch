@@ -1,15 +1,11 @@
 package edu.montana.notch.json5;
 
+import edu.montana.notch.chisel.*;
 import edu.montana.notch.util.Text;
-import edu.montana.notch.chisel.Location;
-import edu.montana.notch.chisel.Token;
-import edu.montana.notch.chisel.TokenType;
-import edu.montana.notch.chisel.TokenizeException;
-import edu.montana.notch.chisel.Tokenizer;
 
 /**
  * JSON5 Number Tokenizer
- *
+ * <p>
  * Supports:
  * - Decimal numbers: 123, 123.456, .456, 123e10, 123e-10
  * - Hexadecimal numbers: 0xDECAF, 0xC0FFEE
@@ -19,7 +15,9 @@ import edu.montana.notch.chisel.Tokenizer;
 public class JSON5TokenTypeNumber implements TokenType {
     public static final JSON5TokenTypeNumber JSON5_NUMBER = new JSON5TokenTypeNumber();
 
-    private JSON5TokenTypeNumber() {}
+    private JSON5TokenTypeNumber() {
+    }
+
     public record NumberValue(String repr, Double decimalValue, Long integerValue) {
         public static NumberValue of(String repr, double value) {
             return new NumberValue(repr, value, null);
@@ -63,7 +61,7 @@ public class JSON5TokenTypeNumber implements TokenType {
     }
 
     @Override
-    public Token tokenize(Tokenizer t) throws TokenizeException {
+    public TokenData tokenize(Tokenizer t) throws TokenizeException {
         var start = t.location();
 
         boolean negative = false;
@@ -72,12 +70,12 @@ public class JSON5TokenTypeNumber implements TokenType {
         if (t.take("Infinity")) {
             String repr = t.lex(start, t.location());
             double value = negative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-            return new Token(start, t.location(), this, NumberValue.of(repr, value));
+            return new TokenData(NumberValue.of(repr, value));
         }
 
         if (t.take("NaN")) {
             String repr = t.lex(start, t.location());
-            return new Token(start, t.location(), this, NumberValue.of(repr, Double.NaN));
+            return new TokenData(NumberValue.of(repr, Double.NaN));
         }
 
         if (t.take("0x") || t.take("0X")) {
@@ -87,9 +85,12 @@ public class JSON5TokenTypeNumber implements TokenType {
         return parseDecimal(t, start);
     }
 
-    private Token parseHex(Tokenizer t, Location start, boolean negative) throws TokenizeException {
+    private TokenData parseHex(Tokenizer t, Location start, boolean negative) throws TokenizeException {
         if (t.atEnd() || !Text.isHexDigit(t.peek())) {
-            throw new TokenizeException(start, t.location(), "expected hex digit after 0x");
+            final var diag = new Diagnostic();
+            diag.highlight(new Span(t.source(), start, t.location()));
+            diag.note("expected hex digit after 0x");
+            throw new TokenizeException(diag);
         }
 
         while (!t.atEnd() && Text.isHexDigit(t.peek())) {
@@ -99,18 +100,21 @@ public class JSON5TokenTypeNumber implements TokenType {
         String repr = t.lex(start, t.location());
 
         int hexStart = start.index + (negative ? 3 : 2);  // Skip +/- and 0x
-        String hexDigits = t.source().subSequence(hexStart, t.location().index).toString();
+        String hexDigits = t.source().content.subSequence(hexStart, t.location().index).toString();
 
         try {
             long longValue = Long.parseLong(hexDigits, 16);
             long value = negative ? -longValue : longValue;
-            return new Token(start, t.location(), this, NumberValue.of(repr, value));
+            return new TokenData(NumberValue.of(repr, value));
         } catch (NumberFormatException e) {
-            throw new TokenizeException(start, t.location(), "invalid hex number: " + hexDigits);
+            final var diag = new Diagnostic();
+            diag.highlight(new Span(t.source(), start, t.location()));
+            diag.note("invalid hex number: " + hexDigits);
+            throw new TokenizeException(diag);
         }
     }
 
-    private Token parseDecimal(Tokenizer t, Location start) {
+    private TokenData parseDecimal(Tokenizer t, Location start) {
         boolean hasIntegerPart = false;
         boolean hasFractionPart = false;
 
@@ -146,7 +150,10 @@ public class JSON5TokenTypeNumber implements TokenType {
 
             // Must have at least one digit after exponent marker
             if (t.atEnd() || !Text.isDigit(t.peek())) {
-                throw new TokenizeException(start, t.location(), "expected digit in exponent");
+                final var diag = new Diagnostic();
+                diag.highlight(new Span(t.source(), start, t.location()));
+                diag.note("expected digit in exponent");
+                throw new TokenizeException(diag);
             }
 
             while (!t.atEnd() && Text.isDigit(t.peek())) {
@@ -166,9 +173,12 @@ public class JSON5TokenTypeNumber implements TokenType {
                 long val = Long.parseLong(repr);
                 value = NumberValue.of(repr, val);
             }
-            return new Token(start, t.location(), this, value);
+            return new TokenData(value);
         } catch (NumberFormatException e) {
-            throw new TokenizeException(start, t.location(), "invalid number: " + repr);
+            final var diag = new Diagnostic();
+            diag.highlight(new Span(t.source(), start, t.location()));
+            diag.note("invalid number: " + repr);
+            throw new TokenizeException(diag);
         }
     }
 }

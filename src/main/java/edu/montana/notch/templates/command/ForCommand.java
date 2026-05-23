@@ -1,52 +1,43 @@
 package edu.montana.notch.templates.command;
 
 import edu.montana.notch.NotchParser;
+import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplateParser;
-import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
-import edu.montana.notch.chisel.Token;
+import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 
 public class ForCommand extends NotchTemplateCommand {
 
     private Token varName;
     private NotchExpression iterable;
     private NotchTemplateContentBlock content;
-    private NotchTemplateContentBlock backupContent;
 
     public ForCommand() {
         super("for");
     }
 
     @Override
-    public NotchTemplateCommand newInstance() {
-        return new ForCommand();
+    public void parseCommand(NotchParser parser) {
+        varName = parser.requireIdent("expected the loop-item variable name");
+        parser.requireKeyword("in", "expected 'in' after the loop-item variable name");
+        iterable = parser.requireExpression("expected iterable in 'for' command");
+        parser.requireEnd("expected end of line after 'for' iterable");
     }
 
     @Override
-    public void parse(Token commandName, NotchTemplateParser tmplParser, NotchParser commandParser) {
-        varName = commandParser.requireIdent("expected the loop-item variable name");
-        commandParser.requireKeyword("in", "expected 'in' after the loop-item variable name");
-        iterable = commandParser.requireExpression("expected iterable in 'for' command");
-        commandParser.requireEnd("expected end of line after 'for' iterable");
-
-        content = tmplParser.parseContentBlock(EndCommand.class, ElseCommand.class);
+    public void parseBody(NotchTemplateParser parser) {
+        content = parser.parseContentBlock(new EndCommand(), new ElseCommand());
         addChildContent(content);
-
-        var endCommand = content.lastCommand();
-        if (endCommand instanceof ElseCommand) {
-            backupContent = tmplParser.parseContentBlock(EndCommand.class);
-            addChildContent(backupContent);
-        }
     }
 
     @Override
     public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
         var iterableValue = iterable.evaluate(runtime);
-        var iterable = runtime.coerceIterable(this.iterable.fileId, this.iterable.span(), iterableValue);
+        var iterable = runtime.coerceIterable(this.iterable.span(), iterableValue);
 
-        try (var scope = runtime.pushScope(fileId, span())) {
+        try (var scope = runtime.pushScope()) {
             int i = 0;
             if (iterable != null) {
                 for (Object o : iterable) {
@@ -57,8 +48,8 @@ public class ForCommand extends NotchTemplateCommand {
                 }
             }
 
-            if (i == 0 && backupContent != null) {
-                backupContent.render(runtime, sb);
+            if (i == 0) {
+                content.terminalCommand().render(runtime, sb);
             }
         }
     }

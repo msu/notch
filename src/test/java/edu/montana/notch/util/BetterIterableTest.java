@@ -1,11 +1,13 @@
 package edu.montana.notch.util;
 
+import edu.montana.notch.iter.BetterIterable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BetterIterableTest {
@@ -14,9 +16,9 @@ class BetterIterableTest {
     void testBetterFactoryMethod() {
         List<String> sourceList = Arrays.asList("a", "b", "c");
         BetterIterable<String> betterIterable = BetterIterable.better(sourceList);
-        
+
         assertNotNull(betterIterable);
-        
+
         List<String> collected = new ArrayList<>();
         betterIterable.forEach(collected::add);
         assertEquals(Arrays.asList("a", "b", "c"), collected);
@@ -26,12 +28,12 @@ class BetterIterableTest {
     void testMap() {
         List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
         BetterIterable<Integer> betterNumbers = BetterIterable.better(numbers);
-        
-        BetterList<String> mapped = betterNumbers.map(String::valueOf);
+
+        BetterList<String> mapped = betterNumbers.map(String::valueOf).toList();
         assertEquals(5, mapped.size());
         assertEquals(Arrays.asList("1", "2", "3", "4", "5"), mapped);
-        
-        BetterList<Integer> doubled = betterNumbers.map(n -> n * 2);
+
+        BetterList<Integer> doubled = betterNumbers.map(n -> n * 2).toList();
         assertEquals(Arrays.asList(2, 4, 6, 8, 10), doubled);
     }
 
@@ -51,12 +53,12 @@ class BetterIterableTest {
     void testToList() {
         Set<String> sourceSet = new HashSet<>(Arrays.asList("x", "y", "z"));
         BetterIterable<String> betterIterable = BetterIterable.better(sourceSet);
-        
+
         BetterList<String> result = betterIterable.toList();
         assertEquals(3, result.size());
-        assertTrue(result.contains("x"));
-        assertTrue(result.contains("y"));
-        assertTrue(result.contains("z"));
+        assertContains("x", result);
+        assertContains("y", result);
+        assertContains("z", result);
     }
 
     @Test
@@ -134,14 +136,14 @@ class BetterIterableTest {
     void testFilter() {
         List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         BetterIterable<Integer> betterNumbers = BetterIterable.better(numbers);
-        
-        BetterList<Integer> evenNumbers = betterNumbers.filter(n -> n % 2 == 0);
+
+        BetterList<Integer> evenNumbers = betterNumbers.filter(n -> n % 2 == 0).toList();
         assertEquals(Arrays.asList(2, 4, 6, 8, 10), evenNumbers);
-        
-        BetterList<Integer> greaterThanFive = betterNumbers.filter(n -> n > 5);
+
+        BetterList<Integer> greaterThanFive = betterNumbers.filter(n -> n > 5).toList();
         assertEquals(Arrays.asList(6, 7, 8, 9, 10), greaterThanFive);
-        
-        BetterList<Integer> noMatches = betterNumbers.filter(n -> n > 20);
+
+        BetterList<Integer> noMatches = betterNumbers.filter(n -> n > 20).toList();
         assertEquals(0, noMatches.size());
     }
 
@@ -149,7 +151,7 @@ class BetterIterableTest {
     void testToStringWithSeparator() {
         List<String> items = Arrays.asList("apple", "banana", "cherry");
         BetterIterable<String> betterItems = BetterIterable.better(items);
-        
+
         assertEquals("apple|banana|cherry", betterItems.toString("|"));
         assertEquals("apple, banana, cherry", betterItems.toString(", "));
         assertEquals("applebananacherry", betterItems.toString(""));
@@ -159,7 +161,7 @@ class BetterIterableTest {
     void testToStringWithEmptyIterable() {
         List<String> emptyList = Arrays.asList();
         BetterIterable<String> betterEmpty = BetterIterable.better(emptyList);
-        
+
         assertEquals("", betterEmpty.toString("|"));
         assertEquals("", betterEmpty.toString(", "));
     }
@@ -168,9 +170,9 @@ class BetterIterableTest {
     void testFirst() {
         List<String> items = Arrays.asList("first", "second", "third");
         BetterIterable<String> betterItems = BetterIterable.better(items);
-        
+
         assertEquals("first", betterItems.first());
-        
+
         List<String> emptyList = Arrays.asList();
         BetterIterable<String> betterEmpty = BetterIterable.better(emptyList);
         assertNull(betterEmpty.first());
@@ -180,13 +182,13 @@ class BetterIterableTest {
     void testFirstWhere() {
         List<String> words = Arrays.asList("apple", "banana", "apricot", "cherry");
         BetterIterable<String> betterWords = BetterIterable.better(words);
-        
+
         Predicate<String> startsWithA = s -> s.startsWith("a");
         assertEquals("apple", betterWords.firstWhere(startsWithA));
-        
+
         Predicate<String> startsWithZ = s -> s.startsWith("z");
         assertNull(betterWords.firstWhere(startsWithZ));
-        
+
         List<String> emptyList = Arrays.asList();
         BetterIterable<String> betterEmpty = BetterIterable.better(emptyList);
         assertNull(betterEmpty.firstWhere(startsWithA));
@@ -196,30 +198,30 @@ class BetterIterableTest {
     void testHasMatch() {
         List<Integer> numbers = Arrays.asList(1, 3, 5, 7, 9);
         BetterIterable<Integer> betterNumbers = BetterIterable.better(numbers);
-        
-        assertTrue(betterNumbers.hasMatch(n -> n > 5));
-        assertTrue(betterNumbers.hasMatch(n -> n == 1));
-        assertFalse(betterNumbers.hasMatch(n -> n % 2 == 0));
-        assertFalse(betterNumbers.hasMatch(n -> n > 20));
-        
+
+        assertTrue(betterNumbers.hasAny(n -> n > 5));
+        assertTrue(betterNumbers.hasAny(n -> n == 1));
+        assertFalse(betterNumbers.hasAny(n -> n % 2 == 0));
+        assertFalse(betterNumbers.hasAny(n -> n > 20));
+
         List<Integer> emptyList = Arrays.asList();
         BetterIterable<Integer> betterEmpty = BetterIterable.better(emptyList);
-        assertFalse(betterEmpty.hasMatch(n -> true));
+        assertFalse(betterEmpty.hasAny(n -> true));
     }
 
     @Test
     void testHasNoMatch() {
         List<Integer> numbers = Arrays.asList(1, 3, 5, 7, 9);
         BetterIterable<Integer> betterNumbers = BetterIterable.better(numbers);
-        
-        assertTrue(betterNumbers.hasNoMatch(n -> n % 2 == 0));
-        assertTrue(betterNumbers.hasNoMatch(n -> n > 20));
-        assertFalse(betterNumbers.hasNoMatch(n -> n > 5));
-        assertFalse(betterNumbers.hasNoMatch(n -> n == 1));
-        
+
+        assertTrue(betterNumbers.hasNone(n -> n % 2 == 0));
+        assertTrue(betterNumbers.hasNone(n -> n > 20));
+        assertFalse(betterNumbers.hasNone(n -> n > 5));
+        assertFalse(betterNumbers.hasNone(n -> n == 1));
+
         List<Integer> emptyList = Arrays.asList();
         BetterIterable<Integer> betterEmpty = BetterIterable.better(emptyList);
-        assertTrue(betterEmpty.hasNoMatch(n -> true));
+        assertTrue(betterEmpty.hasNone(n -> true));
     }
 
     @Test
@@ -258,18 +260,19 @@ class BetterIterableTest {
     void testChainedOperations() {
         List<String> words = Arrays.asList("apple", "banana", "apricot", "cherry", "avocado");
         BetterIterable<String> betterWords = BetterIterable.better(words);
-        
+
         BetterList<String> result = betterWords
                 .filter(s -> s.startsWith("a"))
-                .map(String::toUpperCase);
-        
+                .map(String::toUpperCase)
+                .toList();
+
         assertEquals(Arrays.asList("APPLE", "APRICOT", "AVOCADO"), result);
-        
+
         Set<Integer> lengths = betterWords
                 .filter(s -> s.length() > 5)
                 .map(String::length)
                 .toSet();
-        
+
         assertEquals(Set.of(6, 7), lengths);
     }
 
@@ -277,13 +280,13 @@ class BetterIterableTest {
     void testWithDifferentIterableTypes() {
         Set<String> sourceSet = new HashSet<>(Arrays.asList("x", "y", "z"));
         BetterIterable<String> fromSet = BetterIterable.better(sourceSet);
-        
-        BetterList<String> mapped = fromSet.map(String::toUpperCase);
+
+        BetterList<String> mapped = fromSet.map(String::toUpperCase).toList();
         assertEquals(3, mapped.size());
-        assertTrue(mapped.contains("X"));
-        assertTrue(mapped.contains("Y"));
-        assertTrue(mapped.contains("Z"));
-        
+        assertContains("X", mapped);
+        assertContains("Y", mapped);
+        assertContains("Z", mapped);
+
         Queue<Integer> sourceQueue = new ArrayDeque<>(Arrays.asList(1, 2, 3));
         BetterIterable<Integer> fromQueue = BetterIterable.better(sourceQueue);
         
@@ -295,7 +298,7 @@ class BetterIterableTest {
     void testIteratorBehavior() {
         List<String> items = Arrays.asList("a", "b", "c");
         BetterIterable<String> betterItems = BetterIterable.better(items);
-        
+
         Iterator<String> iterator = betterItems.iterator();
         assertTrue(iterator.hasNext());
         assertEquals("a", iterator.next());
@@ -310,12 +313,12 @@ class BetterIterableTest {
     void testForEachLoop() {
         List<String> items = Arrays.asList("x", "y", "z");
         BetterIterable<String> betterItems = BetterIterable.better(items);
-        
+
         List<String> collected = new ArrayList<>();
         for (String item : betterItems) {
             collected.add(item);
         }
-        
+
         assertEquals(Arrays.asList("x", "y", "z"), collected);
     }
 
@@ -349,7 +352,7 @@ class BetterIterableTest {
         
         BetterList<ArrayList> arrayLists = betterObjects.filter(ArrayList.class);
         assertEquals(1, arrayLists.size());
-        assertTrue(arrayLists.get(0) instanceof ArrayList);
+        assertInstanceOf(ArrayList.class, arrayLists.get(0));
     }
 
     @Test
@@ -377,33 +380,33 @@ class BetterIterableTest {
     void testFlatMap() {
         List<String> sentences = Arrays.asList("hello world", "java programming", "test case");
         BetterIterable<String> betterSentences = BetterIterable.better(sentences);
-        
-        BetterList<String> words = betterSentences.flatMap(s -> Arrays.asList(s.split(" ")));
+
+        BetterList<String> words = betterSentences.flatMap(s -> Arrays.asList(s.split(" "))).toList();
         assertEquals(Arrays.asList("hello", "world", "java", "programming", "test", "case"), words);
-        
+
         List<List<Integer>> nestedNumbers = Arrays.asList(
-            Arrays.asList(1, 2, 3),
-            Arrays.asList(4, 5),
-            Arrays.asList(6, 7, 8, 9)
+                Arrays.asList(1, 2, 3),
+                Arrays.asList(4, 5),
+                Arrays.asList(6, 7, 8, 9)
         );
         BetterIterable<List<Integer>> betterNested = BetterIterable.better(nestedNumbers);
-        
-        BetterList<Integer> flattened = betterNested.flatMap(list -> list);
+
+        BetterList<Integer> flattened = betterNested.flatMap(list -> list).toList();
         assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9), flattened);
     }
 
     @Test
     void testFlatMapWithEmptyIterables() {
         List<List<String>> listsWithEmpties = Arrays.asList(
-            Arrays.asList("a", "b"),
-            Arrays.asList(),
-            Arrays.asList("c"),
-            Arrays.asList(),
-            Arrays.asList("d", "e")
+                Arrays.asList("a", "b"),
+                Arrays.asList(),
+                Arrays.asList("c"),
+                Arrays.asList(),
+                Arrays.asList("d", "e")
         );
         BetterIterable<List<String>> betterLists = BetterIterable.better(listsWithEmpties);
-        
-        BetterList<String> flattened = betterLists.flatMap(list -> list);
+
+        BetterList<String> flattened = betterLists.flatMap(list -> list).toList();
         assertEquals(Arrays.asList("a", "b", "c", "d", "e"), flattened);
     }
 
@@ -411,15 +414,15 @@ class BetterIterableTest {
     void testFlatMapWithSingleElements() {
         List<String> words = Arrays.asList("cat", "dog", "bird");
         BetterIterable<String> betterWords = BetterIterable.better(words);
-        
+
         BetterList<Character> characters = betterWords.flatMap(word -> {
             List<Character> chars = new ArrayList<>();
             for (char c : word.toCharArray()) {
                 chars.add(c);
             }
             return chars;
-        });
-        
+        }).toList();
+
         assertEquals(Arrays.asList('c', 'a', 't', 'd', 'o', 'g', 'b', 'i', 'r', 'd'), characters);
     }
 
@@ -427,35 +430,35 @@ class BetterIterableTest {
     void testFlatMapWithEmptySource() {
         List<String> emptyList = Arrays.asList();
         BetterIterable<String> betterEmpty = BetterIterable.better(emptyList);
-        
+
         BetterList<Character> result = betterEmpty.flatMap(s -> {
             List<Character> chars = new ArrayList<>();
             for (char c : s.toCharArray()) {
                 chars.add(c);
             }
             return chars;
-        });
-        
+        }).toList();
+
         assertEquals(0, result.size());
     }
 
     @Test
     void testChainedOperationsWithFilterByTypeAndFlatMap() {
         List<Object> mixedData = Arrays.asList(
-            "hello world",
-            42,
-            "java programming",
-            Arrays.asList(1, 2, 3),
-            "test case"
+                "hello world",
+                42,
+                "java programming",
+                Arrays.asList(1, 2, 3),
+                "test case"
         );
         BetterIterable<Object> betterMixed = BetterIterable.better(mixedData);
-        
+
         BetterList<String> words = betterMixed
             .filter(String.class)
             .flatMap(s -> Arrays.asList(s.split(" ")));
         
         assertEquals(Arrays.asList("hello", "world", "java", "programming", "test", "case"), words);
-        
+
         BetterList<String> uppercaseWords = betterMixed
             .filter(String.class)
             .flatMap(s -> Arrays.asList(s.split(" ")))
@@ -468,15 +471,15 @@ class BetterIterableTest {
     void testFlatMapWithComplexTransformations() {
         List<Integer> numbers = Arrays.asList(2, 3, 4);
         BetterIterable<Integer> betterNumbers = BetterIterable.better(numbers);
-        
+
         BetterList<Integer> ranges = betterNumbers.flatMap(n -> {
             List<Integer> range = new ArrayList<>();
             for (int i = 1; i <= n; i++) {
                 range.add(i);
             }
             return range;
-        });
-        
+        }).toList();
+
         assertEquals(Arrays.asList(1, 2, 1, 2, 3, 1, 2, 3, 4), ranges);
         
         BetterMap<Integer, BetterList<Integer>> grouped = ranges.groupBy(Function.identity());

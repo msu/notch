@@ -1,27 +1,33 @@
 package edu.montana.notch.token;
 
-import edu.montana.notch.chisel.Token;
+import edu.montana.notch.chisel.TokenData;
 import edu.montana.notch.chisel.TokenType;
 import edu.montana.notch.chisel.TokenizeException;
 import edu.montana.notch.chisel.Tokenizer;
+import edu.montana.notch.util.BetterSet;
 
+import java.util.Arrays;
 import java.util.Set;
 
-import static edu.montana.notch.chisel.type.TokenTypeIdentifier.IDENT;
+import static edu.montana.notch.chisel.type.IdentTokenType.IDENT;
 
 public class NotchTokenTypeKeyword implements TokenType {
     public static final NotchTokenTypeKeyword NOTCH_KEYWORD = new NotchTokenTypeKeyword();
 
-    private NotchTokenTypeKeyword() {}
+    public final BetterSet<String> keywords = new BetterSet<>();
 
-    public static final Set<String> KEYWORDS = Set.of("if", "for", "else", "end", "in", "is", "not", "null", "as");
+    private NotchTokenTypeKeyword(String... keywords) {
+        this.keywords.addAll(Set.of("if", "for", "else", "end", "in", "is", "not", "null", "as"));
+        this.keywords.addAll(Arrays.asList(keywords));
+    }
 
     @Override
-    public Token tokenize(Tokenizer t) throws TokenizeException {
+    public TokenData tokenize(Tokenizer t) throws TokenizeException {
         var ident = IDENT.tokenize(t);
         if (ident == null) return null;
-        if (KEYWORDS.contains(ident.str())) {
-            return ident.withType(this);
+        final String kw = ident.str();
+        if (keywords.contains(kw)) {
+            return new TokenData(kw);
         } else {
             return null;
         }

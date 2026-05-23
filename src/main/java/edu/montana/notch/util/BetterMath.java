@@ -22,7 +22,8 @@ public class BetterMath {
             }
             case INTEGER -> {
                 int av = a.intValue();
-                int bv = b.intValue();try {
+                int bv = b.intValue();
+                try {
                     yield Math.addExact(av, bv);
                 } catch (ArithmeticException ignored) {
                     yield (long) av + (long) bv;
@@ -264,14 +265,15 @@ public class BetterMath {
             default -> throw new IllegalArgumentException("Left shift not supported for type: " + typeA);
         };
     }
+
     public static Number safeRShift(Number a, Number b) {
         NumberType typeA = getNumberType(a);
         int shiftAmount = b.intValue();
 
         // Shift only makes sense for integer types
         return switch (typeA) {
-            case BYTE -> (byte)(a.byteValue() >> shiftAmount);
-            case SHORT -> (short)(a.shortValue() >> shiftAmount);
+            case BYTE -> (byte) (a.byteValue() >> shiftAmount);
+            case SHORT -> (short) (a.shortValue() >> shiftAmount);
             case INTEGER -> a.intValue() >> shiftAmount;
             case LONG -> a.longValue() >> shiftAmount;
             case BIG_INTEGER -> toBigInteger(a).shiftRight(shiftAmount);

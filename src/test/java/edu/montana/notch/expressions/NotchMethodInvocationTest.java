@@ -91,9 +91,8 @@ public class NotchMethodInvocationTest {
     }
 
     @Test
-    public void testExceptionsPropogateProperly() {
+    public void testExceptionsPropagateProperly() {
         assertThrows(CustomException.class, () -> evalNoCatch("foo.throwsException(x)", "foo", new SampleClass(), "x", 10));
-        evalNoCatch("foo.throwsException(x)", "foo", new SampleClass(), "x", 10);
     }
 
     public static class SampleClass {
@@ -158,5 +157,7 @@ public class NotchMethodInvocationTest {
             }
         }
     }
-    public static class CustomException extends RuntimeException {}
+
+    public static class CustomException extends RuntimeException {
+    }
 }

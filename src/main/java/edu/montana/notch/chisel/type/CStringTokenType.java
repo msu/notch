@@ -1,20 +1,13 @@
 package edu.montana.notch.chisel.type;
 
-<<<<<<<< HEAD:src/main/java/edu/montana/notch/chisel/type/TokenTypeString.java
-import edu.montana.notch.chisel.Token;
-import edu.montana.notch.chisel.Tokenizer;
-import edu.montana.notch.chisel.TokenType;
-import edu.montana.notch.chisel.TokenizeException;
+import edu.montana.notch.chisel.*;
 import edu.montana.notch.util.Text;
-========
-import bigsky.notch.chisel.*;
-import bigsky.notch.util.Text;
->>>>>>>> 00d0fae (new tokenizer api):src/main/java/edu/montana/notch/chisel/type/CStringTokenType.java
 
 public class CStringTokenType implements TokenType {
     public static final CStringTokenType STR = new CStringTokenType();
 
-    protected CStringTokenType() {}
+    protected CStringTokenType() {
+    }
 
     @Override
     public TokenData tokenize(Tokenizer t) throws TokenizeException {

@@ -9,75 +9,93 @@ import edu.montana.notch.templates.ast.content.NotchTemplateContentItem;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentText;
 import edu.montana.notch.templates.token.NotchTemplateTokenTypeCommand;
 import edu.montana.notch.templates.token.NotchTemplateTokenTypeExpression;
-import java.util.ArrayList;
-import java.util.Objects;
 
-import static edu.montana.notch.templates.token.NotchTemplateTokenTypeCommand.COMMAND;
-import static edu.montana.notch.templates.token.NotchTemplateTokenTypeExpression.EXPRESSION;
-import static edu.montana.notch.templates.token.NotchTemplateTokenTypeText.TEXT;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import static edu.montana.notch.util.Text.repr;
 
 public class NotchTemplateParser extends BasicParser {
-    private final NotchTemplateRegistry templates;
+    private final NotchTemplates templates;
 
-    private static TokenStream tokenize(String fileId, String content) {
-        TokenStream tokens;
-        try {
-            tokens = NotchTemplates.TOKENIZER.tokenize(fileId, content);
-        } catch (TokenizeException e) {
-            throw new ParseException("failed to tokenize source", e, fileId, e.span());
-        }
+    private static TokenStream tokenize(Source source) {
+        TokenStream tokens = NotchTemplates.TOKENIZER.tokenize(source);
         return tokens;
     }
 
-    public NotchTemplateParser(NotchTemplateRegistry templates, String fileId, String content) throws ParseException {
-        super(tokenize(fileId, content));
+    public NotchTemplateParser(NotchTemplates templates, Source source) throws ParseException {
+        super(tokenize(source));
         this.templates = Objects.requireNonNull(templates);
     }
 
-    public NotchTemplateParser(NotchTemplateRegistry templates, TokenStream tokens) {
+    public NotchTemplateParser(NotchTemplates templates, TokenStream tokens) {
         super(tokens);
         this.templates = Objects.requireNonNull(templates);
     }
 
     public NotchTemplateContentText parseText() {
-        if (!peek(TEXT)) return null;
+        if (!peek("text")) return null;
         var token = take();
         var item = new NotchTemplateContentText(token);
         return item;
     }
 
-    public NotchTemplateContentCommand parseCommand() {
-        if (!peek(COMMAND)) return null;
+    public NotchTemplateContentCommand parseCommand(NotchTemplateCommand... extraCommands) {
+        if (!peek("command")) return null;
 
         var token = take();
         var data = ((NotchTemplateTokenTypeCommand.Data) token.data);
         var commandName = data.commandName().str();
-        var command = templates.commands.get(commandName);
+
+        NotchTemplateCommand command = null;
+        for (final var cmd : extraCommands) {
+            if (cmd.commandName.equals(commandName)) {
+                command = cmd;
+                break;
+            }
+        }
+
         if (command == null) {
-            throw new ParseException("unknown command " + repr(commandName), fileId(), new Span(token.start, token.end));
+            command = templates.commands.get(commandName);
+        }
+
+        if (command == null) {
+            final var diag = new Diagnostic().note("unknown command %s".formatted(repr(commandName))).highlight(data.commandName());
+            throw new ParseException(diag);
         }
 
         command = command.newInstance();
-        command.fileId = fileId();
-        command.start = token.start;
-        var parser = new NotchParser(data.notchTokens());
-        command.parse(data.commandName(), this, parser);
-        command.end = parser.location();
+        command.commandToken = data.commandName();
+        command.span = data.commandName().span;
+
+        var commandParser = new NotchParser(data.notchTokens());
+        command.parseCommand(commandParser);
+        if (!commandParser.atEnd()) {
+            final var diag = new Diagnostic();
+            diag.note("unexpected extra tokens here...");
+            diag.highlight(commandParser.restSpan());
+            throw new ParseException(diag);
+        }
+
+        command.parseBody(this);
+        command.span = token.span.through(lastToken().end());
 
         var item = new NotchTemplateContentCommand(command);
         return item;
     }
 
     public NotchTemplateContentExpression parseExpression() {
-        if (!peek(EXPRESSION)) return null;
+        if (!peek("expression")) return null;
 
         var token = take();
         var data = ((NotchTemplateTokenTypeExpression.Data) token.data);
         var notchParser = new NotchParser(data.notchTokens());
         var expr = notchParser.parseExpression();
         if (expr == null) {
-            throw new ParseException("expected expression", fileId(), location());
+            final var diag = new Diagnostic().note("expected an expression here").highlight(currentToken());
+            throw new ParseException(diag);
         }
         notchParser.requireEnd("trailing tokens after expression");
 
@@ -85,25 +103,27 @@ public class NotchTemplateParser extends BasicParser {
         return item;
     }
 
-    public NotchTemplateContentBlock parseContentBlock(Class<?>... commandTypes) {
+    public NotchTemplateContentBlock parseContentBlock(NotchTemplateCommand... terminalCommands) {
+        final var start = currentToken().span;
         var items = new ArrayList<NotchTemplateContentItem>();
-
         NotchTemplateCommand endCommand = null;
-        var start = location();
-        while (endCommand == null && !atEnd()) {
+
+        outer:
+        while (!atEnd()) {
             var text = parseText();
             if (text != null) {
                 items.add(text);
                 continue;
             }
 
-            var cmd = parseCommand();
+            // TODO: terminal commands
+            var cmd = parseCommand(terminalCommands);
             if (cmd != null) {
                 var cmdClazz = cmd.command.getClass();
-                for (var ct : commandTypes) {
-                    if (ct.isAssignableFrom(cmdClazz)) {
+                for (var ct : terminalCommands) {
+                    if (ct.getClass().isAssignableFrom(cmdClazz)) {
                         endCommand = cmd.command;
-                        break;
+                        break outer;
                     }
                 }
 
@@ -117,13 +137,20 @@ public class NotchTemplateParser extends BasicParser {
                 continue;
             }
 
-            throw new ParseException("unexpected token " + repr(peek().type), fileId(), location());
+            final var diag = new Diagnostic().note("unexpected token %s".formatted(repr(currentToken().type))).highlight(currentToken());
+            throw new ParseException(diag);
         }
 
-        if (commandTypes.length > 0 && endCommand == null) {
-            throw new ParseException("unterminated content block", fileId(), start);
+        if (terminalCommands.length > 0 && endCommand == null) {
+            final var names = Arrays.stream(terminalCommands)
+                    .map(c -> "#%s".formatted(c.commandName))
+                    .collect(Collectors.joining(", "));
+            final var diag = new Diagnostic()
+                    .note("unterminated block content, expected %s".formatted(names))
+                    .highlight(currentToken());
+            throw new ParseException(diag);
         }
 
-        return new NotchTemplateContentBlock(items);
+        return new NotchTemplateContentBlock(start.through(currentToken()), items, endCommand);
     }
 }

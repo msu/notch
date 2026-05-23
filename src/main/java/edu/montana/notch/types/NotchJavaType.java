@@ -2,7 +2,6 @@ package edu.montana.notch.types;
 
 
 import edu.montana.notch.util.BetterList;
-import edu.montana.notch.util.Text;
 
 import java.lang.reflect.*;
 import java.util.Arrays;
@@ -57,7 +56,7 @@ public class NotchJavaType implements NotchType {
 
     private void initProperties() {
         for (Method method : backingClass.getMethods()) {
-            if(isPropertyMethod(method)){
+            if (isPropertyMethod(method)) {
                 String propName = propertyNameFor(method);
                 NotchJavaProperty property = new NotchJavaProperty(backingClass, propName, Modifier.isStatic(method.getModifiers()));
                 addProperty(property);
@@ -70,7 +69,7 @@ public class NotchJavaType implements NotchType {
                 map.putIfAbsent(Text.snakeCase(method.getName()), property);
             }
         }
-        for(Field field : backingClass.getFields()) {
+        for (Field field : backingClass.getFields()) {
             NotchJavaProperty value = new NotchJavaProperty(backingClass, field.getName(), Modifier.isStatic(field.getModifiers()));
             addProperty(value);
         }
@@ -79,10 +78,10 @@ public class NotchJavaType implements NotchType {
     private void initMethods() {
         for (Method method : backingClass.getMethods()) {
             boolean staticMethod = Modifier.isStatic(method.getModifiers());
-            if(staticMethod && !staticMethods.containsKey(method.getName())){
+            if (staticMethod && !staticMethods.containsKey(method.getName())) {
                 NotchJavaMethod notchMethod = new NotchJavaMethod(method.getName(), backingClass, true);
                 staticMethods.put(method.getName(), notchMethod);
-            } else if (!staticMethod && !methods.containsKey(method.getName())){
+            } else if (!staticMethod && !methods.containsKey(method.getName())) {
                 NotchJavaMethod notchMethod = new NotchJavaMethod(method.getName(), backingClass, false);
                 methods.put(method.getName(), notchMethod);
             }
@@ -90,7 +89,7 @@ public class NotchJavaType implements NotchType {
     }
 
     private void addProperty(NotchJavaProperty property) {
-        if(property.isStatic()){
+        if (property.isStatic()) {
             staticProperties.putIfAbsent(property.getName(), property);
             staticProperties.putIfAbsent(property.getAlternateName(), property);
         } else {
@@ -147,7 +146,7 @@ public class NotchJavaType implements NotchType {
     @Override
     public Object newInstance(Object[] args) {
         Constructor bestMatch = NotchJavaMethod.getBestMatch(Arrays.asList(args), constructors);
-        if(bestMatch != null){
+        if (bestMatch != null) {
             return safelyEval(() -> bestMatch.newInstance(args));
         } else {
             throw new IllegalArgumentException("No constructor available for values " + Arrays.asList(args));

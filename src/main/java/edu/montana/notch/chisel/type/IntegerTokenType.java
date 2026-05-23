@@ -1,20 +1,14 @@
 package edu.montana.notch.chisel.type;
 
-<<<<<<<< HEAD:src/main/java/edu/montana/notch/chisel/type/TokenTypeInteger.java
-import edu.montana.notch.chisel.Token;
-import edu.montana.notch.chisel.Tokenizer;
+import edu.montana.notch.chisel.TokenData;
 import edu.montana.notch.chisel.TokenType;
-========
-import bigsky.notch.chisel.Token;
-import bigsky.notch.chisel.TokenData;
-import bigsky.notch.chisel.Tokenizer;
-import bigsky.notch.chisel.TokenType;
->>>>>>>> 00d0fae (new tokenizer api):src/main/java/edu/montana/notch/chisel/type/IntegerTokenType.java
+import edu.montana.notch.chisel.Tokenizer;
 
 public class IntegerTokenType implements TokenType {
     public static final IntegerTokenType INT = new IntegerTokenType();
 
-    protected IntegerTokenType() {}
+    protected IntegerTokenType() {
+    }
 
     public static boolean isDigit(char c, int radix) {
         if (radix == 10) return c >= '0' && c <= '9';

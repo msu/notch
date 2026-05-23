@@ -9,14 +9,14 @@ public abstract class NotchErrorExpression extends NotchExpression {
 
 
     public NotchErrorExpression(String message, NotchExpression expr) {
-        super(expr.fileId, expr.start, expr.end);
+        super(expr.span);
         this.message = message;
         this.child = expr;
         this.cause = null;
     }
 
-    public NotchErrorExpression(String fileId, Span span, Throwable cause) {
-        super(fileId, span.start(), span.end());
+    public NotchErrorExpression(Span span, Throwable cause) {
+        super(span);
         this.message = cause.getMessage();
         this.child = null;
         this.cause = cause;

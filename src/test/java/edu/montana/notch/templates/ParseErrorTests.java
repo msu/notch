@@ -1,62 +1,16 @@
 package edu.montana.notch.templates;
 
+import edu.montana.notch.chisel.Source;
 import edu.montana.notch.templates.loader.NotchTemplateLoader;
-import edu.montana.notch.templates.runtime.RenderException;
-import edu.montana.notch.chisel.ParseException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ParseErrorTests extends NotchTemplateTestBase {
-    void expectParseError(String content, String expectedMessageFragment) {
-        var argMap = new LinkedHashMap<String, Object>();
-        var templ = new NotchTemplateRegistry();
-        BasicNotchTemplateCommands.addTo(templ);
-
-        RenderException ex = assertThrows(RenderException.class, () -> {
-            templ.renderString(testInfo.getDisplayName(), content, argMap);
-        }, "Expected ParseException but template rendered successfully");
-
-        // Check that the underlying cause is a ParseException
-        Throwable cause = ex.getCause();
-        while (cause != null && !(cause instanceof ParseException)) {
-            cause = cause.getCause();
-        }
-
-        assertNotNull(cause, "Expected ParseException in the exception chain");
-        assertTrue(cause instanceof ParseException, "Expected ParseException but got: " + cause.getClass());
-
-        if (expectedMessageFragment != null) {
-            String message = cause.getMessage();
-            assertTrue(message.contains(expectedMessageFragment), "Expected error message to contain '" + expectedMessageFragment + "' but got: " + message);
-        }
-    }
-
-    void expectRenderError(String content, String expectedMessageFragment, Object... args) {
-        var argMap = new LinkedHashMap<String, Object>();
-        for (int i = 0; i < args.length; i += 2) {
-            var name = (String) args[i];
-            var value = args[i + 1];
-            argMap.put(name, value);
-        }
-
-        var templ = new NotchTemplateRegistry();
-        BasicNotchTemplateCommands.addTo(templ);
-
-        RenderException ex = assertThrows(RenderException.class, () -> {
-            templ.renderString(testInfo.getDisplayName(), content, argMap);
-        }, "Expected RenderException but template rendered successfully");
-
-        if (expectedMessageFragment != null) {
-            String message = ex.getMessage();
-            assertTrue(message.contains(expectedMessageFragment), "Expected error message to contain '" + expectedMessageFragment + "' but got: " + message);
-        }
-    }
-
     // ========================================================================
     // Missing #end Tags
     // ========================================================================
@@ -66,84 +20,84 @@ public class ParseErrorTests extends NotchTemplateTestBase {
 
         @Test
         void missingEndForIf() {
-            var tmpl = """
+            registerTemplate("template", """
                     #if true
                         content here
-                    """;
-            expectParseError(tmpl, "unterminated");
+                    """);
+            expectParseError("template", "unterminated");
         }
 
         @Test
         void missingEndForNestedIf() {
-            var tmpl = """
+            registerTemplate("template", """
                     #if true
                         outer content
                         #if false
                             inner content
                         #end
-                    """;
-            expectParseError(tmpl, "unterminated");
+                    """);
+            expectParseError("template", "unterminated");
         }
 
         @Test
         void missingEndForFor() {
-            var tmpl = """
+            registerTemplate("template", """
                     #for x in [1,2,3]
                         ${x}
-                    """;
-            expectParseError(tmpl, "unterminated");
+                    """);
+            expectParseError("template", "unterminated");
         }
 
         @Test
         void missingEndForFragment() {
-            var tmpl = """
+            registerTemplate("template", """
                     #macro card(id)
                         <div>${id}</div>
-                    """;
-            expectParseError(tmpl, "unterminated");
+                    """);
+            expectParseError("template", "unterminated");
         }
 
         @Test
         void missingEndForContent() {
-            var tmpl = """
-                    #content for footer default
+            registerTemplate("template", """
+                    #content footer with
                         Footer content
-                    """;
-            expectParseError(tmpl, "unterminated");
+                    """);
+            expectParseError("template", "unterminated");
         }
 
         @Test
         void missingEndForNestedFor() {
-            var tmpl = """
+            registerTemplate("template", """
                     #for x in [1,2,3]
                         ${x}
                         #for y in [4,5,6]
                             ${y}
                         #end
-                    """;
-            expectParseError(tmpl, "unterminated");
+                    """);
+            expectParseError("template", "unterminated");
         }
 
         @Test
         void missingEndForIfWithElse() {
-            var tmpl = """
+            registerTemplate("template", """
                     #if true
                         first
                     #else
                         second
-                    """;
-            expectParseError(tmpl, "unterminated");
+                    """);
+            expectParseError("template", "unterminated");
         }
 
         @Test
         void missingEndForIfWithElseIf() {
-            var tmpl = """
+            registerTemplate("template", """
                     #if false
                         first
                     #elseif true
                         second
-                    """;
-            expectParseError(tmpl, "unterminated");
+                    """);
+            expectParseError("template", "unterminated");
         }
     }
 
@@ -156,7 +110,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
 
         @Test
         void elseifAfterElse() {
-            var tmpl = """
+            registerTemplate("template", """
                     #if false
                         first
                     #else
@@ -164,16 +118,16 @@ public class ParseErrorTests extends NotchTemplateTestBase {
                     #elseif true
                         third
                     #end
-                    """;
+                    """);
             // The parser is lenient - #elseif after #else is treated as a command in the else block
             // This actually renders successfully with the else block containing the elseif
-            var result = renderString(tmpl);
+            var result = renderString("template");
             assertNotNull(result, "Parser allows elseif after else (though semantically odd)");
         }
 
         @Test
         void doubleElseInFor() {
-            var tmpl = """
+            registerTemplate("template", """
                     #for x in [1,2,3]
                         ${x}
                     #else
@@ -181,24 +135,20 @@ public class ParseErrorTests extends NotchTemplateTestBase {
                     #else
                         double else
                     #end
-                    """;
-            // The parser is lenient - second #else is treated as a command in the first else block
-            var result = renderString(tmpl);
-            assertNotNull(result, "Parser allows double else (though semantically odd)");
+                    """);
+            expectParseError("template", "unknown command \"else\"");
         }
 
         @Test
         void elseifInFor() {
-            var tmpl = """
+            registerTemplate("template", """
                     #for x in [1,2,3]
                         ${x}
                     #elseif true
                         This shouldn't work
                     #end
-                    """;
-            // The parser is lenient - #elseif is treated as a regular command in the for loop body
-            var result = renderString(tmpl);
-            assertNotNull(result, "Parser allows elseif in for (though semantically odd)");
+                    """);
+            expectParseError("template", "unknown command \"elseif\"");
         }
     }
 
@@ -211,94 +161,94 @@ public class ParseErrorTests extends NotchTemplateTestBase {
 
         @Test
         void ifWithoutCondition() {
-            var tmpl = """
+            registerTemplate("template", """
                     #if
                         content
                     #end
-                    """;
+                    """);
             // Missing condition causes runtime error from Notch expression parser
-            expectRenderError(tmpl, null);
+            expectRenderError("template", null);
         }
 
         @Test
         void forWithoutIn() {
-            var tmpl = """
+            registerTemplate("template", """
                     #for x [1,2,3]
                         ${x}
                     #end
-                    """;
-            expectParseError(tmpl, "in");
+                    """);
+            expectParseError("template", "in");
         }
 
         @Test
         void forWithoutVarName() {
-            var tmpl = """
+            registerTemplate("template", """
                     #for in [1,2,3]
                         content
                     #end
-                    """;
-            expectParseError(tmpl, null);
+                    """);
+            expectParseError("template", null);
         }
 
         @Test
         void forWithoutIterable() {
-            var tmpl = """
+            registerTemplate("template", """
                     #for x in
                         content
                     #end
-                    """;
-            expectParseError(tmpl, null);
+                    """);
+            expectParseError("template", null);
         }
 
         @Test
         void elseifWithoutCondition() {
-            var tmpl = """
+            registerTemplate("template", """
                     #if false
                         first
                     #elseif
                         second
                     #end
-                    """;
+                    """);
             // Missing condition causes runtime error from Notch expression parser
-            expectRenderError(tmpl, null);
+            expectRenderError("template", null);
         }
 
         @Test
         void fragmentWithoutName() {
-            var tmpl = """
+            registerTemplate("template", """
                     #fragment
                         content
                     #end
-                    """;
-            expectParseError(tmpl, null);
+                    """);
+            expectParseError("template", null);
         }
 
         @Test
         void expandWithoutName() {
-            var tmpl = """
+            registerTemplate("template", """
                     #expand
-                    """;
-            expectParseError(tmpl, null);
+                    """);
+            expectParseError("template", null);
         }
 
         @Test
         void ifWithExtraTokens() {
-            var tmpl = """
+            registerTemplate("template", """
                     #if true extra stuff here
                         content
                     #end
-                    """;
-            expectParseError(tmpl, "extra tokens");
+                    """);
+            expectParseError("template", "extra tokens");
         }
 
         @Test
         void forWithExtraTokens() {
-            var tmpl = """
+            registerTemplate("template", """
                     #for x in [1,2,3] extra
                         ${x}
                     #end
-                    """;
-            expectParseError(tmpl, null);
+                    """);
+            expectParseError("template", null);
         }
     }
 
@@ -311,42 +261,42 @@ public class ParseErrorTests extends NotchTemplateTestBase {
 
         @Test
         void unknownCommand() {
-            var tmpl = """
+            registerTemplate("template", """
                     #foobar
                         content
                     #end
-                    """;
-            expectParseError(tmpl, "unknown command");
+                    """);
+            expectParseError("template", "unknown command");
         }
 
         @Test
         void typoInIfCommand() {
-            var tmpl = """
+            registerTemplate("template", """
                     #iif true
                         content
                     #end
-                    """;
-            expectParseError(tmpl, "unknown command");
+                    """);
+            expectParseError("template", "unknown command");
         }
 
         @Test
         void caseSensitiveCommand() {
-            var tmpl = """
+            registerTemplate("template", """
                     #IF true
                         content
                     #END
-                    """;
-            expectParseError(tmpl, "unknown command");
+                    """);
+            expectParseError("template", "unknown command");
         }
 
         @Test
         void typoInForCommand() {
-            var tmpl = """
+            registerTemplate("template", """
                     #fore x in [1,2,3]
                         ${x}
                     #end
-                    """;
-            expectParseError(tmpl, "unknown command");
+                    """);
+            expectParseError("template", "unknown command");
         }
     }
 
@@ -359,39 +309,39 @@ public class ParseErrorTests extends NotchTemplateTestBase {
 
         @Test
         void emptyExpression() {
-            var tmpl = "${}";
-            expectParseError(tmpl, "expression");
+            registerTemplate("template", "${}");
+            expectParseError("template", "expression");
         }
 
         @Test
         void expressionWithTrailingTokens() {
             // This might be caught by the Notch parser
-            var tmpl = "${value extra}";
-            expectParseError(tmpl, "trailing tokens");
+            registerTemplate("template", "${value extra}");
+            expectParseError("template", "trailing tokens");
         }
 
         @Test
         void malformedElvis() {
-            var tmpl = "${value ?:}";
-            expectParseError(tmpl, null);
+            registerTemplate("template", "${value ?:}");
+            expectParseError("template", null);
         }
 
         @Test
         void incompleteConditionalExpression() {
-            var tmpl = "${\"value\" if}";
-            expectParseError(tmpl, null);
+            registerTemplate("template", "${\"value\" if}");
+            expectParseError("template", null);
         }
 
         @Test
         void unbalancedParentheses() {
-            var tmpl = "${(value}";
-            expectParseError(tmpl, null);
+            registerTemplate("template", "${(value}");
+            expectParseError("template", null);
         }
 
         @Test
         void invalidOperator() {
-            var tmpl = "${value !! other}";
-            expectParseError(tmpl, null);
+            registerTemplate("template", "${value !! other}");
+            expectParseError("template", null);
         }
     }
 
@@ -420,7 +370,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             // Should succeed
             var result = renderString(tmpl);
             assertNotNull(result);
-            assertTrue(result.contains("deep content"));
+            assertContains("deep content", result);
         }
 
         @Test
@@ -437,7 +387,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             // Should succeed
             var result = renderString(tmpl);
             assertNotNull(result);
-            assertTrue(result.contains("123"));
+            assertContains("123", result);
         }
 
         @Test
@@ -473,8 +423,8 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             // Should succeed
             var result = renderString(tmpl);
             assertNotNull(result);
-            assertTrue(result.contains("Item 1"));
-            assertTrue(result.contains("Item 2"));
+            assertContains("Item 1", result);
+            assertContains("Item 2", result);
         }
     }
 
@@ -487,11 +437,11 @@ public class ParseErrorTests extends NotchTemplateTestBase {
 
         @Test
         void expandUndefinedFragment() {
-            var tmpl = """
+            registerTemplate("template", """
                     #expand nonexistent()
-                    """;
+                    """);
             // This is a runtime error, not a parse error
-            expectRenderError(tmpl, null);
+            expectRenderError("template", null);
         }
 
         @Test
@@ -505,7 +455,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             // Should succeed
             var result = renderString(tmpl);
             assertNotNull(result);
-            assertTrue(result.contains("Simple content"));
+            assertContains("Simple content", result);
         }
 
         @Test
@@ -542,8 +492,8 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             // Should succeed
             var result = renderString(tmpl);
             assertNotNull(result);
-            assertTrue(result.contains("First: 42"));
-            assertTrue(result.contains("Second: 42"));
+            assertContains("First: 42", result);
+            assertContains("Second: 42", result);
         }
     }
 
@@ -560,10 +510,10 @@ public class ParseErrorTests extends NotchTemplateTestBase {
                     #include "nonexistent.html"
                     """;
 
-            var templates = new NotchTemplateRegistry(new NotchTemplateLoader() {
+            var templates = new NotchTemplates(new NotchTemplateLoader() {
                 @Override
-                public String loadTemplate(String path) {
-                    if (path.equals(testInfo.getDisplayName())) return tmpl;
+                public Source loadSource(String path) {
+                    if (path.equals(testInfo.getDisplayName())) return new Source(path, tmpl);
                     throw new RuntimeException("Template not found: " + path);
                 }
             });
@@ -581,10 +531,10 @@ public class ParseErrorTests extends NotchTemplateTestBase {
                     Content
                     """;
 
-            var templates = new NotchTemplateRegistry(new NotchTemplateLoader() {
+            var templates = new NotchTemplates(new NotchTemplateLoader() {
                 @Override
-                public String loadTemplate(String path) {
-                    if (path.equals(testInfo.getDisplayName())) return tmpl;
+                public Source loadSource(String path) {
+                    if (path.equals(testInfo.getDisplayName())) return new Source(path, tmpl);
                     throw new RuntimeException("Template not found: " + path);
                 }
             });
@@ -628,7 +578,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
                     """;
             var result = renderString(tmpl);
             assertNotNull(result);
-            assertTrue(result.contains("content"));
+            assertContains("content", result);
         }
 
         @Test
@@ -640,9 +590,9 @@ public class ParseErrorTests extends NotchTemplateTestBase {
                     """;
             var result = renderString(tmpl);
             assertNotNull(result);
-            assertTrue(result.contains("🎉"));
-            assertTrue(result.contains("你好"));
-            assertTrue(result.contains("مرحبا"));
+            assertContains("🎉", result);
+            assertContains("你好", result);
+            assertContains("مرحبا", result);
         }
 
         @Test
@@ -674,7 +624,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
                     """;
             var result = renderString(tmpl, "x", 6, "y", 8, "z", "other");
             assertNotNull(result);
-            assertTrue(result.contains("matched"));
+            assertContains("matched", result);
         }
 
         @Test
@@ -684,7 +634,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
                     """;
             var result = renderString(tmpl, "c", "value");
             assertNotNull(result);
-            assertTrue(result.contains("value"));
+            assertContains("value", result);
         }
 
         @Test
@@ -711,7 +661,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
 
             var result = renderString(tmpl, "obj", outerMap);
             assertNotNull(result);
-            assertTrue(result.contains("value"));
+            assertContains("value", result);
         }
     }
 
@@ -731,9 +681,9 @@ public class ParseErrorTests extends NotchTemplateTestBase {
                     """;
             var result = renderString(tmpl);
             assertNotNull(result);
-            assertTrue(result.contains("0: 10"));
-            assertTrue(result.contains("1: 20"));
-            assertTrue(result.contains("2: 30"));
+            assertContains("0: 10", result);
+            assertContains("1: 20", result);
+            assertContains("2: 30", result);
         }
 
         @Test
@@ -786,7 +736,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
                     """;
             var result = renderString(tmpl);
             assertNotNull(result);
-            assertTrue(result.contains("No items!"));
+            assertContains("No items!", result);
             assertFalse(result.contains("Item:"));
         }
 
@@ -802,7 +752,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             var result = renderString(tmpl);
             assertNotNull(result);
             assertFalse(result.contains("No items!"));
-            assertTrue(result.contains("Item:"));
+            assertContains("Item:", result);
         }
 
         @Test
@@ -820,7 +770,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
                     """;
             var result = renderString(tmpl);
             assertNotNull(result);
-            assertTrue(result.contains("Empty inner"));
+            assertContains("Empty inner", result);
             assertFalse(result.contains("Empty outer"));
         }
     }

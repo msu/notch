@@ -1,16 +1,17 @@
 package edu.montana.notch.statements;
 
+import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.chisel.Location;
-import edu.montana.notch.chisel.Token;
 
 public class NotchAssignment extends NotchStatement {
     private Token name;
     private NotchExpression expression;
 
-    public NotchAssignment(String fileId, Location start, Location end) {
-        super(fileId, start, end);
+    public NotchAssignment(Token name, NotchExpression expression) {
+        super(name.span.through(expression));
+        this.name = name;
+        this.expression = expression;
     }
 
     @Override

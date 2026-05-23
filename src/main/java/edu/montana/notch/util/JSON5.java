@@ -1,8 +1,7 @@
 package edu.montana.notch.util;
 
-import edu.montana.notch.chisel.ParseException;
-import edu.montana.notch.chisel.TokenStream;
-import edu.montana.notch.chisel.Tokenizer;
+import edu.montana.notch.chisel.*;
+import edu.montana.notch.chisel.type.LiteralTokenType;
 import edu.montana.notch.json5.*;
 
 import java.lang.reflect.InvocationTargetException;
@@ -19,32 +18,40 @@ import static edu.montana.notch.json5.JSON5TokenTypeWhitespace.JSON5_WHITESPACE;
 
 public class JSON5 {
     public static final Tokenizer tokenizer = new Tokenizer()
-            .withTokenType(JSON5_COMMENT)
-            .withTokenType(JSON5_WHITESPACE)
-            .withTokenTypes(JSON5TokenTypePunct.values())
-            .withTokenType(JSON5_NUMBER)
-            .withTokenType(JSON5_IDENT)
-            .withTokenType(JSON5_STRING);
+            .withTokenType("_ws", JSON5_WHITESPACE)
+            .withTokenType("_comment", JSON5_COMMENT)
+            .withTokenTypes("{", new LiteralTokenType("{"))
+            .withTokenTypes("}", new LiteralTokenType("}"))
+            .withTokenTypes("[", new LiteralTokenType("["))
+            .withTokenTypes("]", new LiteralTokenType("]"))
+            .withTokenTypes(",", new LiteralTokenType(","))
+            .withTokenTypes(":", new LiteralTokenType(":"))
+            .withTokenType("num", JSON5_NUMBER)
+            .withTokenType("ident", JSON5_IDENT)
+            .withTokenType("string", JSON5_STRING);
 
-    public static TokenStream tokenize(String fileId, String src) {
-        return tokenizer.tokenize(fileId, src);
+    public static TokenStream tokenize(Source source) {
+        return tokenizer.tokenize(source);
     }
 
-    public static JSON5Object parseObject(String fileId, String src) {
-        var parser = new JSON5Parser(fileId, src);
+    public static JSON5Object parseObject(Source source) {
+        var parser = new JSON5Parser(source);
         return parser.parseObject();
     }
 
-    public static JSON5Array parseArray(String fileId, String src) {
-        var parser = new JSON5Parser(fileId, src);
+    public static JSON5Array parseArray(Source source) {
+        var parser = new JSON5Parser(source);
         return parser.parseArray();
     }
 
-    public static <T extends JSON5Value> T parse(String fileId, String src) {
-        var parser = new JSON5Parser(fileId, src);
+    public static <T extends JSON5Value> T parse(Source source) {
+        var parser = new JSON5Parser(source);
         var value = parser.parseValue();
         if (value == null) {
-            throw new ParseException(fileId, "unable to parse value", parser.location());
+            final var diag = new Diagnostic();
+            diag.highlight(parser.currentToken());
+            diag.note("unable to parse value");
+            throw new ParseException(diag);
         }
         return (T) value;
     }

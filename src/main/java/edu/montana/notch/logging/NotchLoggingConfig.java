@@ -6,6 +6,7 @@ import org.slf4j.Marker;
 import org.slf4j.event.Level;
 import org.slf4j.helpers.MessageFormatter;
 import org.slf4j.spi.SLF4JServiceProvider;
+
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -25,7 +26,7 @@ public class NotchLoggingConfig {
     private Level configuredGlobalLogLevel;
     SLF4JServiceProvider overrideService;
     private boolean showTimestamp = false;
-    private boolean showFullName= false;
+    private boolean showFullName = false;
     private boolean showShortName = true;
     private boolean noColors = false;
     private boolean flatten = false;
@@ -92,7 +93,7 @@ public class NotchLoggingConfig {
     }
 
     void runAtLevel(Level level, Runnable runnable) {
-        if(configuredGlobalLogLevel == null) {
+        if (configuredGlobalLogLevel == null) {
             Level tmp = configuredGlobalLogLevel;
             try {
                 configuredGlobalLogLevel = level;
@@ -146,7 +147,7 @@ public class NotchLoggingConfig {
     }
 
     public boolean shouldLog(String name, Level level, Marker marker, String messagePattern, Object[] arguments, Throwable throwable) {
-        if(backgroundLogs) {
+        if (backgroundLogs) {
             String msg = formatMessage(name, level, marker, messagePattern, arguments, throwable);
             synchronized (this) {
                 if (backgroundBuffer.isEmpty()) {
@@ -161,7 +162,7 @@ public class NotchLoggingConfig {
     }
 
     private Level getGlobalLogLevel() {
-        if(configuredGlobalLogLevel != null) {
+        if (configuredGlobalLogLevel != null) {
             return configuredGlobalLogLevel;
         } else {
             return Level.INFO;
@@ -188,13 +189,13 @@ public class NotchLoggingConfig {
         int nextLineOffsets = 0;
         if (logIndentSupported) {
             Integer offset = LOG_INDENT.get();
-            if(offset != null) {
+            if (offset != null) {
                 firstLineOffset = offset;
                 nextLineOffsets = offset;
             }
         }
 
-        if(showTimestamp) {
+        if (showTimestamp) {
             ZonedDateTime now = LocalDateTime.now().atZone(ZoneOffset.systemDefault());
             String formatted = formatter.format(now);
             msg.a(formatted).a(" ");
@@ -214,9 +215,9 @@ public class NotchLoggingConfig {
 
         msg.a(" ".repeat(firstLineOffset));
 
-        if(showFullName) {
+        if (showFullName) {
             msg.a(name).a(" | ");
-        } else if(showShortName) {
+        } else if (showShortName) {
             msg.a(shortenName(name)).a(" | ");
         }
 
@@ -224,20 +225,20 @@ public class NotchLoggingConfig {
         if (includeRequestId) {
             map = new TreeMap<>();
             String value = MDC.get(REQUEST_ID_KEY);
-            if(value != null) {
+            if (value != null) {
                 map.put(REQUEST_ID_KEY, value);
             }
         }
         if (includeServerIP) {
-            if(map == null) {
+            if (map == null) {
                 map = new TreeMap<>();
             }
             String ip = MDC.get(IP_KEY);
-            if(ip != null) {
+            if (ip != null) {
                 map.put(IP_KEY, ip);
             }
         }
-        if(map != null && !map.isEmpty()) {
+        if (map != null && !map.isEmpty()) {
             msg.append(map.toString()).append(" | ");
         }
 
@@ -267,7 +268,7 @@ public class NotchLoggingConfig {
                 if (i == 0) {
                     normalized.append(s);
                 } else {
-                    if(flatten) {
+                    if (flatten) {
                         normalized.append(" ").append(s);
                     } else {
                         normalized.append("\n");
@@ -297,9 +298,9 @@ public class NotchLoggingConfig {
     }
 
     public void pushLogIndent() {
-        if(logIndentSupported) {
+        if (logIndentSupported) {
             Integer indent = LOG_INDENT.get();
-            if(indent == null) {
+            if (indent == null) {
                 indent = 0;
             }
             indent += 2;
@@ -308,9 +309,9 @@ public class NotchLoggingConfig {
     }
 
     public void popLogIndent() {
-        if(logIndentSupported) {
+        if (logIndentSupported) {
             Integer indent = LOG_INDENT.get();
-            if(indent == null) {
+            if (indent == null) {
                 indent = 0;
             }
             indent -= 2;

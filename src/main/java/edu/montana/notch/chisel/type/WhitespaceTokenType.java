@@ -1,11 +1,15 @@
-package bigsky.notch.chisel.type;
+package edu.montana.notch.chisel.type;
 
-import bigsky.notch.chisel.*;
+import edu.montana.notch.chisel.TokenData;
+import edu.montana.notch.chisel.TokenType;
+import edu.montana.notch.chisel.TokenizeException;
+import edu.montana.notch.chisel.Tokenizer;
 
 public class WhitespaceTokenType implements TokenType {
     public static final WhitespaceTokenType WHITESPACE = new WhitespaceTokenType();
 
-    protected WhitespaceTokenType() {}
+    protected WhitespaceTokenType() {
+    }
 
     @Override
     public TokenData tokenize(Tokenizer t) throws TokenizeException {

@@ -9,7 +9,7 @@ public class IndexExpression extends QueryExpression {
     public final QueryExpression index;
 
     public IndexExpression(QueryExpression root, QueryExpression index, Token rBracket) {
-        super(root.fileId, root.start, rBracket.end);
+        super(root.span.through(rBracket));
         this.root = root;
         this.index = index;
     }

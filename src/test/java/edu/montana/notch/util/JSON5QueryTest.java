@@ -1,5 +1,6 @@
 package edu.montana.notch.util;
 
+import edu.montana.notch.chisel.Source;
 import edu.montana.notch.json5.JSON5Array;
 import edu.montana.notch.json5.JSON5Object;
 import edu.montana.notch.json5.JSON5Value;
@@ -18,7 +19,8 @@ public class JSON5QueryTest {
     }
 
     private <T extends JSON5Value> T parse(String query) {
-        return JSON5.parse("<test:" + testInfo.getDisplayName() + ">", query);
+        final var source = new Source("<test:" + testInfo.getDisplayName() + ">", query);
+        return JSON5.parse(source);
     }
 
     @Test

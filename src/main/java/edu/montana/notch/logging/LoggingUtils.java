@@ -8,6 +8,7 @@ public class LoggingUtils {
     private static class NoAnsi extends Ansi {
         public NoAnsi() {
         }
+
         public Ansi fg(Color color) {
             return this;
         }

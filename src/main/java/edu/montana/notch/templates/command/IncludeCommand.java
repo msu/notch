@@ -1,12 +1,9 @@
 package edu.montana.notch.templates.command;
 
 import edu.montana.notch.NotchParser;
-import edu.montana.notch.templates.NotchTemplateCommand;
-import edu.montana.notch.templates.NotchTemplateParser;
-import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.chisel.Token;
-
-import static edu.montana.notch.chisel.type.TokenTypeString.STR;
+import edu.montana.notch.templates.NotchTemplateCommand;
+import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 
 public class IncludeCommand extends NotchTemplateCommand {
     public IncludeCommand() {
@@ -16,9 +13,8 @@ public class IncludeCommand extends NotchTemplateCommand {
     private Token path;
 
     @Override
-    public void parse(Token commandName, NotchTemplateParser tmplParser, NotchParser commandParser) {
-        path = commandParser.require(STR, "expected template path");
-        commandParser.requireEnd("expected EOL after template path");
+    public void parseCommand(NotchParser parser) {
+        path = parser.require("string", "expected template path");
     }
 
     @Override

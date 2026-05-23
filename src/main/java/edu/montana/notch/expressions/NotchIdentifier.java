@@ -1,17 +1,17 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.types.NotchType;
 import edu.montana.notch.types.TypeSystem;
-import edu.montana.notch.chisel.Token;
 
 import static edu.montana.notch.runtime.NotchRuntime.UNDEFINED;
 
 public class NotchIdentifier extends NotchExpression implements DotPathMember {
     public final Token token;
 
-    public NotchIdentifier(String fileId, Token token) {
-        super(fileId, token.start, token.end);
+    public NotchIdentifier(Token token) {
+        super(token.span);
         this.token = token;
     }
 
@@ -28,11 +28,6 @@ public class NotchIdentifier extends NotchExpression implements DotPathMember {
             if (type != null) {
                 return type;
             }
-            // UNDEFINED propagates as a value: callers that need a defined
-            // value (arithmetic, method invocation, etc.) will throw when they
-            // try to coerce it; callers that can handle absence (?:, print,
-            // property access, template interpolation) do the right thing.
-            return UNDEFINED;
         }
         return val;
     }

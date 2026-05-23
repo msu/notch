@@ -1,24 +1,16 @@
 package edu.montana.notch.json5;
 
+import edu.montana.notch.chisel.*;
 import edu.montana.notch.util.JSON5;
-import edu.montana.notch.chisel.BasicParser;
-import edu.montana.notch.chisel.ParseException;
-import edu.montana.notch.chisel.TokenStream;
-
-import static edu.montana.notch.json5.JSON5TokenTypeIdent.JSON5_IDENT;
-import static edu.montana.notch.json5.JSON5TokenTypeIdent.Keyword.*;
-import static edu.montana.notch.json5.JSON5TokenTypePunct.*;
-import static edu.montana.notch.json5.JSON5TokenTypeString.JSON5_STRING;
-import static edu.montana.notch.json5.JSON5TokenTypeNumber.JSON5_NUMBER;
 
 public class JSON5Parser extends BasicParser {
     {
-        ignoredTokenTypes.add(JSON5TokenTypeWhitespace.JSON5_WHITESPACE);
-        ignoredTokenTypes.add(JSON5TokenTypeComment.JSON5_COMMENT);
+        ignoredTokenTypes.add("_ws");
+        ignoredTokenTypes.add("_comment");
     }
 
-    public JSON5Parser(String fileId, String source) {
-        this(JSON5.tokenize(fileId, source));
+    public JSON5Parser(Source source) {
+        this(JSON5.tokenize(source));
     }
 
     public JSON5Parser(TokenStream tokens) {
@@ -60,12 +52,12 @@ public class JSON5Parser extends BasicParser {
     }
 
     private String parseMemberName() {
-        if (peek(JSON5_STRING)) {
+        if (peek("string")) {
             var token = take();
             return ((JSON5TokenTypeString.StringValue) token.data).value();
         }
 
-        if (peek(JSON5_IDENT)) {
+        if (peek("ident")) {
             var token = take();
             return token.str();
         }
@@ -74,91 +66,115 @@ public class JSON5Parser extends BasicParser {
     }
 
     public JSON5Object parseObject() {
-        if (!take(LeftBrace)) return null;
+        if (!take("{")) return null;
 
         var out = new JSON5Object();
 
-        while (!atEnd() && !peek(RightBrace)) {
+        while (!atEnd() && !peek("}")) {
             var key = parseMemberName();
             if (key == null) {
-                throw new ParseException(fileId(), "expected a member name (string or identifier) in json-object", peek().span());
+                final var diag = new Diagnostic()
+                        .highlight(currentToken())
+                        .note("expected a member name (string or identifier) in json-object");
+                throw new ParseException(diag);
             }
 
-            if (!take(Colon)) {
-                throw new ParseException(fileId(), "expected a ':' character after json-object member name", peek().span());
+            if (!take(":")) {
+                final var diag = new Diagnostic()
+                        .highlight(currentToken())
+                        .note("expected a ':' character after json-object member name");
+                throw new ParseException(diag);
             }
 
             var value = parseValue();
             if (value == null) {
-                throw new ParseException(fileId(), "expected a json value after json-object member", peek().span());
+                final var diag = new Diagnostic()
+                        .highlight(currentToken())
+                        .note("expected a json value after json-object member");
+                throw new ParseException(diag);
             }
 
             out.put(key, value);
 
-            if (!take(Comma)) {
+            if (!take(",")) {
                 break;
             }
         }
 
-        var start = peek();
+        var start = currentToken();
         if (parseMemberName() != null) {
-            throw new ParseException(fileId(), "expected ',' or '}' in json-object, did you for get a comma??", start.span());
+            final var diag = new Diagnostic()
+                    .highlight(start)
+                    .note("expected ',' or '}' in json-object, did you for get a comma??");
+            throw new ParseException(diag);
         }
 
-        if (!take(RightBrace)) {
-            throw new ParseException(fileId(), "expected '}' at the end of this json-object", peek().span());
+        if (!take("}")) {
+            final var diag = new Diagnostic()
+                    .highlight(currentToken())
+                    .note("expected '}' at the end of this json-object");
+            throw new ParseException(diag);
         }
 
         return out;
     }
 
     public JSON5Array parseArray() {
-        if (!take(LeftBracket)) return null;
+        if (!take("[")) return null;
 
         var out = new JSON5Array();
 
-        while (!atEnd() && !peek(RightBracket)) {
+        while (!atEnd() && !peek("]")) {
             var value = parseValue();
             if (value == null) {
-                throw new ParseException(fileId(), "expected a json value in json-array", peek().span());
+                final var diag = new Diagnostic();
+                diag.note("expected a json value in json-array");
+                diag.highlight(currentToken());
+                throw new ParseException(diag);
             }
 
             out.add(value);
 
-            if (!take(Comma)) {
+            if (!take(",")) {
                 break;
             }
         }
 
-        var start = peek();
+        var start = currentToken();
         if (peekValue()) {
-            throw new ParseException(fileId(), "expected ',' or ']' in json-array, did you forget a comma??", start.span());
+            final var diag = new Diagnostic();
+            diag.highlight(start);
+            diag.note("expected ',' or ']' in json-array, did you forget a comma??");
+            throw new ParseException(diag);
         }
 
-        if (!take(RightBracket)) {
-            throw new ParseException(fileId(), "expected ']' at the end of this json-array", peek().span());
+        if (!take("]")) {
+            final var diag = new Diagnostic();
+            diag.highlight(currentToken());
+            diag.note("expected ']' at the end of this json-array");
+            throw new ParseException(diag);
         }
 
         return out;
     }
 
     public boolean peekValue() {
-        return tokens.peek(JSON_NULL, JSON5_IDENT, LeftBrace, LeftBracket, JSON5_NUMBER, JSON5_STRING);
+        return tokens.peek("null", "ident", "{", "[", "num", "string");
     }
 
     public JSON5Null parseNull() {
-        if (take(JSON_NULL)) return JSON5Null.NULL;
+        if (take("null")) return JSON5Null.NULL;
         return null;
     }
 
     public JSON5Boolean parseBoolean() {
-        if (take(JSON_TRUE)) return JSON5Boolean.TRUE;
-        if (take(JSON_FALSE)) return JSON5Boolean.FALSE;
+        if (take("true")) return JSON5Boolean.TRUE;
+        if (take("false")) return JSON5Boolean.FALSE;
         return null;
     }
 
     public JSON5String parseString() {
-        if (!peek(JSON5_STRING)) {
+        if (!peek("string")) {
             return null;
         }
 
@@ -168,7 +184,7 @@ public class JSON5Parser extends BasicParser {
     }
 
     public JSON5Number parseNumber() {
-        if (!peek(JSON5_NUMBER)) {
+        if (!peek("num")) {
             return null;
         }
 
@@ -179,11 +195,11 @@ public class JSON5Parser extends BasicParser {
     }
 
     public JSON5Integer parseInteger() {
-        if (!peek(JSON5_NUMBER)) {
+        if (!peek("num")) {
             return null;
         }
 
-        var content = peek();
+        var content = currentToken();
         var value = ((JSON5TokenTypeNumber.NumberValue) content.data);
         if (!value.isInteger()) {
             return null;
@@ -194,11 +210,11 @@ public class JSON5Parser extends BasicParser {
     }
 
     public JSON5Decimal parseDecimal() {
-        if (!peek(JSON5_NUMBER)) {
+        if (!peek("num")) {
             return null;
         }
 
-        var content = peek();
+        var content = currentToken();
         var value = ((JSON5TokenTypeNumber.NumberValue) content.data);
         if (value.isInteger()) {
             return null;

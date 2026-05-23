@@ -1,8 +1,11 @@
-package bigsky.notch.chisel.type;
+package edu.montana.notch.chisel.type;
 
-import bigsky.notch.chisel.*;
+import edu.montana.notch.chisel.TokenData;
+import edu.montana.notch.chisel.TokenType;
+import edu.montana.notch.chisel.TokenizeException;
+import edu.montana.notch.chisel.Tokenizer;
 
-import static bigsky.notch.chisel.type.CIdentifierTokenType.IDENT;
+import static edu.montana.notch.chisel.type.IdentTokenType.IDENT;
 
 public class BooleanTokenType implements TokenType {
     public static final BooleanTokenType BOOL = new BooleanTokenType();

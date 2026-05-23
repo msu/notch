@@ -1,128 +1,77 @@
 package edu.montana.notch.templates.command;
 
 import edu.montana.notch.NotchParser;
+import edu.montana.notch.chisel.Token;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplateParser;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
-import edu.montana.notch.templates.layout.LayoutContentItem;
-import edu.montana.notch.templates.layout.LayoutContentItemText;
-import edu.montana.notch.templates.runtime.RenderException;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
-import edu.montana.notch.util.Exceptions;
-import edu.montana.notch.util.Text;
-import edu.montana.notch.chisel.Token;
+import edu.montana.notch.util.BetterMap;
+import edu.montana.notch.util.Key;
 
-import java.util.HashMap;
-import java.util.Map;
+public class LayoutCommand extends NotchTemplateCommand {
+    public static final Key<Mode> MODE = new Key<>("layout.mode");
+    public static final Key<BetterMap<String, String>> BLOCKS = new Key<>("layout.blocks");
+    public static final String BODY_BLOCK_NAME = "<body>";
 
-import static edu.montana.notch.chisel.type.TokenTypeString.STR;
-
-public class LayoutCommand extends NotchTemplateCommand implements NotchTemplateCommand.Global {
     public LayoutCommand() {
         super("layout");
     }
 
-    private Token path;
-    private NotchTemplateContentBlock childContent;
+    Token templateName;
+    NotchTemplateContentBlock bodyContent;
 
     @Override
-    public void parse(Token commandName, NotchTemplateParser tmplParser, NotchParser commandParser) {
-        path = commandParser.require(STR, "expected template parent path string");
-        end = commandParser.location();
-
-        childContent = tmplParser.parseContentBlock();
-        // addChildContent(content); // <-- NO
-        // this is intentional cuz it isn't meant to be walked
+    public void parseCommand(NotchParser parser) {
+        templateName = parser.expect("string", "expected template name");
     }
 
-    public record Blocks(Map<String, LayoutContentItem> contentBlocks) {
-    }
-
-    public static final NotchTemplateRuntime.StorageKey<Blocks> KEY_LAYOUT_CONTENT = new NotchTemplateRuntime.StorageKey<>(Blocks.class, "layout.content");
-
-    public static final NotchTemplateRuntime.StorageKey<Mode> KEY_LAYOUT_MODE = new NotchTemplateRuntime.StorageKey<>(Mode.class, "layout.mode");
-
-    private NotchTemplateContentBlock parseParentTemplate(NotchTemplateRuntime runtime) {
-        try {
-            var templates = runtime.templates();
-            var src = templates.getLoader().loadTemplate(path.str());
-            var parser = new NotchTemplateParser(templates, path.str(), src);
-            var content = parser.parseContentBlock();
-            return content;
-        } catch (RenderException e) {
-            throw Exceptions.rethrow(e);
-        } catch (Exception e) {
-            throw new RenderException(path.start, path.end, "failed to load template %s".formatted(Text.repr(path.str())), e);
-        }
-    }
-
-    private Blocks collectContentItems(NotchTemplateContentBlock.GlobalCommands parentGlobals) {
-        var out = new HashMap<String, LayoutContentItem>();
-        for (var cmd : parentGlobals.globals()) {
-            if (!(cmd instanceof ContentCommand contentCmd)) {
-                continue;
-            }
-
-            var blockName = contentCmd.blockName();
-            if (out.containsKey(blockName)) {
-                throw new RenderException(contentCmd.getStart(), contentCmd.getEnd(), "duplicate block with name " + Text.repr(blockName));
-            }
-            out.put(blockName, null);
-        }
-        return new Blocks(out);
+    @Override
+    public void parseBody(NotchTemplateParser parser) {
+        bodyContent = parser.parseContentBlock();
     }
 
     @Override
     public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
-        var parentContent = parseParentTemplate(runtime);
-        var parentGlobals = parentContent.collectGlobalCommands();
-        var blocks = collectContentItems(parentGlobals);
+        final var layoutContent = runtime.templates().getTemplateContent(templateName.str());
+        final var contentGlobals = bodyContent.collectGlobals();
+        final var layoutGlobals = layoutContent.collectGlobals();
 
-        var childSb = new StringBuilder();
-        try {
-            runtime.storage(KEY_LAYOUT_CONTENT, blocks);
-            runtime.storage(KEY_LAYOUT_MODE, Mode.CHILD);
+        final var blocks = new BetterMap<String, String>();
+        final var layoutRuntime = new NotchTemplateRuntime(layoutContent.source(), runtime);
+        layoutRuntime.storage(MODE, Mode.LayoutFile);
+        layoutRuntime.storage(BLOCKS, blocks);
 
-            var childGlobals = childContent.collectGlobalCommands();
-            for (var childCommand : childGlobals.globals()) {
-                childCommand.preRender(runtime);
-            }
-            childContent.render(runtime, childSb);
-            for (var childCommand : childGlobals.globals()) {
-                childCommand.postRender(runtime, childSb);
-            }
-
-            blocks.contentBlocks.put("", new LayoutContentItemText(childSb.toString()));
-
-            runtime.storage(KEY_LAYOUT_CONTENT, null);
-            runtime.storage(KEY_LAYOUT_MODE, null);
-        } catch (RenderException e) {
-            throw Exceptions.rethrow(e);
-        } catch (Exception e) {
-            throw new RenderException(path.start, path.end, "failed to render template %s".formatted(Text.repr(path.str())), e);
+        for (final var global : layoutGlobals) {
+            global.preRender(layoutRuntime);
         }
 
-        try { // let's render the parent;
-            var parentRuntime = new NotchTemplateRuntime(path.str(), runtime);
-            parentRuntime.storage(KEY_LAYOUT_CONTENT, blocks);
-            parentRuntime.storage(KEY_LAYOUT_MODE, Mode.PARENT);
-
-            for (var cmd : parentGlobals.globals()) {
-                cmd.preRender(parentRuntime);
-            }
-            parentContent.render(parentRuntime, sb);
-            for (var cmd : parentGlobals.globals()) {
-                cmd.postRender(parentRuntime, sb);
+        {
+            final var contentRuntime = new NotchTemplateRuntime(source(), layoutRuntime);
+            contentRuntime.storage(MODE, Mode.ContentFile);
+            contentRuntime.storage(BLOCKS, blocks);
+            for (final var global : contentGlobals) {
+                global.preRender(contentRuntime);
             }
 
-            parentRuntime.storage(KEY_LAYOUT_CONTENT, null);
-            parentRuntime.storage(KEY_LAYOUT_MODE, null);
-        } catch (RenderException e) {
-            throw Exceptions.rethrow(e);
+            final var contentSb = new StringBuilder();
+            bodyContent.render(contentRuntime, contentSb);
+            blocks.put(null, contentSb.toString());
+
+            for (final var global : contentGlobals) {
+                global.postRender(contentRuntime);
+            }
+        }
+
+        layoutContent.render(layoutRuntime, sb);
+
+        for (final var global : contentGlobals) {
+            global.postRender(layoutRuntime);
         }
     }
 
     public enum Mode {
-        PARENT, CHILD
+        LayoutFile,
+        ContentFile,
     }
 }

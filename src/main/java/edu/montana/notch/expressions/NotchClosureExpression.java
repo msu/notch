@@ -1,37 +1,28 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.chisel.Span;
+import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.NotchClosure;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.statements.NotchStatement;
-import edu.montana.notch.chisel.Location;
-import edu.montana.notch.chisel.Token;
 
 import java.util.List;
 
 public class NotchClosureExpression extends NotchExpression {
-    private List<Token> parameters;
-    private NotchExpression expression;
-    private List<NotchStatement> statements;
+    private final List<Token> parameters;
+    private final NotchExpression expression;
+    private final List<NotchStatement> statements;
 
-    public NotchClosureExpression(String fileId, Location start, Location end) {
-        super(fileId, start, end);
+    public NotchClosureExpression(Span span, List<Token> parameters, NotchExpression expression, List<NotchStatement> statements) {
+        super(span);
+        this.parameters = parameters;
+        this.expression = addChild(expression);
+        this.statements = statements;
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        NotchRuntime closure = new NotchRuntime(fileId, runtime);
+        NotchRuntime closure = new NotchRuntime(source(), runtime);
         return new NotchClosure(closure, parameters, expression, statements);
-    }
-
-    public void setParameters(List<Token> params) {
-        this.parameters = params;
-    }
-
-    public void setExpression(NotchExpression expression) {
-        this.expression = addChild(expression);
-    }
-
-    public void setStatements(List<NotchStatement> statements) {
-        this.statements = addChildren(statements);
     }
 }

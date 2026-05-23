@@ -1,12 +1,14 @@
 package edu.montana.notch.runtime;
 
+import edu.montana.notch.chisel.Diagnostic;
+import edu.montana.notch.chisel.Source;
+import edu.montana.notch.chisel.Span;
+import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.statements.NotchStatement;
+import edu.montana.notch.templates.runtime.RenderException;
 import edu.montana.notch.types.NotchJavaType;
-import edu.montana.notch.util.BetterList;
-import edu.montana.notch.util.Exceptions;
-import edu.montana.notch.util.SafeAutoClosable;
-import edu.montana.notch.chisel.Span;
+import edu.montana.notch.util.*;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -19,31 +21,35 @@ public class NotchRuntime {
         }
     };
 
-    public final String fileId;
+    public final Source source;
     private LinkedList<Scope> values = new LinkedList<>();
     protected BetterList<NotchStackTraceElement> stackTraceElements = new BetterList<>();
     private Consumer<Object> out = System.out::println;
+    private BetterMap<Key, Object> storage = new BetterMap<>();
 
-    public NotchRuntime(String fileId) {
-        this(fileId, Map.of());
+    public NotchRuntime(Source source) {
+        this(source, Map.of());
     }
 
-    public NotchRuntime(String fileId, Map<String, Object> entryBlock) {
-        this.fileId = Objects.requireNonNull(fileId);
+    public NotchRuntime(Source source, Map<String, Object> entryBlock) {
+        this.source = Objects.requireNonNull(source);
         Objects.requireNonNull(entryBlock);
         var scope = new Scope(entryBlock);
         values.push(scope);
-        var trace = new NotchStackTraceElement(fileId, Span.CALLSITE, "<render>");
-        stackTraceElements.add(trace);
+
+        final var currentStackTrace = Thread.currentThread().getStackTrace();
+        final var frame = currentStackTrace[1];
+        stackTraceElements.add(new NotchStackTraceElement(
+                source.span,
+                "<render@%s.%s:%d>".formatted(frame.getClassName(), frame.getMethodName(), frame.getLineNumber())
+        ));
     }
 
-    public NotchRuntime(String fileId, NotchRuntime parent) {
-        this.fileId = Objects.requireNonNull(fileId);
+    public NotchRuntime(Source source, NotchRuntime parent) {
+        this.source = source;
         out = parent.out;
         values = new LinkedList<>(parent.values);
         stackTraceElements.addAll(parent.stackTraceElements);
-        var trace = new NotchStackTraceElement(fileId, Span.CALLSITE, "<render>");
-        stackTraceElements.add(trace);
     }
 
     public static String className(Object obj) {
@@ -96,15 +102,15 @@ public class NotchRuntime {
         frame.put(sym, value);
     }
 
-    public ScopeLock pushScope(String fileId, Span span) {
+    public ScopeLock pushScope() {
         var entry = new Scope();
         values.push(entry);
         var lock = new ScopeLock(entry);
         return lock;
     }
 
-    public TraceGuard trace(String fileId, Span span, String hint) {
-        var elt = new NotchStackTraceElement(fileId, span, hint);
+    public TraceGuard trace(Spanned spanned, String hint) {
+        var elt = new NotchStackTraceElement(spanned.span(), hint);
         return new TraceGuard(elt);
     }
 
@@ -128,9 +134,9 @@ public class NotchRuntime {
         return !isTruthy(value);
     }
 
-    public Iterable<?> coerceIterable(String fileId, Span span, Object iterableValue) {
+    public Iterable<?> coerceIterable(Span span, Object iterableValue) {
 
-        if(iterableValue == null) {
+        if (iterableValue == null) {
             return Collections.emptyList();
         }
 
@@ -152,9 +158,9 @@ public class NotchRuntime {
         }
 
         var st = currentStackTrace();
-        var diag = new NotchDiagnostic();
+        var diag = new Diagnostic();
         diag.setTitle("failed to coerce iterable from value");
-        diag.highlight(fileId, span);
+        diag.highlight(span);
         diag.note("target class was " + className(iterableValue));
         throw new NotchRuntimeException(st, diag);
     }
@@ -197,8 +203,8 @@ public class NotchRuntime {
     }
 
     public Object evaluate(NotchExpression expression) {
-            var value = expression.evaluate(this);
-            return value;
+        var value = expression.evaluate(this);
+        return value;
     }
 
     public void execute(NotchStatement stmt) {
@@ -208,16 +214,33 @@ public class NotchRuntime {
             throw Exceptions.rethrow(e);
         } catch (Throwable t) {
             var st = currentStackTrace();
-            var diag = new NotchDiagnostic();
+            var diag = new Diagnostic();
             diag.setTitle("failed to execute statement");
-            diag.highlight(stmt.fileId, stmt.span());
+            diag.highlight(stmt.span());
+            diag.note("threw a %s".formatted(t.getClass().getName()));
             diag.note(t.getMessage());
             throw new NotchRuntimeException(st, diag, t);
         }
     }
 
+    public <T> T storage(Key<T> key) {
+        if (!storage.containsKey(key)) {
+            throw new RenderException("key " + key + " not found in storage for " + source.id);
+        }
+        return (T) storage.get(key);
+    }
+
+    public <T> void storage(Key<T> key, T value) {
+        storage.put(key, value);
+    }
+
+    public <T> void unstorage(Key<T> key) {
+        storage.remove(key);
+    }
+
     public static class Scope extends LinkedHashMap<String, Object> {
-        public Scope() {}
+        public Scope() {
+        }
 
         public Scope(Map<? extends String, ?> m) {
             super(m);

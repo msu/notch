@@ -1,5 +1,6 @@
 package edu.montana.notch.util;
 
+import edu.montana.notch.chisel.Source;
 import edu.montana.notch.json5.JSON5Array;
 import edu.montana.notch.json5.JSON5Object;
 import edu.montana.notch.json5.JSON5Value;
@@ -195,14 +196,16 @@ public class BetterHTTP {
             var body = inner.body();
             var req = this.inner.request();
             var id = req.method() + " " + req.uri();
-            return JSON5.parseObject(id, (String) body);
+            final var source = new Source(id, (String) body);
+            return JSON5.parseObject(source);
         }
 
         public JSON5Array jsonArray() {
             var body = inner.body();
             var req = this.inner.request();
             var id = req.method() + " " + req.uri();
-            return JSON5.parseArray(id, (String) body);
+            final var source = new Source(id, (String) body);
+            return JSON5.parseArray(source);
         }
 
         public String string() {

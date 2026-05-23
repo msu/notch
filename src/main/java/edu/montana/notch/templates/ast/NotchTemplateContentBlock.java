@@ -1,29 +1,65 @@
 package edu.montana.notch.templates.ast;
 
+import edu.montana.notch.chisel.Span;
+import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentCommand;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentExpression;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentItem;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentText;
-import edu.montana.notch.templates.runtime.RenderException;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
+import edu.montana.notch.templates.runtime.RenderException;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.Exceptions;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
-import static edu.montana.notch.util.Text.repr;
+public class NotchTemplateContentBlock implements Spanned {
+    private final Span span;
+    private final List<NotchTemplateContentItem> content;
+    private final NotchTemplateCommand terminalCommand;
 
-public class NotchTemplateContentBlock {
-    private final List<NotchTemplateContentItem> contentItems;
+    public NotchTemplateContentBlock(Span span, List<NotchTemplateContentItem> content, NotchTemplateCommand terminalCommand) {
+        this.span = span;
+        this.content = content;
+        this.terminalCommand = terminalCommand;
+    }
 
-    public NotchTemplateContentBlock(List<NotchTemplateContentItem> contentItems) {
-        this.contentItems = contentItems;
+    public String globalRender(NotchTemplateRuntime runtime) {
+        final var out = new StringBuilder();
+        globalRender(runtime, out);
+        return out.toString();
+    }
+
+    public void globalRender(NotchTemplateRuntime runtime, StringBuilder out) {
+        final var globals = collectGlobals();
+        try {
+            for (var global : globals) {
+                global.preRender(runtime);
+            }
+        } catch (RenderException e) {
+            throw Exceptions.rethrow(e);
+        } catch (Exception e) {
+            throw new RenderException(e);
+        }
+
+        render(runtime, out);
+
+        try {
+            for (var global : globals) {
+                global.postRender(runtime);
+            }
+        } catch (RenderException e) {
+            throw Exceptions.rethrow(e);
+        } catch (Exception e) {
+            throw new RenderException(e);
+        }
     }
 
     public void render(NotchTemplateRuntime runtime, StringBuilder out) {
-        var errors = new ArrayList<RenderException>();
-        for (var item : items()) {
+        for (var item : content()) {
             try {
                 if (Objects.requireNonNull(item) instanceof NotchTemplateContentText itemText) {
                     out.append(itemText.content);
@@ -33,76 +69,80 @@ public class NotchTemplateContentBlock {
                 } else if (item instanceof NotchTemplateContentExpression itemExpr) {
                     runtime.render(itemExpr.expression, out);
                 } else {
-                    throw new UnsupportedOperationException("don't know how to compile " + item.getClass());
+                    throw new UnsupportedOperationException("unreachable: don't know how to render " + item.getClass());
                 }
             } catch (RenderException e) {
-                errors.add(e);
+                throw Exceptions.rethrow(e);
+            } catch (Exception e) {
+                throw new RenderException(e);
             }
         }
-
-        if (!errors.isEmpty()) {
-            // TODO: throw many errors
-            throw Exceptions.rethrow(errors.get(0));
-        }
     }
 
-    public List<NotchTemplateContentItem> items() {
-        return Collections.unmodifiableList(contentItems);
+    public List<NotchTemplateContentItem> content() {
+        return Collections.unmodifiableList(content);
     }
 
-    public NotchTemplateCommand lastCommand() {
-        if (contentItems.isEmpty()) return null;
-        var item = contentItems.get(contentItems.size() - 1);
-        if (item instanceof NotchTemplateContentCommand cmd) {
-            return cmd.command;
-        }
-        return null;
+    public NotchTemplateCommand terminalCommand() {
+        return terminalCommand;
     }
 
-    public GlobalCommands collectGlobalCommands() {
-        var out = new GlobalCommands();
-        for (var item : items()) {
-            if (item instanceof NotchTemplateContentCommand itemCmd) {
-                collectGlobalCommands(out, itemCmd.command);
-            }
-        }
+    @Override
+    public Span span() {
+        return span;
+    }
+
+    public BetterList<NotchTemplateCommand> collectGlobals() {
+        final var out = new BetterList<NotchTemplateCommand>();
+        collectGlobals(out);
         return out;
     }
 
-    private void collectGlobalCommands(GlobalCommands out, NotchTemplateCommand command) {
-        if (command instanceof NotchTemplateCommand.Global global) {
-            out.globals.add(global);
-
-            if (command instanceof NotchTemplateCommand.Singleton singleton) {
-                var cmdName = singleton.getCommand().name;
-                if (out.singletons.containsKey(cmdName)) {
-                    throw new IllegalStateException("multiple singletons for " + repr(cmdName) + " defined");
-                }
-                out.singletons.put(cmdName, singleton);
+    public void collectGlobals(BetterList<NotchTemplateCommand> out) {
+        for (var item : content()) {
+            if (item instanceof NotchTemplateContentCommand cmd) {
+                collectGlobals(out, cmd.command);
             }
         }
-
-        for (var child : command.getChildCommands()) {
-            collectGlobalCommands(out, child);
+        var cmd = terminalCommand();
+        if (cmd != null) {
+            collectGlobals(out, cmd);
         }
     }
 
-    public record GlobalCommands(
-        BetterList<NotchTemplateCommand.Global> globals,
-        Map<String, NotchTemplateCommand.Singleton> singletons
-    ) {
-        public GlobalCommands() {
-            this(new BetterList<>(), new LinkedHashMap<>());
+    private void collectGlobals(BetterList<NotchTemplateCommand> out, NotchTemplateCommand command) {
+        if (command.isGlobal()) {
+            out.add(command);
         }
 
-        public <T extends NotchTemplateCommand.Global> BetterList<T> globals(Class<T> clazz) {
-            var out = new BetterList<T>();
-            for (var global : globals) {
-                if (clazz.isInstance(global)) {
-                    out.add(clazz.cast(global));
-                }
+        for (final var child : command.getChildCommands()) {
+            collectGlobals(out, child);
+        }
+    }
+
+    public <T extends NotchTemplateCommand> BetterList<T> collectGlobals(Class<T> clazz) {
+        final var out = new BetterList<T>();
+        collectGlobals(out, clazz);
+        return out;
+    }
+
+
+    public <T extends NotchTemplateCommand> void collectGlobals(BetterList<T> out, Class<T> clazz) {
+        for (var item : content()) {
+            if (!(item instanceof NotchTemplateContentCommand cmd)) {
+                continue;
             }
-            return out;
+            collectGlobals(out, clazz, cmd.command);
+        }
+    }
+
+    private <T extends NotchTemplateCommand> void collectGlobals(BetterList<T> out, Class<T> clazz, NotchTemplateCommand command) {
+        if (command.isGlobal() && clazz.isAssignableFrom(command.getClass())) {
+            out.add(clazz.cast(command));
+        }
+
+        for (final var child : command.getChildCommands()) {
+            collectGlobals(out, clazz, child);
         }
     }
 }

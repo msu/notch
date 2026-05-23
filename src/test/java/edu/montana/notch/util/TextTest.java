@@ -2,6 +2,7 @@ package edu.montana.notch.util;
 
 import org.junit.jupiter.api.Test;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TextTest {
@@ -61,16 +62,16 @@ class TextTest {
     void testReprSpecialCharacters() {
         char controlChar = (char) 7; // bell character
         String result = Text.repr(controlChar);
-        assertTrue(result.contains("\\u{7}"));
+        assertContains("\\u{7}", result);
 
         char unicodeChar = (char) 200;
         String unicodeResult = Text.repr(unicodeChar);
-        assertTrue(unicodeResult.contains("\\u{c8}"));
+        assertContains("\\u{c8}", unicodeResult);
 
         String stringWithSpecialChars = "test\u0007\u00C8end";
         String stringResult = Text.repr(stringWithSpecialChars);
-        assertTrue(stringResult.contains("\\u{7}"));
-        assertTrue(stringResult.contains("\\u{c8}"));
+        assertContains("\\u{7}", stringResult);
+        assertContains("\\u{c8}", stringResult);
     }
 
     @Test

@@ -2,6 +2,7 @@ package edu.montana.notch.logging;
 
 import org.junit.jupiter.api.Test;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SensitiveDataSanitizerTest {
@@ -38,9 +39,9 @@ class SensitiveDataSanitizerTest {
     void testSanitizeMultipleFields() {
         String input = "user=john password=secret123 token=abc123";
         String result = SensitiveDataSanitizer.sanitize(input);
-        assertTrue(result.contains("password=***REDACTED***"));
-        assertTrue(result.contains("token=***REDACTED***"));
-        assertTrue(result.contains("user=john"));
+        assertContains("password=***REDACTED***", result);
+        assertContains("token=***REDACTED***", result);
+        assertContains("user=john", result);
     }
 
     @Test
@@ -54,8 +55,8 @@ class SensitiveDataSanitizerTest {
     void testSanitizeFormParamMap() {
         String input = "Form values: {password=[secret123], username=[john]}";
         String result = SensitiveDataSanitizer.sanitize(input);
-        assertTrue(result.contains("password=***REDACTED***"));
-        assertTrue(result.contains("username=[john]"));
+        assertContains("password=***REDACTED***", result);
+        assertContains("username=[john]", result);
     }
 
     @Test
@@ -73,9 +74,9 @@ class SensitiveDataSanitizerTest {
     void testSanitizeWithCommaDelimitedValues() {
         String input = "data password=secret,username=john,token=xyz";
         String result = SensitiveDataSanitizer.sanitize(input);
-        assertTrue(result.contains("password=***REDACTED***"));
-        assertTrue(result.contains("token=***REDACTED***"));
-        assertTrue(result.contains("username=john"));
+        assertContains("password=***REDACTED***", result);
+        assertContains("token=***REDACTED***", result);
+        assertContains("username=john", result);
     }
 
     @Test
@@ -147,22 +148,22 @@ class SensitiveDataSanitizerTest {
 
     @Test
     void testSanitizeSecretVariations() {
-        assertTrue(SensitiveDataSanitizer.sanitize("secret=value").contains("***REDACTED***"));
-        assertTrue(SensitiveDataSanitizer.sanitize("client_secret=value").contains("***REDACTED***"));
-        assertTrue(SensitiveDataSanitizer.sanitize("api_secret=value").contains("***REDACTED***"));
+        assertContains("***REDACTED***", SensitiveDataSanitizer.sanitize("secret=value"));
+        assertContains("***REDACTED***", SensitiveDataSanitizer.sanitize("client_secret=value"));
+        assertContains("***REDACTED***", SensitiveDataSanitizer.sanitize("api_secret=value"));
     }
 
     @Test
     void testSanitizeAuthorizationVariations() {
-        assertTrue(SensitiveDataSanitizer.sanitize("authorization=bearer xyz").contains("***REDACTED***"));
-        assertTrue(SensitiveDataSanitizer.sanitize("auth=basic abc").contains("***REDACTED***"));
+        assertContains("***REDACTED***", SensitiveDataSanitizer.sanitize("authorization=bearer xyz"));
+        assertContains("***REDACTED***", SensitiveDataSanitizer.sanitize("auth=basic abc"));
     }
 
     @Test
     void testSanitizeSSN() {
         String input = "employee ssn=123-45-6789";
         String result = SensitiveDataSanitizer.sanitize(input);
-        assertTrue(result.contains("ssn=***REDACTED***"));
+        assertContains("ssn=***REDACTED***", result);
     }
 
     @Test
@@ -170,9 +171,9 @@ class SensitiveDataSanitizerTest {
         String input = "Form values: {username=[alice], password=[p@ssw0rd!], email=[alice@example.com], remember_me=[true]}";
         String result = SensitiveDataSanitizer.sanitize(input);
 
-        assertTrue(result.contains("username=[alice]"));
-        assertTrue(result.contains("password=***REDACTED***"));
-        assertTrue(result.contains("email=[alice@example.com]"));
-        assertTrue(result.contains("remember_me=[true]"));
+        assertContains("username=[alice]", result);
+        assertContains("password=***REDACTED***", result);
+        assertContains("email=[alice@example.com]", result);
+        assertContains("remember_me=[true]", result);
     }
 }

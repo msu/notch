@@ -1,14 +1,13 @@
 package edu.montana.notch.util;
 
+import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.TokenStream;
 import edu.montana.notch.chisel.TokenizeException;
-import edu.montana.notch.json5.JSON5TokenTypeComment;
-import edu.montana.notch.json5.JSON5TokenTypeIdent;
 import edu.montana.notch.json5.JSON5TokenTypeNumber.NumberValue;
-import edu.montana.notch.json5.JSON5TokenTypePunct;
 import edu.montana.notch.json5.JSON5TokenTypeString.StringValue;
-import edu.montana.notch.json5.JSON5TokenTypeWhitespace;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,13 +15,24 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tests for individual JSON5 token types
  */
 class JSON5TokenTest {
+    TestInfo testInfo;
+
+    @BeforeEach
+    void setUp(TestInfo testInfo) {
+        this.testInfo = testInfo;
+    }
+
+    TokenStream tokenize(String json) {
+        final var source = new Source(testInfo.getDisplayName(), json);
+        return JSON5.tokenize(source);
+    }
 
     // ===== String Token Tests =====
 
     @Test
     void testDoubleQuotedString() {
         String json = "\"hello world\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testDoubleQuotedString", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -35,7 +45,7 @@ class JSON5TokenTest {
     @Test
     void testSingleQuotedString() {
         String json = "'hello world'";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testSingleQuotedString", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -48,7 +58,7 @@ class JSON5TokenTest {
     @Test
     void testStringWithEscapes() {
         String json = "\"\\n\\t\\r\\\"\\\\\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testStringWithEscapes", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -59,7 +69,7 @@ class JSON5TokenTest {
     @Test
     void testStringWithUnicodeEscape() {
         String json = "\"\\u0048\\u0065\\u006C\\u006C\\u006F\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testStringWithUnicodeEscape", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -70,7 +80,7 @@ class JSON5TokenTest {
     @Test
     void testStringWithHexEscape() {
         String json = "\"\\x41\\x42\\x43\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testStringWithHexEscape", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -81,7 +91,7 @@ class JSON5TokenTest {
     @Test
     void testEmptyString() {
         String json = "\"\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testEmptyString", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -91,19 +101,19 @@ class JSON5TokenTest {
 
     @Test
     void testUnterminatedString() {
-        assertThrows(TokenizeException.class, () -> JSON5.tokenize("testUnterminatedString", "\"unterminated"));
+        assertThrows(TokenizeException.class, () -> tokenize("\"unterminated"));
     }
 
     @Test
     void testInvalidEscapeSequence() {
-        assertThrows(TokenizeException.class, () -> JSON5.tokenize("testInvalidEscapeSequence", "\"invalid\\z\""));
+        assertThrows(TokenizeException.class, () -> tokenize("\"invalid\\z\""));
     }
 
     // ===== Number Token Tests =====
 
     @Test
     void testDecimalInteger() {
-        TokenStream stream = JSON5.tokenize("testDecimalInteger", "123");
+        TokenStream stream = tokenize("123");
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
         assertEquals("123", num.repr());
@@ -115,7 +125,7 @@ class JSON5TokenTest {
 
     @Test
     void testDecimalWithFraction() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testDecimalWithFraction", "123.456"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("123.456"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -126,7 +136,7 @@ class JSON5TokenTest {
 
     @Test
     void testDecimalFractionOnly() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testDecimalFractionOnly", ".456"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(".456"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -136,7 +146,7 @@ class JSON5TokenTest {
 
     @Test
     void testDecimalWithExponent() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testDecimalWithExponent", "123e10"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("123e10"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -146,7 +156,7 @@ class JSON5TokenTest {
 
     @Test
     void testNegativeNumber() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testNegativeNumber", "-123.456"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("-123.456"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -157,7 +167,7 @@ class JSON5TokenTest {
 
     @Test
     void testPositiveNumber() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testPositiveNumber", "+123.456"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("+123.456"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -168,7 +178,7 @@ class JSON5TokenTest {
 
     @Test
     void testHexNumber() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testHexNumber", "0xDECAF"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("0xDECAF"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -180,7 +190,7 @@ class JSON5TokenTest {
 
     @Test
     void testNegativeHexNumber() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testNegativeHexNumber", "-0xC0FFEE"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("-0xC0FFEE"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -193,7 +203,7 @@ class JSON5TokenTest {
 
     @Test
     void testInfinity() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testInfinity", "Infinity"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("Infinity"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -205,7 +215,7 @@ class JSON5TokenTest {
 
     @Test
     void testNegativeInfinity() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testNegativeInfinity", "-Infinity"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("-Infinity"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -217,7 +227,7 @@ class JSON5TokenTest {
 
     @Test
     void testNaN() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testNaN", "NaN"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("NaN"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -228,7 +238,7 @@ class JSON5TokenTest {
 
     @Test
     void testNegativeNaN() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testNegativeNaN", "-NaN"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("-NaN"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -239,19 +249,19 @@ class JSON5TokenTest {
 
     @Test
     void testInvalidHexNoDigits() {
-        assertThrows(TokenizeException.class, () -> JSON5.tokenize("testInvalidHexNoDigits", "0x"));
+        assertThrows(TokenizeException.class, () -> tokenize("0x"));
     }
 
     @Test
     void testInvalidExponentNoDigits() {
-        assertThrows(TokenizeException.class, () -> JSON5.tokenize("testInvalidExponentNoDigits", "123e"));
+        assertThrows(TokenizeException.class, () -> tokenize("123e"));
     }
 
     // ===== Identifier Token Tests =====
 
     @Test
     void testIdentifier() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testIdentifier", "hello"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("hello"));
 
         assertEquals(1, stream.size());
         assertEquals("hello", stream.take().str());
@@ -259,7 +269,7 @@ class JSON5TokenTest {
 
     @Test
     void testIdentifierWithUnderscore() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testIdentifierWithUnderscore", "_private"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("_private"));
 
         assertEquals(1, stream.size());
         assertEquals("_private", stream.take().str());
@@ -267,7 +277,7 @@ class JSON5TokenTest {
 
     @Test
     void testIdentifierWithDollar() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testIdentifierWithDollar", "$special"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("$special"));
 
         assertEquals(1, stream.size());
         assertEquals("$special", stream.take().str());
@@ -275,83 +285,83 @@ class JSON5TokenTest {
 
     @Test
     void testKeywordTrue() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testKeywordTrue", "true"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("true"));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypeIdent.Keyword.JSON_TRUE, stream.take().type);
+        assertEquals("true", stream.take().type);
     }
 
     @Test
     void testKeywordFalse() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testKeywordFalse", "false"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("false"));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypeIdent.Keyword.JSON_FALSE, stream.take().type);
+        assertEquals("false", stream.take().type);
     }
 
     @Test
     void testKeywordNull() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testKeywordNull", "null"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("null"));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypeIdent.Keyword.JSON_NULL, stream.take().type);
+        assertEquals("null", stream.take().type);
     }
 
     @Test
     void testReservedKeyword() {
-        assertThrows(TokenizeException.class, () -> JSON5.tokenize("testReservedKeyword", "class"));
-        assertThrows(TokenizeException.class, () -> JSON5.tokenize("testReservedKeyword", "function"));
-        assertThrows(TokenizeException.class, () -> JSON5.tokenize("testReservedKeyword", "const"));
+        assertThrows(TokenizeException.class, () -> tokenize("class"));
+        assertThrows(TokenizeException.class, () -> tokenize("function"));
+        assertThrows(TokenizeException.class, () -> tokenize("const"));
     }
 
     // ===== Punctuation Token Tests =====
 
     @Test
     void testLeftBrace() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testLeftBrace", "{"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("{"));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypePunct.LeftBrace, stream.take().type);
+        assertEquals("{", stream.take().type);
     }
 
     @Test
     void testRightBrace() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testRightBrace", "}"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("}"));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypePunct.RightBrace, stream.take().type);
+        assertEquals("}", stream.take().type);
     }
 
     @Test
     void testLeftBracket() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testLeftBracket", "["));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("["));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypePunct.LeftBracket, stream.take().type);
+        assertEquals("[", stream.take().type);
     }
 
     @Test
     void testRightBracket() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testRightBracket", "]"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("]"));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypePunct.RightBracket, stream.take().type);
+        assertEquals("]", stream.take().type);
     }
 
     @Test
     void testColon() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testColon", ":"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(":"));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypePunct.Colon, stream.take().type);
+        assertEquals(":", stream.take().type);
     }
 
     @Test
     void testComma() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testComma", ","));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(","));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypePunct.Comma, stream.take().type);
+        assertEquals(",", stream.take().type);
     }
 
     // ===== Comment Token Tests =====
@@ -359,45 +369,45 @@ class JSON5TokenTest {
     @Test
     void testSingleLineComment() {
         String json = "// this is a comment\n";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testSingleLineComment", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypeComment.JSON5_COMMENT, stream.take().type);
+        assertEquals("_comment", stream.take().type);
     }
 
     @Test
     void testSingleLineCommentWithoutNewline() {
         String json = "// this is a comment at EOF";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testSingleLineCommentWithoutNewline", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypeComment.JSON5_COMMENT, stream.take().type);
+        assertEquals("_comment", stream.take().type);
     }
 
     @Test
     void testBlockComment() {
         String json = "/* this is a block comment */";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testBlockComment", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypeComment.JSON5_COMMENT, stream.take().type);
+        assertEquals("_comment", stream.take().type);
     }
 
     @Test
     void testMultiLineBlockComment() {
         String json = """
-            /* this is
-               a multiline
-               comment */
-            """;
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testMultiLineBlockComment", json));
+                /* this is
+                   a multiline
+                   comment */
+                """;
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
-        assertEquals(JSON5TokenTypeComment.JSON5_COMMENT, stream.take().type);
+        assertEquals("_comment", stream.take().type);
     }
 
     @Test
     void testUnterminatedBlockComment() {
-        assertThrows(TokenizeException.class, () -> JSON5.tokenize("testUnterminatedBlockComment", "/* unterminated comment"));
+        assertThrows(TokenizeException.class, () -> tokenize("/* unterminated comment"));
     }
 
     // ===== Whitespace Token Tests =====
@@ -405,29 +415,29 @@ class JSON5TokenTest {
     @Test
     void testBasicWhitespace() {
         String json = "   \t\n  ";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testBasicWhitespace", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypeWhitespace.JSON5_WHITESPACE, stream.take().type);
+        assertEquals("_ws", stream.take().type);
     }
 
     @Test
     void testUnicodeWhitespace() {
         // Test various Unicode whitespace characters
         String json = "\u00A0\u2028\u2029\uFEFF";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testUnicodeWhitespace", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypeWhitespace.JSON5_WHITESPACE, stream.take().type);
+        assertEquals("_ws", stream.take().type);
     }
 
     @Test
     void testVerticalTab() {
         String json = "\u000B";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testVerticalTab", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
-        assertEquals(JSON5TokenTypeWhitespace.JSON5_WHITESPACE, stream.take().type);
+        assertEquals("_ws", stream.take().type);
     }
 
     // ===== String Escape Edge Cases =====
@@ -435,7 +445,7 @@ class JSON5TokenTest {
     @Test
     void testStringWithVerticalTab() {
         String json = "\"\\v\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testStringWithVerticalTab", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -445,7 +455,7 @@ class JSON5TokenTest {
     @Test
     void testStringWithNullCharacter() {
         String json = "\"\\0\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testStringWithNullCharacter", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -455,7 +465,7 @@ class JSON5TokenTest {
     @Test
     void testStringWithLineContinuationCRLF() {
         String json = "\"line\\\r\ncontinuation\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testStringWithLineContinuationCRLF", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -465,7 +475,7 @@ class JSON5TokenTest {
     @Test
     void testStringWithLineContinuationLF() {
         String json = "\"line\\\ncontinuation\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testStringWithLineContinuationLF", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -475,7 +485,7 @@ class JSON5TokenTest {
     @Test
     void testStringWithLineContinuationCR() {
         String json = "\"line\\\rcontinuation\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testStringWithLineContinuationCR", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -485,7 +495,7 @@ class JSON5TokenTest {
     @Test
     void testStringWithLineContinuationLS() {
         String json = "\"line\\\u2028continuation\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testStringWithLineContinuationLS", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -495,7 +505,7 @@ class JSON5TokenTest {
     @Test
     void testStringWithLineContinuationPS() {
         String json = "\"line\\\u2029continuation\"";
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testStringWithLineContinuationPS", json));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(json));
 
         assertEquals(1, stream.size());
         StringValue str = (StringValue) stream.take().data;
@@ -506,7 +516,7 @@ class JSON5TokenTest {
 
     @Test
     void testDecimalWithPositiveExponent() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testDecimalWithPositiveExponent", "123e+10"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("123e+10"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -516,7 +526,7 @@ class JSON5TokenTest {
 
     @Test
     void testDecimalWithNegativeExponent() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testDecimalWithNegativeExponent", "123e-10"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("123e-10"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -526,7 +536,7 @@ class JSON5TokenTest {
 
     @Test
     void testDecimalWithUppercaseExponent() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testDecimalWithUppercaseExponent", "123E10"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("123E10"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -536,7 +546,7 @@ class JSON5TokenTest {
 
     @Test
     void testMixedCaseHexNumber() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testMixedCaseHexNumber", "0xAbCdEf"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("0xAbCdEf"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -548,7 +558,7 @@ class JSON5TokenTest {
 
     @Test
     void testUppercaseHexPrefix() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testUppercaseHexPrefix", "0XFF"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("0XFF"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -558,7 +568,7 @@ class JSON5TokenTest {
 
     @Test
     void testLeadingDecimalPoint() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testLeadingDecimalPoint", ".5"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize(".5"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;
@@ -568,7 +578,7 @@ class JSON5TokenTest {
 
     @Test
     void testFractionWithExponent() {
-        TokenStream stream = assertDoesNotThrow(() -> JSON5.tokenize("testFractionWithExponent", "0.5e2"));
+        TokenStream stream = assertDoesNotThrow(() -> tokenize("0.5e2"));
 
         assertEquals(1, stream.size());
         NumberValue num = (NumberValue) stream.take().data;

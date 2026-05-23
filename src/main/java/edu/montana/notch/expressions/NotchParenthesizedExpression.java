@@ -1,7 +1,7 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.chisel.Location;
 
 import java.util.Objects;
 
@@ -9,8 +9,8 @@ public class NotchParenthesizedExpression extends NotchExpression {
 
     public final NotchExpression expression;
 
-    public NotchParenthesizedExpression(Location start, NotchExpression expression, Location end) {
-        super(expression.fileId, start, end);
+    public NotchParenthesizedExpression(Span span, NotchExpression expression) {
+        super(span);
         this.expression = Objects.requireNonNull(expression);
     }
 

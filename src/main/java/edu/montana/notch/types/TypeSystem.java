@@ -64,7 +64,17 @@ public class TypeSystem {
             Class<?> backingClass = Class.forName(className, true, contextClassLoader);
             return getType(backingClass);
         } catch (ClassNotFoundException e) {
-            return null;
+            return switch (className) {
+                case "int" -> getType(int.class);
+                case "char" -> getType(char.class);
+                case "float" -> getType(float.class);
+                case "double" -> getType(double.class);
+                case "boolean" -> getType(boolean.class);
+                case "long" -> getType(long.class);
+                case "short" -> getType(short.class);
+                case "byte" -> getType(byte.class);
+                default -> null;
+            };
         }
     }
 }

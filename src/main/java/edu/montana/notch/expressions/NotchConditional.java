@@ -6,7 +6,7 @@ public class NotchConditional extends NotchExpression {
     public final NotchExpression value, condition, fallback;
 
     public NotchConditional(NotchExpression value, NotchExpression condition, NotchExpression fallback) {
-        super(value.fileId, value.start, fallback == null ? condition.end : fallback.end);
+        super(value.span.through(fallback == null ? condition : fallback));
         this.value = addChild(value);
         this.condition = addChild(condition);
         this.fallback = addChild(fallback);

@@ -1,27 +1,24 @@
 package edu.montana.notch.templates.ast;
 
 import edu.montana.notch.NotchParser;
-import edu.montana.notch.chisel.Location;
 import edu.montana.notch.chisel.Span;
+import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.util.BetterList;
 
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import static edu.montana.notch.chisel.type.TokenTypeIdentifier.IDENT;
-import static edu.montana.notch.chisel.type.TokenTypePunct.DOT;
-
-public class QualifiedIdent {
-    public final Location start, end;
+public class QualifiedIdent implements Spanned {
+    public final Span span;
     private final List<Token> names;
 
-    public QualifiedIdent(List<Token> names) {
+    public QualifiedIdent(BetterList<Token> names) {
         if (names.isEmpty()) {
             throw new IllegalArgumentException("names cannot be empty");
         }
-        this.start = names.get(0).start;
-        this.end = names.get(names.size() - 1).end;
+        this.span = names.first().span.through(names.getLast());
         this.names = new LinkedList<>(names);
     }
 
@@ -47,14 +44,14 @@ public class QualifiedIdent {
 
     // TODO: care about whitespace
     public static QualifiedIdent parse(NotchParser parser) {
-        Token name = parser.consume(IDENT);
+        Token name = parser.consume("ident");
         if (name == null) return null;
 
-        var names = new LinkedList<Token>();
+        var names = new BetterList<Token>();
         names.add(name);
 
-        while (parser.take(DOT)) {
-            name = parser.require(IDENT, "expected namespace item");
+        while (parser.take(".")) {
+            name = parser.require("ident", "expected namespace item");
 
             names.add(name);
         }
@@ -67,6 +64,6 @@ public class QualifiedIdent {
     }
 
     public Span span() {
-        return new Span(start, end);
+        return span;
     }
 }

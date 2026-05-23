@@ -3,6 +3,7 @@ package edu.montana.notch.templates;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class IncludeTests extends NotchTemplateTestBase {
@@ -27,9 +28,9 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("partial.html", partial);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Before include"));
-            assertTrue(result.contains("Hello from partial!"));
-            assertTrue(result.contains("After include"));
+            assertContains("Before include", result);
+            assertContains("Hello from partial!", result);
+            assertContains("After include", result);
             // Verify ordering
             assertTrue(result.indexOf("Before") < result.indexOf("Hello from partial"), "Before should come first");
             assertTrue(result.indexOf("Hello from partial") < result.indexOf("After"), "Partial should be in middle");
@@ -56,8 +57,8 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("header.html", header);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("<header>"));
-            assertTrue(result.contains("<h1>My Website</h1>"));
+            assertContains("<header>", result);
+            assertContains("<h1>My Website</h1>", result);
             // Verify proper HTML structure
             assertTrue(result.contains("<!DOCTYPE html>"), "Doctype should be present");
             assertTrue(result.contains("</header>"), "Closing header tag should be present");
@@ -81,8 +82,8 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("footer.html", footer);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("<header>Header</header>"));
-            assertTrue(result.contains("<footer>Footer</footer>"));
+            assertContains("<header>Header</header>", result);
+            assertContains("<footer>Footer</footer>", result);
             // Verify ordering
             assertTrue(result.indexOf("<header>") < result.indexOf("<main>"), "Header should come before main");
             assertTrue(result.indexOf("<main>") < result.indexOf("<footer>"), "Main should come before footer");
@@ -141,7 +142,7 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("partial.html", partial);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html", "name", "World");
-            assertTrue(result.contains("Hello World!"));
+            assertContains("Hello World!", result);
             // Verify variable was interpolated
             assertFalse(result.contains("${"), "Variable should be interpolated");
             assertFalse(result.contains("name"), "Variable name should be replaced");
@@ -164,7 +165,7 @@ public class IncludeTests extends NotchTemplateTestBase {
                     "name", "Alice",
                     "age", 30
             );
-            assertTrue(result.contains("Hi Alice, you are 30 years old"));
+            assertContains("Hi Alice, you are 30 years old", result);
         }
 
         @Test
@@ -180,9 +181,9 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("partial.html", partial);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Item: 1"));
-            assertTrue(result.contains("Item: 2"));
-            assertTrue(result.contains("Item: 3"));
+            assertContains("Item: 1", result);
+            assertContains("Item: 2", result);
+            assertContains("Item: 3", result);
             // Verify count and ordering
             assertEquals(3, result.split("Item:").length - 1, "Should have 3 items");
             assertTrue(result.indexOf("Item: 1") < result.indexOf("Item: 2"), "Items should be in order");
@@ -204,9 +205,9 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("partial.html", partial);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Index: 0, Value: a"));
-            assertTrue(result.contains("Index: 1, Value: b"));
-            assertTrue(result.contains("Index: 2, Value: c"));
+            assertContains("Index: 0, Value: a", result);
+            assertContains("Index: 1, Value: b", result);
+            assertContains("Index: 2, Value: c", result);
         }
 
         @Test
@@ -227,7 +228,7 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
             // x should be undefined in main after include
-            assertTrue(result.contains("Value of x: undefined"));
+            assertContains("Value of x: undefined", result);
         }
     }
 
@@ -256,11 +257,11 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("middle.html", middle);
             registerTemplate("outer.html", outer);
             var result = renderTemplate("outer.html");
-            assertTrue(result.contains("Outer start"));
-            assertTrue(result.contains("Middle start"));
-            assertTrue(result.contains("Innermost content"));
-            assertTrue(result.contains("Middle end"));
-            assertTrue(result.contains("Outer end"));
+            assertContains("Outer start", result);
+            assertContains("Middle start", result);
+            assertContains("Innermost content", result);
+            assertContains("Middle end", result);
+            assertContains("Outer end", result);
             // Verify proper nesting order
             assertTrue(result.indexOf("Outer start") < result.indexOf("Middle start"), "Outer should start first");
             assertTrue(result.indexOf("Middle start") < result.indexOf("Innermost"), "Middle should start before innermost");
@@ -296,11 +297,11 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("level2.html", level2);
             registerTemplate("level1.html", level1);
             var result = renderTemplate("level1.html");
-            assertTrue(result.contains("L1"));
-            assertTrue(result.contains("L2"));
-            assertTrue(result.contains("L3"));
-            assertTrue(result.contains("L4"));
-            assertTrue(result.contains("Level 5"));
+            assertContains("L1", result);
+            assertContains("L2", result);
+            assertContains("L3", result);
+            assertContains("L4", result);
+            assertContains("Level 5", result);
         }
 
         @Test
@@ -314,8 +315,8 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("inner.html", inner);
             registerTemplate("outer.html", outer);
             var result = renderTemplate("outer.html", "value", 42);
-            assertTrue(result.contains("Outer: 42"));
-            assertTrue(result.contains("Inner: 42"));
+            assertContains("Outer: 42", result);
+            assertContains("Inner: 42", result);
         }
     }
 
@@ -341,7 +342,7 @@ public class IncludeTests extends NotchTemplateTestBase {
 
             // Test when condition is true
             var resultTrue = renderTemplate("main.html", "show", true);
-            assertTrue(resultTrue.contains("Conditional content"));
+            assertContains("Conditional content", resultTrue);
 
             // Test when condition is false
             var resultFalse = renderTemplate("main.html", "show", false);
@@ -363,7 +364,7 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("partial.html", partial);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("From else"));
+            assertContains("From else", result);
             assertFalse(result.contains("From if"));
         }
 
@@ -380,9 +381,9 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("item.html", item);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("- Item 1"));
-            assertTrue(result.contains("- Item 2"));
-            assertTrue(result.contains("- Item 3"));
+            assertContains("- Item 1", result);
+            assertContains("- Item 2", result);
+            assertContains("- Item 3", result);
             // Verify count
             assertEquals(3, result.split("- Item").length - 1, "Should have 3 items");
             // Verify ordering
@@ -408,9 +409,9 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("cell.html", cell);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("1x1"));
-            assertTrue(result.contains("1x2"));
-            assertTrue(result.contains("2x3"));
+            assertContains("1x1", result);
+            assertContains("1x2", result);
+            assertContains("2x3", result);
         }
     }
 
@@ -427,7 +428,7 @@ public class IncludeTests extends NotchTemplateTestBase {
                     #macro item(n)
                         Item ${n}
                     #end
-
+                    
                     #expand item(1)
                     #expand item(2)
                     """;
@@ -439,8 +440,8 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("partial.html", partial);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Item 1"));
-            assertTrue(result.contains("Item 2"));
+            assertContains("Item 1", result);
+            assertContains("Item 2", result);
             // Verify both items expanded
             assertEquals(2, result.split("Item").length - 1, "Should have 2 items");
             // Verify ordering
@@ -460,14 +461,14 @@ public class IncludeTests extends NotchTemplateTestBase {
                     #macro card(id)
                         Card ${id}
                     #end
-
+                    
                     #include "partial.html"
                     """;
 
             registerTemplate("partial.html", partial);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Card 100"));
+            assertContains("Card 100", result);
         }
 
         @Test
@@ -487,7 +488,7 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
             // Fragment defined in included template is available after include
-            assertTrue(result.contains("Helper: test"));
+            assertContains("Helper: test", result);
         }
     }
 
@@ -563,12 +564,12 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("main.html", main);
 
             var resultAdmin = renderTemplate("main.html", "admin", true);
-            assertTrue(resultAdmin.contains("Admin panel"));
+            assertContains("Admin panel", resultAdmin);
             assertFalse(resultAdmin.contains("User panel"), "User panel should not show for admin");
             assertFalse(resultAdmin.contains("#if"), "Commands should not appear in output");
 
             var resultUser = renderTemplate("main.html", "admin", false);
-            assertTrue(resultUser.contains("User panel"));
+            assertContains("User panel", resultUser);
             assertFalse(resultUser.contains("Admin panel"), "Admin panel should not show for user");
             assertFalse(resultUser.contains("#if"), "Commands should not appear in output");
         }
@@ -588,9 +589,9 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("partial.html", partial);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html", "items", java.util.List.of("A", "B", "C"));
-            assertTrue(result.contains("- A"));
-            assertTrue(result.contains("- B"));
-            assertTrue(result.contains("- C"));
+            assertContains("- A", result);
+            assertContains("- B", result);
+            assertContains("- C", result);
         }
 
         @Test
@@ -606,9 +607,9 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("partial.html", partial);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Name: Alice"));
-            assertTrue(result.contains("Name: Bob"));
-            assertTrue(result.contains("Name: Charlie"));
+            assertContains("Name: Alice", result);
+            assertContains("Name: Bob", result);
+            assertContains("Name: Charlie", result);
         }
 
         @Test
@@ -623,7 +624,7 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html", "username", "<script>alert('xss')</script>");
             // Should be escaped
-            assertTrue(result.contains("&lt;script&gt;"));
+            assertContains("&lt;script&gt;", result);
             assertFalse(result.contains("<script>"));
             // Verify full escaping
             assertTrue(result.contains("&lt;/script&gt;"), "Closing script tag should be escaped");
@@ -648,8 +649,8 @@ public class IncludeTests extends NotchTemplateTestBase {
             registerTemplate("layouts/base.html", layouts);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Layout:"));
-            assertTrue(result.contains("Component content"));
+            assertContains("Layout:", result);
+            assertContains("Component content", result);
         }
     }
 
@@ -701,7 +702,7 @@ public class IncludeTests extends NotchTemplateTestBase {
             var result = renderTemplate("main.html",
                     "v1", 1, "v2", 2, "v3", 3, "v4", 4, "v5", 5
             );
-            assertTrue(result.contains("1 2 3 4 5"));
+            assertContains("1 2 3 4 5", result);
         }
     }
 }

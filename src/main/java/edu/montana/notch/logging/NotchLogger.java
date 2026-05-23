@@ -26,7 +26,7 @@ public class NotchLogger extends LegacyAbstractLogger {
             String msg = config.formatMessage(this.name, level, marker, messagePattern, arguments, throwable);
             PrintStream stream = config.getStreamFor(level);
             stream.println(msg);
-            if(throwable != null) {
+            if (throwable != null) {
                 throwable.printStackTrace(stream);
             }
             stream.flush();

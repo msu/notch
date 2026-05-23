@@ -1,6 +1,6 @@
 package edu.montana.notch.json5;
 
-import edu.montana.notch.chisel.Token;
+import edu.montana.notch.chisel.TokenData;
 import edu.montana.notch.chisel.TokenType;
 import edu.montana.notch.chisel.TokenizeException;
 import edu.montana.notch.chisel.Tokenizer;
@@ -9,7 +9,9 @@ import java.util.Set;
 
 public class JSON5TokenTypeWhitespace implements TokenType {
     public static final JSON5TokenTypeWhitespace JSON5_WHITESPACE = new JSON5TokenTypeWhitespace();
-    private JSON5TokenTypeWhitespace() {}
+
+    private JSON5TokenTypeWhitespace() {
+    }
 
     public static final Set<Character> WHITESPACE_CHARS = Set.of(
             '\u0009',
@@ -23,7 +25,7 @@ public class JSON5TokenTypeWhitespace implements TokenType {
     );
 
     @Override
-    public Token tokenize(Tokenizer t) throws TokenizeException {
+    public TokenData tokenize(Tokenizer t) throws TokenizeException {
         var start = t.location();
         while (!t.atEnd()) {
             var c = t.peek();
@@ -43,6 +45,6 @@ public class JSON5TokenTypeWhitespace implements TokenType {
         if (start.equals(t.location())) {
             return null;
         }
-        return new Token(start, t.location(), this, null);
+        return new TokenData();
     }
 }

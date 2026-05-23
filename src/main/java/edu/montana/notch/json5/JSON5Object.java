@@ -1,7 +1,7 @@
 package edu.montana.notch.json5;
 
-import edu.montana.notch.util.JSON5;
 import edu.montana.notch.util.BetterMap;
+import edu.montana.notch.util.JSON5;
 
 import java.util.Map;
 import java.util.Objects;

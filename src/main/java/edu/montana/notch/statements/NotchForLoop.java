@@ -1,9 +1,9 @@
 package edu.montana.notch.statements;
 
+import edu.montana.notch.chisel.Span;
+import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.chisel.Location;
-import edu.montana.notch.chisel.Token;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,8 +17,8 @@ public class NotchForLoop extends NotchStatement {
     public final NotchExpression expr;
     public final List<NotchStatement> loopBody;
 
-    public NotchForLoop(Location start, Token loopVariable, NotchExpression expr, Token indexVariable, List<NotchStatement> loopBody, Location end) {
-        super(expr.fileId, start, end);
+    public NotchForLoop(Span span, Token loopVariable, NotchExpression expr, Token indexVariable, List<NotchStatement> loopBody) {
+        super(span);
         this.loopVariable = Objects.requireNonNull(loopVariable);
         this.expr = Objects.requireNonNull(expr);
         this.indexVariable = indexVariable;
@@ -29,7 +29,7 @@ public class NotchForLoop extends NotchStatement {
     public void execute(NotchRuntime runtime) {
         Object result = runtime.evaluate(expr);
         int index = 0;
-        try (var scope = runtime.pushScope(fileId, span())) {
+        try (var scope = runtime.pushScope()) {
             result = tryCoerceIterable(result);
             if (result instanceof Iterable<?> i) {
                 for (Object o : i) {

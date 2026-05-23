@@ -1,10 +1,7 @@
 package edu.montana.notch.json5;
 
+import edu.montana.notch.chisel.*;
 import edu.montana.notch.util.Text;
-import edu.montana.notch.chisel.Token;
-import edu.montana.notch.chisel.TokenType;
-import edu.montana.notch.chisel.TokenizeException;
-import edu.montana.notch.chisel.Tokenizer;
 
 public class JSON5TokenTypeString implements TokenType {
     public static final JSON5TokenTypeString JSON5_STRING = new JSON5TokenTypeString();
@@ -37,12 +34,20 @@ public class JSON5TokenTypeString implements TokenType {
         int val = 0;
         for (int i = 0; i < digits; i++) {
             if (t.atEnd()) {
-                throw new TokenizeException(t.location(), "expected unicode escape hex digit");
+                final var diag = new Diagnostic();
+                diag.highlight(t.currentCharSpan());
+                diag.note("expected unicode escape hex digit");
+                throw new TokenizeException(diag);
             }
 
             char c = t.take();
             int digit = Character.digit(c, 16);
-            if (digit < 0) throw new TokenizeException(t.location(), "Invalid hex escape");
+            if (digit < 0) {
+                final var diag = new Diagnostic();
+                diag.highlight(t.currentCharSpan());
+                diag.note("Invalid hex escape");
+                throw new TokenizeException(diag);
+            }
             val = (val << 4) | digit;
         }
         return (char) val;
@@ -65,11 +70,14 @@ public class JSON5TokenTypeString implements TokenType {
         if (c == '0') return '\u0000';
         if (c == 'x') return lexUnicodeEscape(t, 2);
         if (c == 'u') return lexUnicodeEscape(t, 4);
-        throw new TokenizeException(t.location(), "invalid escape %s, U+%s".formatted(Text.repr(c), Integer.toHexString(c)));
+        final var diag = new Diagnostic();
+        diag.highlight(t.currentCharSpan());
+        diag.note("invalid escape %s, U+%s".formatted(Text.repr(c), Integer.toHexString(c)));
+        throw new TokenizeException(diag);
     }
 
     @Override
-    public Token tokenize(Tokenizer t) throws TokenizeException {
+    public TokenData tokenize(Tokenizer t) throws TokenizeException {
         var start = t.location();
         if (!t.peek('"', '\'')) return null;
         var quote = t.take();
@@ -87,18 +95,26 @@ public class JSON5TokenTypeString implements TokenType {
             } else if (Character.isDefined(c)) {
                 content.append(c);
             } else {
-                throw new TokenizeException(start, t.location(), "unexpected character, u" + Integer.toHexString(c));
+                final var diag = new Diagnostic();
+                final var span = new Span(t.source(), start, t.location());
+                diag.highlight(span);
+                diag.note("unexpected character, u" + Integer.toHexString(c));
+                throw new TokenizeException(diag);
             }
         }
 
         if (!t.take(quote)) {
-            throw new TokenizeException(start, t.location(), "unterminated string, expected <%s>".formatted(quote));
+            final var diag = new Diagnostic();
+            final var span = new Span(t.source(), start, t.location());
+            diag.highlight(span);
+            diag.note("unterminated string, expected <%s>".formatted(quote));
+            throw new TokenizeException(diag);
         }
 
-        String repr = t.source().subSequence(start.index, t.location().index).toString();
+        String repr = t.source().content.subSequence(start.index, t.location().index).toString();
         String value = content.toString();
 
-        return new Token(start, t.location(), this, StringValue.of(repr, value));
+        return new TokenData(StringValue.of(repr, value));
     }
 
     private boolean isSourceChar(char c, char quote) {

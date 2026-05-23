@@ -21,24 +21,25 @@ import java.util.Map;
 
 public class TerminalSyntaxHighlighter implements Highlighter {
 
-    private final Map<TokenType, AttributedStyle> styles = Map.of(
-            TokenTypeBoolean.BOOL, AttributedStyle.DEFAULT.foregroundRgb(NerdFont.CONSTANT),
-            TokenTypeIdentifier.IDENT, AttributedStyle.DEFAULT.foregroundRgb(NerdFont.VARIABLE),
-            TokenTypeInteger.NUM, AttributedStyle.DEFAULT.foregroundRgb(NerdFont.NUMBER),
-            TokenTypeString.STR, AttributedStyle.DEFAULT.foregroundRgb(NerdFont.STRING),
-            TokenTypePlain.PLAIN, AttributedStyle.DEFAULT.foregroundRgb(NerdFont.FOREGROUND),
-            TokenTypeWhitespace.WHITESPACE, AttributedStyle.DEFAULT.backgroundRgb(NerdFont.BACKGROUND),
-            TokenTypeTerminalKeyword.TERMINAL_KEYWORD, AttributedStyle.DEFAULT.foregroundRgb(NerdFont.TYPE)
+    private final Map<String, AttributedStyle> styles = Map.of(
+            "bool", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.CONSTANT),
+            "ident", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.VARIABLE),
+            "int", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.NUMBER),
+            "string", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.STRING),
+            "plain", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.FOREGROUND),
+            "_ws", AttributedStyle.DEFAULT.backgroundRgb(NerdFont.BACKGROUND),
+            "terminal_keyword", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.TYPE)
     );
 
     private Tokenizer getTokenizer(String src) {
+        final var source = new Source("notch-cli", src);
         return new Tokenizer()
-                .withTokenType(TokenTypeString.STR)
-                .withTokenType(TokenTypeInteger.NUM)
-                .withTokenType(TokenTypeWhitespace.WHITESPACE)
-                .withTokenType(TokenTypeTerminalKeyword.TERMINAL_KEYWORD)
-                .withTokenType(TokenTypePlain.PLAIN) // must be last
-                .create("notch-cli", src);
+                .withTokenType("string", CStringTokenType.STR)
+                .withTokenType("int", IntegerTokenType.INT)
+                .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
+                .withTokenType("terminal_keyword", TerminalKeywordTokenType.TERMINAL_KEYWORD)
+                .withTokenType("plain", PlainTokenType.PLAIN) // must be last
+                .create(source);
     }
 
     @Override
@@ -49,7 +50,7 @@ public class TerminalSyntaxHighlighter implements Highlighter {
         while (!tokenizer.atEnd()) {
             Token token = tokenizer.peekToken();
             AttributedStyle style = styles.get(token.type);
-            String substring = buffer.substring(token.start.index, token.end.index);
+            String substring = buffer.substring(token.start().index, token.end().index);
             builder.styled(style, substring);
             tokenizer.nextToken();
         }

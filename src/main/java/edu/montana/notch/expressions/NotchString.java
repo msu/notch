@@ -1,13 +1,13 @@
 package edu.montana.notch.expressions;
 
-import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.runtime.NotchRuntime;
 
 public class NotchString extends NotchExpression {
     public final Token token;
 
-    public NotchString(String fileId, Token token) {
-        super(fileId, token.start, token.end);
+    public NotchString(Token token) {
+        super(token.span);
         this.token = token;
     }
 

@@ -7,14 +7,11 @@ public final class BasicNotchTemplateCommands {
     }
 
     public static final NotchTemplateCommand[] COMMANDS = new NotchTemplateCommand[]{
-            new EndCommand(),
-            new ElseCommand(),
             new HelperCommand(),
             new ContentCommand(),
             new LayoutCommand(),
             new ForCommand(),
             new IfCommand(),
-            new ElseIfCommand(),
             new IncludeCommand(),
             new MacroCommand(),
             new ExpandCommand(),
@@ -25,7 +22,7 @@ public final class BasicNotchTemplateCommands {
             new RequireCommand(),
     };
 
-    public static void addTo(NotchTemplateRegistry templates) {
+    public static void addTo(NotchTemplates templates) {
         for (var cmd : COMMANDS) {
             if (!templates.hasCommand(cmd)) {
                 templates.addCommand(cmd);

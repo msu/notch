@@ -1,20 +1,25 @@
-package bigsky.notch.chisel;
+package edu.montana.notch.chisel;
 
 import java.util.List;
 
-public class Source {
+public final class Source {
     public final String id;
     public final CharSequence content;
 
     public final Token soi;
     public final Token eoi;
+    public final Span span;
 
-    public Source(String id, CharSequence content) {
+    public Source(
+            String id,
+            CharSequence content
+    ) {
         this.id = id;
         this.content = content;
 
-        this.soi = new Token(new Span(this, Location.SOI, Location.SOI), "SOI");
-        this.eoi = new Token(new Span(this, Location.EOI, Location.EOI), "EOI");
+        this.soi = new Token(new Span(this, Location.SOI, Location.SOI), "soi");
+        this.eoi = new Token(new Span(this, Location.EOI, Location.EOI), "eoi");
+        this.span = new Span(this, Location.SOI, Location.EOI);
     }
 
     @Override

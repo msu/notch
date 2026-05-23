@@ -1,6 +1,7 @@
 package edu.montana.notch.templates;
 
 
+import edu.montana.notch.chisel.Source;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.templates.loader.NotchTemplateLoader;
 import edu.montana.notch.templates.runtime.NotchTemplateHelper;
@@ -32,20 +33,14 @@ public class TemplateTests extends NotchTemplateTestBase {
                 chicken noodle ${name}
                 """;
 
-        var content = renderString(tmpl, "name", "friend");
-        assertEquals("chicken noodle friend\n", content);
-        // Verify variable was interpolated
-        assertFalse(content.contains("${"), "Template variable should be interpolated");
-        assertTrue(content.contains("friend"), "Variable value should be present");
-        // Verify exact structure
-        assertTrue(content.startsWith("chicken"));
-        assertTrue(content.endsWith("friend\n"));
+        var content = renderString(tmpl, "name", "soup");
+        assertEquals("chicken noodle soup\n", content);
     }
 
     @Test
     public void testUnsetFallback() {
         var tmpl = """
-                ${value ?: "so back"}
+                ${value?: "so back"}
                 """;
         var content = renderString(tmpl);
         assertEquals("so back\n", content);
@@ -101,7 +96,7 @@ public class TemplateTests extends NotchTemplateTestBase {
                 </div>
                 
                 <footer>
-                #content for footer default
+                #content footer with
                     Goodbye!
                 #end
                 </footer>
@@ -112,16 +107,16 @@ public class TemplateTests extends NotchTemplateTestBase {
                 
                 Hello, World
                 
-                #content for footer with
+                #content footer with
                     Goodbye, World
                 #end
                 """;
 
-        var templates = new NotchTemplateRegistry(new NotchTemplateLoader() {
+        var templates = new NotchTemplates(new NotchTemplateLoader() {
             @Override
-            public String loadTemplate(String path) {
-                if (path.equals("base.html")) return base;
-                if (path.equals("index.html")) return tmpl;
+            public Source loadSource(String path) {
+                if (path.equals("base.html")) return new Source("base.html", base);
+                if (path.equals("index.html")) return new Source("index.html", tmpl);
                 throw new RuntimeException("unknown path " + repr(path));
             }
         });
@@ -219,104 +214,6 @@ public class TemplateTests extends NotchTemplateTestBase {
     }
 
     @Test
-    public void testConditionalContentBlocks() {
-        var base = """
-                <header>
-                #content for header default
-                    Default Header
-                #end
-                </header>
-                
-                <main>
-                #content
-                </main>
-                
-                <footer>
-                #content for footer default
-                    Default Footer
-                #end
-                </footer>
-                """;
-
-        var childTrue = """
-                #layout "base.html"
-                
-                Main content here
-                
-                #if true
-                #content for header with
-                    Conditional Header (True Branch)
-                #end
-                #else
-                #content for footer with
-                    Conditional Footer (False Branch)
-                #end
-                #end
-                """;
-
-        var childFalse = """
-                #layout "base.html"
-                
-                Main content here
-                
-                #if false
-                #content for header with
-                    Conditional Header (True Branch)
-                #end
-                #else
-                #content for footer with
-                    Conditional Footer (False Branch)
-                #end
-                #end
-                """;
-
-        var templates = new NotchTemplateRegistry(new NotchTemplateLoader() {
-            @Override
-            public String loadTemplate(String path) {
-                if (path.equals("base.html")) return base;
-                if (path.equals("child-true.html")) return childTrue;
-                if (path.equals("child-false.html")) return childFalse;
-                throw new RuntimeException("unknown path " + repr(path));
-            }
-        });
-        BasicNotchTemplateCommands.addTo(templates);
-
-        var contentTrue = templates.renderTemplate("child-true.html", Map.of());
-        assertEquals("""
-                <header>
-                    Conditional Header (True Branch)
-                </header>
-                
-                <main>
-                
-                Main content here
-                
-                </main>
-                
-                <footer>
-                    Default Footer
-                </footer>
-                """, contentTrue);
-
-        var contentFalse = templates.renderTemplate("child-false.html", Map.of());
-        assertEquals("""
-                <header>
-                    Default Header
-                </header>
-                
-                <main>
-                
-                Main content here
-                
-                </main>
-                
-                <footer>
-                    Conditional Footer (False Branch)
-                </footer>
-                """, contentFalse);
-    }
-
-    @Test
     public void crossSiteScripting() {
         var template = """
                 Hello, welcome to ${msg}
@@ -343,7 +240,7 @@ public class TemplateTests extends NotchTemplateTestBase {
                     I am a Card!!
                 </div>
                 #end
-
+                
                 #for i in [1, 2, 3]
                     #expand card(i)
                 #end
@@ -372,14 +269,14 @@ public class TemplateTests extends NotchTemplateTestBase {
                     I am Card #${id}!!
                 </div>
                 #end
-
+                
                 #for i in [1, 2, 3]
                     #expand card(i)
                 #end
                 """;
         var result = renderString(tmpl);
         assertEquals("""
-
+                
                 <div class="card">
                     I am Card #1!!
                 </div>

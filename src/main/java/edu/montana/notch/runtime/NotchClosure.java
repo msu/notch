@@ -1,8 +1,8 @@
 package edu.montana.notch.runtime;
 
+import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.statements.NotchStatement;
-import edu.montana.notch.chisel.Token;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +19,7 @@ public record NotchClosure(NotchRuntime closure, List<Token> parameters, NotchEx
         if (args.size() != parameters.size()) {
             throw new IllegalArgumentException(String.format("The number of arguments, %s, does not match the number of parameters of this closure, %s", args.size(), parameters.size()));
         }
-        try (var scopeLock = closure.pushScope(expression.fileId, expression.span())) {
+        try (var scopeLock = closure.pushScope()) {
             for (int i = 0; i < args.size(); i++) {
                 Object arg = args.get(i);
                 String param = parameters.get(i).str();
@@ -39,8 +39,8 @@ public record NotchClosure(NotchRuntime closure, List<Token> parameters, NotchEx
 
     public String getQualifiedName() {
         var ste = closure.stackTraceElements.getLast();
-
-        return "<closure:%s:%d:%d>".formatted(ste.file(), ste.span().start().line, ste.span().start().column);
+        final var span = ste.span();
+        return "<closure:%s:%d:%d>".formatted(span.sourceId(), span.start().line, span.start().column);
     }
 
     // implement a bunch of functional interfaces in java to make NotchClosures work w/various APIs

@@ -4,7 +4,6 @@ import edu.montana.notch.util.Exceptions;
 
 import java.lang.reflect.Field;
 
-import static edu.montana.notch.util.Exceptions.safely;
 import static edu.montana.notch.util.Exceptions.safelyEval;
 
 public class NotchJavaField implements NotchField {
@@ -22,7 +21,7 @@ public class NotchJavaField implements NotchField {
 
     @Override
     public Object get(Object from) {
-        return safelyEval(()->field.get(from));
+        return safelyEval(() -> field.get(from));
     }
 
     @Override

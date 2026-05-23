@@ -29,7 +29,7 @@ public class NotchJavaMethod implements NotchMethod {
         this.javaMethods = new BetterList<>();
         Method[] allMethods = backingClass.getMethods();
         for (Method m : allMethods) {
-            if (m.getName().equals(methodName) &&  Modifier.isStatic(m.getModifiers()) == staticMethod) {
+            if (m.getName().equals(methodName) && Modifier.isStatic(m.getModifiers()) == staticMethod) {
                 m.setAccessible(true);
                 javaMethods.add(m);
             }
@@ -69,9 +69,9 @@ public class NotchJavaMethod implements NotchMethod {
                 // remove reflection internals
                 e.setStackTrace(Exceptions.replaceInStackTrace(e.getStackTrace(),
                         (ste) -> ste.getClassName().startsWith("java.") ||
-                               ste.getClassName().startsWith("jdk.") ||
-                               ste.getClassName().startsWith("javax.") ||
-                               ste.getClassName().contains("NotchJavaMethod"),
+                                ste.getClassName().startsWith("jdk.") ||
+                                ste.getClassName().startsWith("javax.") ||
+                                ste.getClassName().contains("NotchJavaMethod"),
                         new RuntimeException()));
             }
             throw rethrow(e);
@@ -106,7 +106,7 @@ public class NotchJavaMethod implements NotchMethod {
 
     public static int distanceFromValues(Executable executable, List<Object> runtimeValues) {
         Class<?>[] parameterTypes = executable.getParameterTypes();
-        if(runtimeValues.size() == parameterTypes.length) {
+        if (runtimeValues.size() == parameterTypes.length) {
             int distance = 0;
             for (int i = 0; i < parameterTypes.length; i++) {
                 Class<?> parameterType = parameterTypes[i];
@@ -148,7 +148,7 @@ public class NotchJavaMethod implements NotchMethod {
 
     @Override
     public boolean isPublic() {
-        return javaMethods.hasMatch((m) -> Modifier.isPublic(m.getModifiers()));
+        return javaMethods.hasAny((m) -> Modifier.isPublic(m.getModifiers()));
     }
 
     @Override

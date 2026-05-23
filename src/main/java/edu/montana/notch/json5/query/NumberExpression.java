@@ -7,8 +7,8 @@ import edu.montana.notch.json5.JSON5Value;
 public class NumberExpression extends QueryExpression {
     public final Token token;
 
-    public NumberExpression(String fileId, Token token) {
-        super(fileId, token.span());
+    public NumberExpression(Token token) {
+        super(token.span);
         this.token = token;
     }
 

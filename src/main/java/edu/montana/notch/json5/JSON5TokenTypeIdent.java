@@ -1,35 +1,14 @@
 package edu.montana.notch.json5;
 
+import edu.montana.notch.chisel.*;
 import edu.montana.notch.util.Text;
-import edu.montana.notch.chisel.Token;
-import edu.montana.notch.chisel.TokenType;
-import edu.montana.notch.chisel.TokenizeException;
-import edu.montana.notch.chisel.Tokenizer;
 
 import java.util.Set;
 
 public final class JSON5TokenTypeIdent implements TokenType {
-    public enum Keyword implements TokenType {
-        JSON_TRUE("true"),
-        JSON_FALSE("false"),
-        JSON_NULL("null");
-
-        public final String lex;
-
-        Keyword(String lex) {
-            this.lex = lex;
-        }
-
-        @Override
-        public Token tokenize(Tokenizer t) throws TokenizeException {
-            var ident = JSON5_IDENT.tokenize(t);
-            if (ident == null || ident.type != this) return null;
-            return ident;
-        }
-    }
-
     public static final JSON5TokenTypeIdent JSON5_IDENT = new JSON5TokenTypeIdent();
 
+    public static final Set<String> KEYWORDS = Set.of("true", "false", "null");
     public static final Set<String> RESERVED = Set.of("break", "do", "instanceof", "typeof", "case", "else", "new",
             "var", "catch", "finally", "return", "void", "continue", "for", "switch", "while", "debugger", "function",
             "this", "with", "default", "if", "throw", "delete", "in", "try", "class", "enum", "extends", "super",
@@ -61,7 +40,10 @@ public final class JSON5TokenTypeIdent implements TokenType {
         for (int i = 0; i < 4; i++) {
             char ch = t.peek();
             if (!Text.isHexDigit(ch)) {
-                throw new TokenizeException(start, t.location(), "expected hex digit in escape");
+                final var diag = new Diagnostic();
+                diag.highlight(new Span(t.source(), start, t.location()));
+                diag.note("expected hex digit in escape");
+                throw new TokenizeException(diag);
             }
             codePoint = (codePoint << 4) + Text.hexValue(ch);
             t.take();
@@ -69,7 +51,10 @@ public final class JSON5TokenTypeIdent implements TokenType {
 
         // Validate the resulting code point
         if (!Character.isLetter(codePoint)) {
-            throw new TokenizeException(start, t.location(), "expected hex digit in escape");
+            final var diag = new Diagnostic();
+            diag.highlight(new Span(t.source(), start, t.location()));
+            diag.note("expected hex digit in escape");
+            throw new TokenizeException(diag);
         }
 
         lexB.append((char) codePoint);
@@ -108,7 +93,7 @@ public final class JSON5TokenTypeIdent implements TokenType {
     }
 
     @Override
-    public Token tokenize(Tokenizer t) throws TokenizeException {
+    public TokenData tokenize(Tokenizer t) throws TokenizeException {
         var start = t.location();
         var lexB = new StringBuilder();
 
@@ -120,18 +105,17 @@ public final class JSON5TokenTypeIdent implements TokenType {
         var end = t.location();
 
         var lex = lexB.toString();
-        for (var tt : Keyword.values()) {
-            if (lex.equals(tt.lex)) {
-                return new Token(start, end, tt);
-            }
+        if (KEYWORDS.contains(lex)) {
+            return new TokenData(lex, lex);
         }
 
-        for (var str : RESERVED) {
-            if (lex.equals(str)) {
-                throw new TokenizeException(start, end, "reserved keyword: " + Text.repr(str));
-            }
+        if (RESERVED.contains(lex)) {
+            final var diag = new Diagnostic();
+            diag.highlight(new Span(t.source(), start, end));
+            diag.note("reserved keyword: " + Text.repr(lex));
+            throw new TokenizeException(diag);
         }
 
-        return new Token(start, end, this, lex);
+        return new TokenData(lex);
     }
 }

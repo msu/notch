@@ -1,39 +1,40 @@
 package edu.montana.notch.json5.query;
 
-import edu.montana.notch.util.Text;
-import edu.montana.notch.chisel.ParseException;
-import edu.montana.notch.chisel.TokenStream;
-import edu.montana.notch.chisel.Tokenizer;
-import edu.montana.notch.chisel.type.TokenTypePunct;
+import edu.montana.notch.chisel.*;
+import edu.montana.notch.chisel.type.LiteralTokenType;
 import edu.montana.notch.json5.JSON5Boolean;
 import edu.montana.notch.json5.JSON5Number;
 import edu.montana.notch.json5.JSON5String;
 import edu.montana.notch.json5.JSON5Value;
+import edu.montana.notch.util.Text;
 
-import static edu.montana.notch.json5.JSON5TokenTypeString.JSON5_STRING;
-import static edu.montana.notch.json5.JSON5TokenTypeNumber.JSON5_NUMBER;
 import static edu.montana.notch.json5.JSON5TokenTypeIdent.JSON5_IDENT;
+import static edu.montana.notch.json5.JSON5TokenTypeNumber.JSON5_NUMBER;
+import static edu.montana.notch.json5.JSON5TokenTypeString.JSON5_STRING;
 
 public class QueryEngine {
     public static Tokenizer tokenizer() {
         return new Tokenizer()
-                .withTokenType(JSON5_STRING)
-                .withTokenType(JSON5_NUMBER)
-                .withTokenType(JSON5_IDENT)
-                .withTokenType(TokenTypePunct.DOT)
-                .withTokenType(TokenTypePunct.LBRACKET)
-                .withTokenType(TokenTypePunct.RBRACKET);
+                .withTokenType("string", JSON5_STRING)
+                .withTokenType("number", JSON5_NUMBER)
+                .withTokenType("ident", JSON5_IDENT)
+                .withTokenType(".", new LiteralTokenType("."))
+                .withTokenType("[", new LiteralTokenType("["))
+                .withTokenType("]", new LiteralTokenType("]"));
     }
 
-    public static TokenStream tokenize(String fileId, String src) {
-        return tokenizer().tokenize(fileId, src);
+    public static TokenStream tokenize(Source source) {
+        return tokenizer().tokenize(source);
     }
 
     public static QueryExpression parseQueryExpression(String query) throws ParseException {
         var parser = new QueryParser(query);
         var expr = parser.parseExpression();
         if (expr == null) {
-            throw new ParseException("invalid query string", parser.fileId(), parser.location());
+            final var diagnostic = new Diagnostic();
+            diagnostic.highlight(parser.currentToken());
+            diagnostic.note("invalid query string");
+            throw new ParseException(diagnostic);
         }
         return expr;
     }

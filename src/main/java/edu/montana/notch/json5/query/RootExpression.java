@@ -5,8 +5,8 @@ import edu.montana.notch.json5.JSON5Value;
 
 public class RootExpression extends QueryExpression {
 
-    public RootExpression(String fileId, Token token) {
-        super(fileId, token.span());
+    public RootExpression(Token token) {
+        super(token.span);
     }
 
     @Override

@@ -1,38 +1,52 @@
 package edu.montana.notch.templates.command;
 
 import edu.montana.notch.NotchParser;
+import edu.montana.notch.chisel.Diagnostic;
+import edu.montana.notch.chisel.ParseException;
+import edu.montana.notch.runtime.NotchRuntimeException;
+import edu.montana.notch.templates.NotchTemplateCommand;
+import edu.montana.notch.templates.ast.QualifiedIdent;
+import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.types.NotchType;
 import edu.montana.notch.types.TypeSystem;
-import edu.montana.notch.templates.NotchTemplateCommand;
-import edu.montana.notch.templates.NotchTemplateParser;
-import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
-import edu.montana.notch.templates.ast.QualifiedIdent;
-import edu.montana.notch.chisel.ParseException;
-import edu.montana.notch.chisel.Token;
 
-public class HelperCommand extends NotchTemplateCommand implements NotchTemplateCommand.Global, NotchTemplateCommand.Singleton {
+public class HelperCommand extends NotchTemplateCommand {
     public HelperCommand() {
         super("helper");
+        isGlobal = true;
+        isSingleton = true;
     }
 
     private QualifiedIdent path;
 
     @Override
-    public void parse(Token commandName, NotchTemplateParser tmplParser, NotchParser commandParser) {
-        path = QualifiedIdent.parse(commandParser);
+    public void parseCommand(NotchParser commandParser) {
+        path = commandParser.parseQualifiedIdent();
         if (path == null) {
-            throw new ParseException("expected helper class path", fileId, commandParser.location());
+            final var diag = new Diagnostic()
+                    .highlight(commandParser.currentToken())
+                    .note("expected helper class path");
+            throw new ParseException(diag);
         }
-        end = path.end;
     }
 
     @Override
-    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {}
+    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
+    }
 
     @Override
     public void preRender(NotchTemplateRuntime runtime) {
         NotchType type = TypeSystem.getType(path.qualifiedClass().getName());
-        var helper = type.newInstance(new Object[0]);
+        Object helper;
+        try {
+            helper = type.newInstance(new Object[0]);
+        } catch (Exception e) {
+            final var diag = new Diagnostic();
+            diag.highlight(path);
+            diag.note("unable to create helper");
+            diag.note(e.getMessage());
+            throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
+        }
         runtime.setHelper(helper);
     }
 }

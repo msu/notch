@@ -4,6 +4,7 @@ import edu.montana.notch.json5.query.QueryEngine;
 
 public abstract sealed class JSON5Value permits JSON5Object, JSON5Array, JSON5String, JSON5Number, JSON5Null, JSON5Boolean {
     public abstract JSON5Value copy();
+
     public abstract JSON5Value deepCopy();
 
     public Object query(String path) {

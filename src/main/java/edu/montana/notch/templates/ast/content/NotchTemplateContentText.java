@@ -1,13 +1,13 @@
 package edu.montana.notch.templates.ast.content;
 
-import edu.montana.notch.util.Text;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.util.Text;
 
 public final class NotchTemplateContentText extends NotchTemplateContentItem {
     public final String content;
 
     public NotchTemplateContentText(Token content) {
-        super(content.start, content.end);
+        super(content.span);
         this.content = content.str();
     }
 

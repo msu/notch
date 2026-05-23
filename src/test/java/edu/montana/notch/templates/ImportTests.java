@@ -3,6 +3,7 @@ package edu.montana.notch.templates;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ImportTests extends NotchTemplateTestBase {
@@ -41,11 +42,11 @@ public class ImportTests extends NotchTemplateTestBase {
                     #macro card(id)
                         Card ${id}
                     #end
-
+                    
                     #macro button(label)
                         Button: ${label}
                     #end
-
+                    
                     #macro header(title)
                         Header: ${title}
                     #end
@@ -110,8 +111,8 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("library.html", library);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Alice is 30 years old"));
-            assertTrue(result.contains("Bob is 25 years old"));
+            assertContains("Alice is 30 years old", result);
+            assertContains("Bob is 25 years old", result);
         }
     }
 
@@ -168,8 +169,8 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("buttons.html", buttons);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Card 1"));
-            assertTrue(result.contains("Button: OK"));
+            assertContains("Card 1", result);
+            assertContains("Button: OK", result);
             // Verify both fragments expanded correctly
             assertEquals(1, result.split("Card 1").length - 1, "Card should expand once");
             assertEquals(1, result.split("Button: OK").length - 1, "Button should expand once");
@@ -186,7 +187,7 @@ public class ImportTests extends NotchTemplateTestBase {
                     #macro foo
                         Foo!
                     #end
-
+                    
                     #macro bar
                         Bar!
                     #end
@@ -201,8 +202,8 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("library.html", library);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Foo!"));
-            assertTrue(result.contains("Bar!"));
+            assertContains("Foo!", result);
+            assertContains("Bar!", result);
         }
     }
 
@@ -225,7 +226,7 @@ public class ImportTests extends NotchTemplateTestBase {
                     #macro card
                         Local card
                     #end
-
+                    
                     #import "library.html"
                     #expand card()
                     """;
@@ -235,7 +236,7 @@ public class ImportTests extends NotchTemplateTestBase {
             var result = renderTemplate("main.html");
             // Local fragment is defined during render, import happens in preRender
             // So local fragment is available first
-            assertTrue(result.contains("Local card"));
+            assertContains("Local card", result);
             // Verify imported fragment is NOT used
             assertFalse(result.contains("Imported card"), "Local fragment should take precedence");
             // Verify only one expansion
@@ -254,7 +255,7 @@ public class ImportTests extends NotchTemplateTestBase {
                     #macro card
                         Local card
                     #end
-
+                    
                     #import "library.html" as lib
                     #expand card()
                     #expand lib.card()
@@ -263,8 +264,8 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("library.html", library);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Local card"));
-            assertTrue(result.contains("Imported card"));
+            assertContains("Local card", result);
+            assertContains("Imported card", result);
             // Verify both fragments expanded once each
             assertEquals(1, result.split("Local card").length - 1, "Local fragment should expand once");
             assertEquals(1, result.split("Imported card").length - 1, "Imported fragment should expand once");
@@ -297,7 +298,7 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
             // Last import wins
-            assertTrue(result.contains("From lib2"));
+            assertContains("From lib2", result);
             // Verify first import was overridden
             assertFalse(result.contains("From lib1"), "First import should be overridden by second");
             // Verify only one expansion
@@ -321,9 +322,7 @@ public class ImportTests extends NotchTemplateTestBase {
                     """;
 
             registerTemplate("main.html", main);
-            assertThrows(Exception.class, () -> {
-                renderTemplate("main.html");
-            });
+            expectRenderError("main.html", "no such template \"missing.html\"");
         }
 
         @Test
@@ -407,8 +406,8 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("library.html", library);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Outer: 42"));
-            assertTrue(result.contains("Inner: 42"));
+            assertContains("Outer: 42", result);
+            assertContains("Inner: 42", result);
             // Verify nesting structure
             assertTrue(result.indexOf("Outer:") < result.indexOf("Inner:"), "Outer should come before Inner");
             // Verify parameter passing
@@ -424,7 +423,7 @@ public class ImportTests extends NotchTemplateTestBase {
                     #macro base(n)
                         Base: ${n}
                     #end
-
+                    
                     #macro wrapper(x)
                         Wrapper: ${x}
                         #expand base(x)
@@ -439,8 +438,8 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("library.html", library);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Wrapper: 100"));
-            assertTrue(result.contains("Base: 100"));
+            assertContains("Wrapper: 100", result);
+            assertContains("Base: 100", result);
         }
 
         @Test
@@ -462,7 +461,7 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
             // Import is Global, runs in preRender regardless of conditionals
-            assertTrue(result.contains("Hello from library"));
+            assertContains("Hello from library", result);
         }
 
         @Test
@@ -503,7 +502,7 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
             // Should not fail, just no fragments available
-            assertTrue(result.contains("No fragments imported"));
+            assertContains("No fragments imported", result);
         }
 
         @Test
@@ -522,8 +521,8 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("library.html", library);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html", "count", 5);
-            assertTrue(result.contains("Hello Alice"));
-            assertTrue(result.contains("you have 5 messages"));
+            assertContains("Hello Alice", result);
+            assertContains("you have 5 messages", result);
         }
     }
 
@@ -550,7 +549,7 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("components/library.html", library);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Widget from components"));
+            assertContains("Widget from components", result);
             // Verify path handling worked correctly
             assertFalse(result.contains("components/"), "Path should not appear in output");
             assertFalse(result.contains("#import"), "Import commands should not appear in output");
@@ -583,8 +582,8 @@ public class ImportTests extends NotchTemplateTestBase {
             registerTemplate("layouts/base.html", layouts);
             registerTemplate("main.html", main);
             var result = renderTemplate("main.html");
-            assertTrue(result.contains("Widget"));
-            assertTrue(result.contains("Layout"));
+            assertContains("Widget", result);
+            assertContains("Layout", result);
             // Verify both fragments expanded
             assertEquals(1, result.split("Widget").length - 1, "Widget should expand once");
             assertEquals(1, result.split("Layout").length - 1, "Layout should expand once");

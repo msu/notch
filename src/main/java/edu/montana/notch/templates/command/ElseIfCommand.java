@@ -4,26 +4,36 @@ import edu.montana.notch.NotchParser;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplateParser;
+import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
-import edu.montana.notch.chisel.Token;
 
 public class ElseIfCommand extends NotchTemplateCommand {
-    NotchExpression condition;
+    private NotchExpression condition;
+    private NotchTemplateContentBlock body;
 
     public ElseIfCommand() {
         super("elseif");
     }
 
     @Override
-    public void parse(Token commandName, NotchTemplateParser tmplParser, NotchParser commandParser) {
-        this.condition = commandParser.requireExpression("expected condition after #elseif");
-        commandParser.requireEnd("extra tokens after if condition");
+    public void parseCommand(NotchParser parser) {
+        condition = parser.requireExpression("expected 'if' condition here");
     }
 
     @Override
-    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {}
+    public void parseBody(NotchTemplateParser parser) {
+        body = parser.parseContentBlock(new EndCommand(), new ElseIfCommand(), new ElseCommand());
+        addChildContent(body);
+    }
 
-    public NotchExpression getCondition() {
-        return condition;
+    @Override
+    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
+        var conditionValue = runtime.evaluate(condition);
+        if (runtime.isTruthy(conditionValue)) {
+            body.render(runtime, sb);
+        } else {
+            body.terminalCommand().render(runtime, sb);
+        }
+
     }
 }

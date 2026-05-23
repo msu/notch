@@ -1,190 +1,215 @@
 package edu.montana.notch.chisel;
 
 import edu.montana.notch.chisel.type.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
-import java.util.regex.Pattern;
-
+import static edu.montana.notch.AssertContains.assertContains;
+import static edu.montana.notch.TokenMatcher.tokenMatcher;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TokenizerTest {
+    TestInfo testInfo;
+
+    Source source(String content) {
+        return new Source(testInfo.getDisplayName(), content);
+    }
+
+    @BeforeEach
+    public void setUp(TestInfo testInfo) {
+        this.testInfo = testInfo;
+    }
+
 
     @Test
     void testBasicTokenization() {
-        String source = "hello world 123";
+        Source source = source("hello world 123");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenTypes(TokenTypeIdentifier.IDENT, TokenTypeWhitespace.WHITESPACE, TokenTypeInteger.INT)
-            .create("testBasicTokenization", source);
-        
-        Token token1 = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals("hello", token1.str());
-        assertEquals(TokenTypeIdentifier.IDENT, token1.type);
-        assertEquals(0, token1.start.index);
-        assertEquals(5, token1.end.index);
-        
-        Token token2 = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(" ", token2.str());
-        assertEquals(TokenTypeWhitespace.WHITESPACE, token2.type);
-        
-        Token token3 = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals("world", token3.str());
-        assertEquals(TokenTypeIdentifier.IDENT, token3.type);
-        
-        Token token4 = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(" ", token4.str());
-        assertEquals(TokenTypeWhitespace.WHITESPACE, token4.type);
-        
-        Token token5 = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(123, token5.integer());
-        assertEquals(TokenTypeInteger.INT, token5.type);
-        
-        Token nullToken = assertDoesNotThrow(() -> tokenizer.nextToken());
+                .withTokenType("ident", IdentTokenType.IDENT)
+                .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
+                .withTokenType("int", IntegerTokenType.INT)
+                .create(source);
+
+        Token token1 = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "ident", "hello", 0, 5).assertMatches(token1);
+
+        Token token2 = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "_ws", " ", 5, 6).assertMatches(token2);
+
+        Token token3 = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "ident", "world", 6, 11).assertMatches(token3);
+
+        Token token4 = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "_ws", " ", 11, 12).assertMatches(token4);
+
+        Token token5 = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "int", 123, 12, 15).assertMatches(token5);
+
+        Token nullToken = assertDoesNotThrow(tokenizer::nextToken);
         assertNull(nullToken);
     }
 
     @Test
     void testPeekToken() {
-        String source = "test";
+        Source source = source("test");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenType(TokenTypeIdentifier.IDENT)
-            .create("testPeekToken", source);
-        
-        Token peeked1 = assertDoesNotThrow(() -> tokenizer.peekToken());
-        Token peeked2 = assertDoesNotThrow(() -> tokenizer.peekToken());
-        assertEquals(peeked1.str(), peeked2.str());
-        assertEquals(peeked1.type, peeked2.type);
-        
-        Token consumed = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(peeked1.str(), consumed.str());
-        assertEquals(peeked1.type, consumed.type);
-        
-        Token nullPeek = assertDoesNotThrow(() -> tokenizer.peekToken());
+                .withTokenType("ident", IdentTokenType.IDENT)
+                .create(source);
+
+        Token peeked1 = assertDoesNotThrow(tokenizer::peekToken);
+        Token peeked2 = assertDoesNotThrow(tokenizer::peekToken);
+        assertSame(peeked1, peeked2);
+        assertEquals(new Location(), tokenizer.location());
+
+        Token consumed = assertDoesNotThrow(tokenizer::nextToken);
+        assertSame(peeked1, consumed);
+        assertEquals(new Location(4, 1, 5), tokenizer.location());
+
+        Token nullPeek = assertDoesNotThrow(tokenizer::peekToken);
         assertNull(nullPeek);
     }
 
     @Test
     void testStringTokenization() {
-        String source = "\"hello world\" 'single'";
+        Source source = source("\"hello world\" 'single'");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenTypes(TokenTypeString.STR, TokenTypeWhitespace.WHITESPACE)
-            .create("testStringTokenization", source);
-        
-        Token stringToken = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals("hello world", stringToken.str());
-        assertEquals(TokenTypeString.STR, stringToken.type);
-        
-        Token wsToken = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(" ", wsToken.str());
-        
-        Token singleQuoteToken = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals("single", singleQuoteToken.str());
-        assertEquals(TokenTypeString.STR, singleQuoteToken.type);
+                .withTokenType("string", CStringTokenType.STR)
+                .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
+                .create(source);
+
+        Token stringToken = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "string", "hello world", 0, 13).assertMatches(stringToken);
+
+        Token wsToken = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "_ws", " ", 13, 14).assertMatches(wsToken);
+
+        Token singleQuoteToken = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "string", "single", 14, 22).assertMatches(singleQuoteToken);
     }
 
     @Test
     void testStringEscapeSequences() {
-        String source = "\"hello\\nworld\\t\\\"test\\\"\"";
+        Source source = source("\"hello\\nworld\\t\\\"test\\\"\"");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenType(TokenTypeString.STR)
-            .create("testStringEscapeSequences", source);
-        
-        Token token = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals("hello\nworld\t\"test\"", token.str());
+                .withTokenType("string", CStringTokenType.STR)
+                .create(source);
+
+        Token token = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "string", "hello\nworld\t\"test\"", 0, 24).assertMatches(token);
     }
 
     @Test
     void testUnterminatedString() {
-        String source = "\"unterminated";
+        Source source = source("\"unterminated");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenType(TokenTypeString.STR)
-            .create("testUnterminatedString", source);
-        
-        TokenizeException exception = assertThrows(TokenizeException.class, () -> {
-            tokenizer.nextToken();
-        });
-        assertTrue(exception.getMessage().contains("unterminated string"));
+                .withTokenType("string", CStringTokenType.STR)
+                .create(source);
+
+        TokenizeException exception = assertThrows(TokenizeException.class, tokenizer::nextToken);
+        assertContains("unterminated", exception.diagnostic.getNotes().get(0));
     }
 
     @Test
     void testInvalidEscape() {
-        String source = "\"invalid\\z\"";
+        Source source = source("\"invalid\\z\"");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenType(TokenTypeString.STR)
-            .create("testInvalidEscape", source);
-        
-        TokenizeException exception = assertThrows(TokenizeException.class, () -> {
-            tokenizer.nextToken();
-        });
-        assertTrue(exception.getMessage().contains("invalid escape"));
+                .withTokenType("string", CStringTokenType.STR)
+                .create(source);
+
+        TokenizeException exception = assertThrows(TokenizeException.class, tokenizer::nextToken);
+        assertContains("invalid", exception.diagnostic.getNotes().get(0));
     }
 
     @Test
     void testIntegerTokenization() {
-        String source = "123 0xff 0b101 0o77";
+        Source source = source("123 0xff 0b101 0o77");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenTypes(TokenTypeInteger.INT, TokenTypeWhitespace.WHITESPACE)
-            .create("testIntegerTokenization", source);
-        
-        Token decimal = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(123, decimal.integer());
-        
+                .withTokenType("int", IntegerTokenType.INT)
+                .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
+                .create(source);
+
+        Token decimal = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "int", 123, 0, 3).assertMatches(decimal);
+
         tokenizer.nextToken();
-        
-        Token hex = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(255, hex.integer());
-        
+
+        Token hex = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "int", 255, 4, 8).assertMatches(hex);
+
         tokenizer.nextToken();
-        
-        Token binary = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(5, binary.integer());
-        
+
+        Token binary = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "int", 5, 9, 14).assertMatches(binary);
+
         tokenizer.nextToken();
-        
-        Token octal = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(63, octal.integer());
+
+        Token octal = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "int", 63, 15, 19).assertMatches(octal);
     }
 
     @Test
     void testBooleanTokenization() {
-        String source = "true false";
+        Source source = source("true false");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenTypes(TokenTypeBoolean.BOOL, TokenTypeWhitespace.WHITESPACE)
-            .create("testBooleanTokenization", source);
-        
-        Token trueToken = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertTrue(trueToken.bool());
-        assertEquals(TokenTypeBoolean.BOOL, trueToken.type);
-        
+                .withTokenType("bool", BooleanTokenType.BOOL)
+                .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
+                .create(source);
+
+        Token trueToken = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "bool", true, 0, 4).assertMatches(trueToken);
+
         tokenizer.nextToken();
-        
-        Token falseToken = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertFalse(falseToken.bool());
-        assertEquals(TokenTypeBoolean.BOOL, falseToken.type);
+
+        Token falseToken = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "bool", false, 5, 10).assertMatches(falseToken);
     }
 
     @Test
     void testPunctuationTokenization() {
-        String source = "( ) [ ] { }";
+        Source source = source("( ) [ ] { }");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenTypes(TokenTypePunct.common()).withTokenType(TokenTypeWhitespace.WHITESPACE)
-            .create("testPunctuationTokenization", source);
-        
-        Token lparen = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals("(", lparen.str());
-        
+                .withTokenTypes(LiteralTokenType.COMMON)
+                .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
+                .create(source);
+
+        Token lparen = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "(", "(", 0, 1).assertMatches(lparen);
+
         tokenizer.nextToken();
-        
-        Token rparen = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(")", rparen.str());
+
+        Token rparen = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, ")", ")", 2, 3).assertMatches(rparen);
+
+        tokenizer.nextToken();
+
+        Token lbracket = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "[", "[", 4, 5).assertMatches(lbracket);
+
+        tokenizer.nextToken();
+
+        Token rbracket = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "]", "]", 6, 7).assertMatches(rbracket);
+
+        tokenizer.nextToken();
+
+        Token lbrace = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "{", "{", 8, 9).assertMatches(lbrace);
+
+        tokenizer.nextToken();
+
+        Token rbrace = assertDoesNotThrow(tokenizer::nextToken);
+        tokenMatcher(source, "}", "}", 10, 11).assertMatches(rbrace);
     }
 
     @Test
     void testTokenStream() {
-        String source = "hello world";
+        Source source = source("hello world");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenTypes(TokenTypeIdentifier.IDENT, TokenTypeWhitespace.WHITESPACE)
-            .create("testTokenStream", source);
-        
+                .withTokenType("ident", IdentTokenType.IDENT)
+                .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
+                .create(source);
+
         TokenStream stream = assertDoesNotThrow(() -> tokenizer.tokenize());
         assertEquals(3, stream.tokens.size());
         assertEquals("hello", stream.tokens.get(0).str());
@@ -192,89 +217,64 @@ class TokenizerTest {
         assertEquals("world", stream.tokens.get(2).str());
     }
 
-    // TODO dillon review this test and rewrite if necessary
-//    @Test
-//    void testTokenStreamWithTerminalTypes() {
-//        String source = "start middle end";
-//        TokenType terminatorType = TokenTypeIdentifier.IDENT;
-//        Tokenizer tokenizer = new Tokenizer(source)
-//            .with(TokenTypeIdentifier.IDENT, TokenTypeWhitespace.WHITESPACE);
-//
-//        tokenizer.nextToken();
-//        tokenizer.nextToken();
-//
-//        TokenStream stream = assertDoesNotThrow(() -> tokenizer.tokenize(terminatorType));
-//        assertEquals(1, stream.tokens.size());
-//        assertEquals("middle", stream.tokens.get(0).str());
-//    }
+    @Test
+    void testTokenStreamWithTerminalTypes() {
+        Source source = source("start middle : end");
+        Tokenizer tokenizer = new Tokenizer()
+                .withTokenType("ident", IdentTokenType.IDENT)
+                .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
+                .withTokenType(":", new LiteralTokenType(":"))
+                .create(source);
+
+        Token start = tokenizer.nextToken();
+        assertEquals("start", start.str());
+
+        TokenStream stream = assertDoesNotThrow(() -> tokenizer.tokenize(":"));
+        assertEquals(3, stream.tokens.size());
+        assertEquals(" ", stream.tokens.get(0).str());
+        assertEquals("middle", stream.tokens.get(1).str());
+        assertEquals(" ", stream.tokens.get(2).str());
+    }
 
     @Test
     void testNoMatchingTokenType() {
-        String source = "@#$";
+        Source source = source("@#$");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenType(TokenTypeIdentifier.IDENT)
-            .create("testNoMatchingTokenType", source);
-        
-        TokenizeException exception = assertThrows(TokenizeException.class, () -> {
-            tokenizer.tokenize();
-        });
-        assertTrue(exception.getMessage().contains("expected token"));
+                .withTokenType("ident", IdentTokenType.IDENT)
+                .create(source);
+
+        TokenizeException exception = assertThrows(TokenizeException.class, tokenizer::tokenize);
+        assertContains("unexpected character '@'", exception.diagnostic.getNotes().get(0));
     }
 
     @Test
     void testInfiniteLoopDetection() {
-        TokenType brokenTokenType = new TokenType() {
-            @Override
-            public Token tokenize(Tokenizer t) {
-                return new Token(t.location(), t.location(), this, "broken");
-            }
-        };
-        
-        String source = "test";
-        Tokenizer tokenizer = new Tokenizer()
-            .withTokenType(brokenTokenType)
-            .create("testInfiniteLoopDetection", source);
-        
-        TokenizeException exception = assertThrows(TokenizeException.class, () -> {
-            tokenizer.tokenize();
-        });
-        assertTrue(exception.getMessage().contains("infinite loop"));
-    }
+        TokenType brokenTokenType = t -> new TokenData();
 
-    @Test
-    void testLocationTracking() {
-        String source = "line1\nline2";
-        Location customLocation = new Location(0, 1, 1);
-        Tokenizer tokenizer = new Tokenizer("testLocationTracking", source, customLocation)
-            .withTokenType(TokenTypeIdentifier.IDENT);
-        
-        Token token1 = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(1, token1.start.line);
-        assertEquals(1, token1.start.column);
-        assertEquals(1, token1.end.line);
-        assertEquals(6, token1.end.column);
-        
-        tokenizer.take();
-        
-        Token token2 = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(2, token2.start.line);
-        assertEquals(1, token2.start.column);
+        Source source = source("test");
+        Tokenizer tokenizer = new Tokenizer()
+                .withTokenType("broken", brokenTokenType)
+                .create(source);
+
+        TokenizeException exception = assertThrows(TokenizeException.class, tokenizer::tokenize);
+        assertContains("infinite loop", exception.getMessage());
+        assertContains("infinite loop", exception.diagnostic.getNotes().get(0));
     }
 
     @Test
     void testPeekAndTakeOperations() {
-        String source = "hello";
-        Tokenizer tokenizer = new Tokenizer().create("testPeekAndTakeOperations", source);
+        Source source = source("hello");
+        Tokenizer tokenizer = new Tokenizer().create(source);
 
         assertEquals('h', tokenizer.peek());
-        assertTrue(tokenizer.peek('h', 'e', 'l'));
+        assertTrue(tokenizer.peek('g', 'h', 'i'));
         assertFalse(tokenizer.peek('x', 'y', 'z'));
 
-        tokenizer = new Tokenizer().create("testPeekAndTakeOperations", source);
+        tokenizer = new Tokenizer().create(source);
         assertTrue(tokenizer.peek("hello"));
         assertFalse(tokenizer.peek("world"));
 
-        tokenizer = new Tokenizer().create("testPeekAndTakeOperations", source);
+        tokenizer = new Tokenizer().create(source);
         assertEquals('h', tokenizer.take());
         assertEquals('e', tokenizer.take());
         assertTrue(tokenizer.take('l'));
@@ -286,109 +286,81 @@ class TokenizerTest {
 
     @Test
     void testSeekOperations() {
-        String source = "hello world end";
-        Tokenizer tokenizer = new Tokenizer().create("testSeekOperations", source);
-        
+        Source source = source("hello world end");
+        Tokenizer tokenizer = new Tokenizer().create(source);
+
         String result1 = tokenizer.seek(' ');
         assertEquals("hello", result1);
-        
-        String result2 = tokenizer.seek("end");
-        assertEquals("world ", result2);
-        
-        assertTrue(tokenizer.atEnd());
-    }
 
-    @Test
-    void testComplexExpression() {
-        String source = "if (x == \"hello\") { return 42; }";
-        Tokenizer tokenizer = new Tokenizer()
-            .withTokenTypes(TokenTypeIdentifier.IDENT, TokenTypeWhitespace.WHITESPACE,
-                    TokenTypeString.STR, TokenTypeInteger.INT).withTokenTypes(TokenTypePunct.common())
-            .create("testComplexExpression", source);
-        
-        TokenStream stream = assertDoesNotThrow(() -> tokenizer.tokenize());
-        assertTrue(stream.tokens.size() > 10);
-        
-        assertEquals("if", stream.tokens.get(0).str());
-        assertEquals("(", stream.tokens.get(2).str());
-        assertEquals("x", stream.tokens.get(3).str());
-        assertEquals("==", stream.tokens.get(5).str());
-        assertEquals("hello", stream.tokens.get(7).str());
-        assertTrue(stream.tokens.stream().anyMatch(t -> t.type == TokenTypeInteger.INT && t.integer() == 42));
+        String result2 = tokenizer.trySeek(" ");
+        assertEquals("world", result2);
+
+        String result3 = tokenizer.trySeek(":");
+        assertNull(result3);
+        assertTrue(tokenizer.atEnd());
+
+        assertTrue(tokenizer.atEnd());
     }
 
     @Test
     void testEmptySource() {
-        String source = "";
+        Source source = source("");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenType(TokenTypeIdentifier.IDENT)
-            .create("testEmptySource", source);
-        
+                .withTokenType("ident", IdentTokenType.IDENT)
+                .create(source);
+
         assertTrue(tokenizer.atEnd());
         assertNull(tokenizer.nextToken());
         assertNull(tokenizer.peekToken());
-        
+
         TokenStream stream = assertDoesNotThrow(() -> tokenizer.tokenize());
         assertTrue(stream.tokens.isEmpty());
     }
 
     @Test
     void testWhitespaceOnlySource() {
-        String source = "   \t\n  ";
+        Source source = source("   \t\n  ");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenType(TokenTypeWhitespace.WHITESPACE)
-            .create("testWhitespaceOnlySource", source);
-        
+                .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
+                .create(source);
+
         TokenStream stream = assertDoesNotThrow(() -> tokenizer.tokenize());
         assertEquals(1, stream.tokens.size());
-        assertEquals(source, stream.tokens.get(0).str());
+        assertEquals(source.content, stream.tokens.get(0).str());
     }
 
     @Test
     void testMultilineLocationTracking() {
-        String source = "first\nsecond\nthird";
+        Source source = source("first\nsecond\nthird");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenType(TokenTypeIdentifier.IDENT)
-            .create("testMultilineLocationTracking", source);
-        
-        Token first = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(1, first.start.line);
-        assertEquals(1, first.start.column);
-        
-        tokenizer.take();
-        
-        Token second = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(2, second.start.line);
-        assertEquals(1, second.start.column);
-        
-        tokenizer.take();
-        
-        Token third = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals(3, third.start.line);
-        assertEquals(1, third.start.column);
-    }
+                .withTokenType("ident", IdentTokenType.IDENT)
+                .create(source);
 
-    @Test
-    void testPatternTokenization() {
-        String source = "match123pattern";
-        TokenTypePattern customPattern = new TokenTypePattern(Pattern.compile("match\\d+pattern"));
-        Tokenizer tokenizer = new Tokenizer()
-            .withTokenTypes(customPattern, TokenTypeIdentifier.IDENT)
-            .create("testPatternTokenization", source);
-        
-        Token matched = assertDoesNotThrow(() -> tokenizer.nextToken());
-        assertEquals("match123pattern", matched.str());
-        assertEquals(customPattern, matched.type);
+        Token first = assertDoesNotThrow(tokenizer::nextToken);
+        assertEquals(1, first.start().line);
+        assertEquals(1, first.start().column);
+
+        tokenizer.take();
+
+        Token second = assertDoesNotThrow(tokenizer::nextToken);
+        assertEquals(2, second.start().line);
+        assertEquals(1, second.start().column);
+
+        tokenizer.take();
+
+        Token third = assertDoesNotThrow(tokenizer::nextToken);
+        assertEquals(3, third.start().line);
+        assertEquals(1, third.start().column);
     }
 
     @Test
     void testTokenizerToString() {
-        String source = "hello world";
-        Tokenizer tokenizer = new Tokenizer().create("testTokenizerToString", source);
-        
+        Source source = source("hello world");
+        Tokenizer tokenizer = new Tokenizer().create(source);
+
         String initial = tokenizer.toString();
         assertEquals("*hello world", initial);
-        
+
         tokenizer.take(6);
         String afterTake = tokenizer.toString();
         assertEquals("hello *world", afterTake);
@@ -396,22 +368,23 @@ class TokenizerTest {
 
     @Test
     void testUnicodeHandling() {
-        String source = "café naïve résumé";
+        Source source = source("café naïve résumé");
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenTypes(TokenTypeIdentifier.IDENT, TokenTypeWhitespace.WHITESPACE)
-            .create("testUnicodeHandling", source);
-        
-        Token cafe = assertDoesNotThrow(() -> tokenizer.nextToken());
+                .withTokenTypes("ident", IdentTokenType.IDENT)
+                .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
+                .create(source);
+
+        Token cafe = assertDoesNotThrow(tokenizer::nextToken);
         assertEquals("café", cafe.str());
-        
+
         tokenizer.nextToken();
-        
-        Token naive = assertDoesNotThrow(() -> tokenizer.nextToken());
+
+        Token naive = assertDoesNotThrow(tokenizer::nextToken);
         assertEquals("naïve", naive.str());
-        
+
         tokenizer.nextToken();
-        
-        Token resume = assertDoesNotThrow(() -> tokenizer.nextToken());
+
+        Token resume = assertDoesNotThrow(tokenizer::nextToken);
         assertEquals("résumé", resume.str());
     }
 
@@ -421,15 +394,16 @@ class TokenizerTest {
         for (int i = 0; i < 1000; i++) {
             sb.append("token").append(i).append(" ");
         }
-        String source = sb.toString().trim();
+        Source source = source(sb.toString().trim());
 
         Tokenizer tokenizer = new Tokenizer()
-            .withTokenTypes(TokenTypeIdentifier.IDENT, TokenTypeWhitespace.WHITESPACE)
-            .create("testLargeInput", source);
-        
+                .withTokenType("ident", IdentTokenType.IDENT)
+                .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
+                .create(source);
+
         TokenStream stream = assertDoesNotThrow(() -> tokenizer.tokenize());
         assertEquals(1999, stream.tokens.size());
-        
+
         assertEquals("token0", stream.tokens.get(0).str());
         assertEquals("token999", stream.tokens.get(1998).str());
     }

@@ -1,10 +1,11 @@
 package edu.montana.notch.runtime;
 
-import java.util.List;
+import edu.montana.notch.util.BetterList;
 
 public interface NotchRenderable {
     String getName();
+
     String getQualifiedName();
 
-    void render(List<Object> args, NotchRuntime runtime, StringBuilder sb);
+    void render(BetterList<Object> args, NotchRuntime runtime, StringBuilder sb);
 }

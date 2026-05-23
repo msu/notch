@@ -1,4 +1,4 @@
-package bigsky.notch.chisel;
+package edu.montana.notch.chisel;
 
 public record TokenData(String tokenType, Object value) {
     public TokenData(Object value) {

@@ -127,17 +127,22 @@ public class TypeSystemTest {
         }
 
         // overloaded void method
-        public void foo() {}
-        public void foo(String foo) {}
+        public void foo() {
+        }
+
+        public void foo(String foo) {
+        }
 
 
         // getters w/different visibilities
         public String getPublicString() {
             return "public string";
         }
+
         protected String getProtectedString() {
             return "protected string";
         }
+
         private String getPrivateString() {
             return "private string";
         }

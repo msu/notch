@@ -4,11 +4,8 @@ import org.slf4j.ILoggerFactory;
 import org.slf4j.IMarkerFactory;
 import org.slf4j.helpers.BasicMDCAdapter;
 import org.slf4j.helpers.BasicMarkerFactory;
-import org.slf4j.helpers.NOPLoggerFactory;
 import org.slf4j.spi.MDCAdapter;
 import org.slf4j.spi.SLF4JServiceProvider;
-
-import java.util.ServiceLoader;
 
 public class NotchLoggingServiceProvider implements SLF4JServiceProvider {
 
@@ -44,34 +41,10 @@ public class NotchLoggingServiceProvider implements SLF4JServiceProvider {
 
     @Override
     public void initialize() {
+        loggerFactory = NotchLogging.get();
         markerFactory = new BasicMarkerFactory();
         mdcAdapter = new BasicMDCAdapter();
-
-        NotchLogging.Mode mode = NotchLogging.effectiveMode();
-        if (mode == NotchLogging.Mode.FORCE) {
-            loggerFactory = NotchLogging.get();
-            return;
-        }
-
-        SLF4JServiceProvider other = findOtherProvider();
-        if (other != null) {
-            other.initialize();
-            loggerFactory = other.getLoggerFactory();
-            markerFactory = other.getMarkerFactory();
-            mdcAdapter = other.getMDCAdapter();
-        } else if (mode == NotchLogging.Mode.DISABLED) {
-            loggerFactory = new NOPLoggerFactory();
-        } else {
-            loggerFactory = NotchLogging.get();
-        }
     }
 
-    private SLF4JServiceProvider findOtherProvider() {
-        for (var p : ServiceLoader.load(SLF4JServiceProvider.class)) {
-            if (!(p instanceof NotchLoggingServiceProvider)) {
-                return p;
-            }
-        }
-        return null;
-    }
+
 }

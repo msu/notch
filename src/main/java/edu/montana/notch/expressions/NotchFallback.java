@@ -6,7 +6,7 @@ public class NotchFallback extends NotchExpression {
     public final NotchExpression primary, fallback;
 
     public NotchFallback(NotchExpression primary, NotchExpression fallback) {
-        super(primary.fileId, primary.start, fallback.end);
+        super(primary.span.through(fallback));
         this.primary = addChild(primary);
         this.fallback = addChild(fallback);
     }

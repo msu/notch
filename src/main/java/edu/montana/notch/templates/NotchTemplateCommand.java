@@ -1,13 +1,12 @@
 package edu.montana.notch.templates;
 
 import edu.montana.notch.NotchParser;
-import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
-import edu.montana.notch.templates.ast.content.NotchTemplateContentCommand;
-import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
-import edu.montana.notch.chisel.Location;
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
+import edu.montana.notch.templates.ast.content.NotchTemplateContentCommand;
+import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -16,14 +15,16 @@ import java.util.List;
 import java.util.Objects;
 
 public abstract class NotchTemplateCommand implements Spanned {
-    public final String name;
-    protected Location start, end;
-    protected String fileId;
+    public final String commandName;
+    protected Span span;
+    protected Token commandToken;
     protected List<NotchTemplateCommand> childCommands = new ArrayList<>();
+    protected boolean isGlobal = false;
+    protected boolean isSingleton = false;
 
-    public NotchTemplateCommand(String name) {
-        Objects.requireNonNull(name);
-        this.name = name.toLowerCase();
+    public NotchTemplateCommand(String commandName) {
+        Objects.requireNonNull(commandName);
+        this.commandName = commandName.toLowerCase();
     }
 
     public NotchTemplateCommand newInstance() {
@@ -37,9 +38,18 @@ public abstract class NotchTemplateCommand implements Spanned {
         }
     }
 
-    public abstract void parse(Token commandName, NotchTemplateParser tmplParser, NotchParser commandParser);
+    public abstract void parseCommand(NotchParser parser);
+
+    public void parseBody(NotchTemplateParser parser) {
+    }
+
+    public void preRender(NotchTemplateRuntime runtime) {
+    }
 
     public abstract void render(NotchTemplateRuntime runtime, StringBuilder sb);
+
+    public void postRender(NotchTemplateRuntime runtime) {
+    }
 
     protected void addChildCommand(NotchTemplateCommand cmd) {
         if (cmd != null) {
@@ -49,53 +59,27 @@ public abstract class NotchTemplateCommand implements Spanned {
 
     protected void addChildContent(NotchTemplateContentBlock content) {
         if (content == null) return;
-        for (var item : content.items()) {
+        for (var item : content.content()) {
             if (item instanceof NotchTemplateContentCommand cmd) {
                 addChildCommand(cmd.command);
             }
         }
     }
 
-    public Location getStart() {
-        return start;
-    }
-
-    public Location getEnd() {
-        return end;
-    }
-
     public List<NotchTemplateCommand> getChildCommands() {
         return Collections.unmodifiableList(childCommands);
     }
 
-    public abstract static class ContextCommand {
-        public final String name;
-
-        public ContextCommand(String name) {
-            Objects.requireNonNull(name);
-            this.name = name.toLowerCase();
-        }
-
-        public abstract void parse(NotchTemplateParser parser);
-    }
-
-    public interface Global {
-        default NotchTemplateCommand getCommand() {
-            return (NotchTemplateCommand) this;
-        }
-
-        default void preRender(NotchTemplateRuntime runtime) {
-        }
-
-        default void postRender(NotchTemplateRuntime runtime, StringBuilder sb) {
-        }
-    }
-
-    public interface Singleton extends Global {
-    }
-
     @Override
     public Span span() {
-        return new Span(start, end);
+        return span;
+    }
+
+    public boolean isGlobal() {
+        return isGlobal;
+    }
+
+    public boolean isSingleton() {
+        return isGlobal && isSingleton;
     }
 }

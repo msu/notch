@@ -1,64 +1,79 @@
 package edu.montana.notch.util;
 
 import edu.montana.notch.chisel.ParseException;
+import edu.montana.notch.chisel.Source;
 import edu.montana.notch.json5.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for JSON5 Parser
  */
 class JSON5ParserTest {
+    TestInfo info;
+
+    @BeforeEach
+    void setUp(TestInfo testInfo) {
+        this.info = testInfo;
+    }
+
+    <T> T parse(String query) {
+        final var src = new Source(info.getDisplayName(), query);
+        return (T) JSON5.parse(src);
+    }
 
     // ===== Primitive Value Tests =====
 
     @Test
     void testParseString() {
-        JSON5String result = JSON5.parse("testParseString", "\"hello world\"");
+        JSON5String result = parse("\"hello world\"");
         assertEquals("hello world", result.value);
     }
 
     @Test
     void testParseInteger() {
-        JSON5Integer result = JSON5.parse("testParseInteger", "123");
+        JSON5Integer result = parse("123");
         assertEquals(123L, result.value);
     }
 
     @Test
     void testParseFloat() {
-        JSON5Decimal result = JSON5.parse("testParseFloat", "123.456");
+        JSON5Decimal result = parse("123.456");
         assertEquals(123.456, result.value);
     }
 
     @Test
     void testParseTrue() {
-        JSON5Boolean result = JSON5.parse("testParseTrue", "true");
+        JSON5Boolean result = parse("true");
         assertTrue(result.value);
     }
 
     @Test
     void testParseFalse() {
-        JSON5Boolean result = JSON5.parse("testParseFalse", "false");
+        JSON5Boolean result = parse("false");
         assertFalse(result.value);
     }
 
     @Test
     void testParseNull() {
-        JSON5Null ignored = JSON5.parse("testParseNull", "null");
+        JSON5Null ignored = parse("null");
     }
 
     // ===== Array Tests =====
 
     @Test
     void testParseEmptyArray() {
-        JSON5Array result = JSON5.parse("testParseEmptyArray", "[]");
+        JSON5Array result = parse("[]");
         assertEquals(0, result.size());
     }
 
     @Test
     void testParseSimpleArray() {
-        JSON5Array array = JSON5.parse("testParseSimpleArray", "[1, 2, 3]");
+        JSON5Array array = parse("[1, 2, 3]");
         assertEquals(3, array.size());
         assertEquals(1, array.get(0).intValue());
         assertEquals(2, array.get(1).intValue());
@@ -67,7 +82,7 @@ class JSON5ParserTest {
 
     @Test
     void testParseMixedArray() {
-        JSON5Array array = JSON5.parse("testParseMixedArray", "[\"hello\", 123, true, null]");
+        JSON5Array array = parse("[\"hello\", 123, true, null]");
         assertEquals(4, array.size());
         assertEquals("hello", array.get(0).stringValue());
         assertEquals(123L, array.get(1).longValue());
@@ -77,7 +92,7 @@ class JSON5ParserTest {
 
     @Test
     void testParseNestedArray() {
-        JSON5Array outer = JSON5.parse("testParseNestedArray", "[[1, 2], [3, 4]]");
+        JSON5Array outer = parse("[[1, 2], [3, 4]]");
         assertEquals(2, outer.size());
 
         JSON5Array first = (JSON5Array) outer.get(0);
@@ -93,7 +108,7 @@ class JSON5ParserTest {
 
     @Test
     void testParseArrayWithTrailingComma() {
-        JSON5Array array = JSON5.parse("testParseArrayWithTrailingComma", "[1, 2, 3,]");
+        JSON5Array array = parse("[1, 2, 3,]");
         assertEquals(3, array.size());
     }
 
@@ -101,13 +116,13 @@ class JSON5ParserTest {
 
     @Test
     void testParseEmptyObject() {
-        JSON5Object result = JSON5.parse("testParseEmptyObject", "{}");
+        JSON5Object result = parse("{}");
         assertEquals(0, result.size());
     }
 
     @Test
     void testParseSimpleObject() {
-        JSON5Object map = JSON5.parse("testParseSimpleObject", "{\"name\": \"John\", \"age\": 30}");
+        JSON5Object map = parse("{\"name\": \"John\", \"age\": 30}");
         assertEquals(2, map.size());
         assertEquals("John", map.get("name").stringValue());
         assertEquals(30L, map.get("age").longValue());
@@ -115,7 +130,7 @@ class JSON5ParserTest {
 
     @Test
     void testParseObjectWithUnquotedKeys() {
-        JSON5Object map = JSON5.parse("testParseObjectWithUnquotedKeys", "{name: \"John\", age: 30}");
+        JSON5Object map = parse("{name: \"John\", age: 30}");
         assertEquals(2, map.size());
         assertEquals("John", map.get("name").stringValue());
         assertEquals(30L, map.get("age").longValue());
@@ -123,7 +138,7 @@ class JSON5ParserTest {
 
     @Test
     void testParseObjectWithSingleQuotes() {
-        JSON5Object map = JSON5.parse("testParseObjectWithSingleQuotes", "{'name': 'John', 'age': 30}");
+        JSON5Object map = parse("{'name': 'John', 'age': 30}");
         assertEquals(2, map.size());
         assertEquals("John", map.get("name").stringValue());
         assertEquals(30L, map.get("age").longValue());
@@ -131,7 +146,7 @@ class JSON5ParserTest {
 
     @Test
     void testParseNestedObject() {
-        JSON5Object outer = JSON5.parse("testParseNestedObject", "{\"person\": {\"name\": \"John\", \"age\": 30}}");
+        JSON5Object outer = parse("{\"person\": {\"name\": \"John\", \"age\": 30}}");
         assertEquals(1, outer.size());
 
         JSON5Object personMap = (JSON5Object) outer.get("person");
@@ -141,13 +156,13 @@ class JSON5ParserTest {
 
     @Test
     void testParseObjectWithTrailingComma() {
-        JSON5Object map = JSON5.parse("testParseObjectWithTrailingComma", "{\"a\": 1, \"b\": 2,}");
+        JSON5Object map = parse("{\"a\": 1, \"b\": 2,}");
         assertEquals(2, map.size());
     }
 
     @Test
     void testParseObjectWithArray() {
-        JSON5Object map = JSON5.parse("testParseObjectWithArray", "{\"numbers\": [1, 2, 3]}");
+        JSON5Object map = parse("{\"numbers\": [1, 2, 3]}");
 
         JSON5Array array = (JSON5Array) map.get("numbers");
         assertEquals(3, array.size());
@@ -158,16 +173,16 @@ class JSON5ParserTest {
     @Test
     void testParseComplexNestedStructure() {
         String json = """
-            {
-                users: [
-                    {name: "Alice", active: true},
-                    {name: "Bob", active: false}
-                ],
-                count: 2
-            }
-            """;
+                {
+                    users: [
+                        {name: "Alice", active: true},
+                        {name: "Bob", active: false}
+                    ],
+                    count: 2
+                }
+                """;
 
-        JSON5Object map = JSON5.parse("testParseComplexNestedStructure", json);
+        JSON5Object map = parse(json);
 
         assertEquals(2, map.size());
         assertEquals(2L, map.get("count").longValue());
@@ -188,7 +203,7 @@ class JSON5ParserTest {
     void testParseArrayOfObjects() {
         String json = "[{a: 1}, {b: 2}, {c: 3}]";
 
-        JSON5Array array = JSON5.parse("testParseArrayOfObjects", json);
+        JSON5Array array = parse(json);
         assertEquals(3, array.size());
 
         assertEquals(1L, ((JSON5Object) array.get(0)).get("a").longValue());
@@ -200,7 +215,7 @@ class JSON5ParserTest {
     void testParseWithSpecialNumbers() {
         String json = "{inf: Infinity, negInf: -Infinity, notANumber: NaN}";
 
-        JSON5Object map = JSON5.parse("testParseWithSpecialNumbers", json);
+        JSON5Object map = parse(json);
 
         assertTrue(Double.isInfinite(map.get("inf").doubleValue()));
         assertTrue(Double.isInfinite(map.get("negInf").doubleValue()));
@@ -211,7 +226,7 @@ class JSON5ParserTest {
     void testParseWithHexNumbers() {
         String json = "{hex: 0xFF, negHex: -0xABCD}";
 
-        JSON5Object map = JSON5.parse("testParseWithHexNumbers", json);
+        JSON5Object map = parse(json);
 
         assertEquals(255L, map.get("hex").longValue());
         assertEquals(-43981L, map.get("negHex").longValue());
@@ -221,44 +236,44 @@ class JSON5ParserTest {
 
     @Test
     void testParseInvalidJSON() {
-        assertThrows(ParseException.class, () -> JSON5.parse("testParseInvalidJSON", "{invalid}"));
+        assertThrows(ParseException.class, () -> parse("{invalid}"));
     }
 
     @Test
     void testParseUnterminatedArray() {
-        assertThrows(ParseException.class, () -> JSON5.parse("testParseUnterminatedArray", "[1, 2, 3"));
+        assertThrows(ParseException.class, () -> parse("[1, 2, 3"));
     }
 
     @Test
     void testParseUnterminatedObject() {
-        assertThrows(ParseException.class, () -> JSON5.parse("testParseUnterminatedObject", "{\"a\": 1"));
+        assertThrows(ParseException.class, () -> parse("{\"a\": 1"));
     }
 
     @Test
     void testParseMissingColon() {
-        assertThrows(ParseException.class, () -> JSON5.parse("testParseMissingColon", "{\"a\" 1}"));
+        assertThrows(ParseException.class, () -> parse("{\"a\" 1}"));
     }
 
     @Test
     void testParseEmptyInput() {
-        assertThrows(ParseException.class, () -> JSON5.parse("testParseEmptyInput", ""));
+        assertThrows(ParseException.class, () -> parse(""));
     }
 
     @Test
     void testParseMissingCommaInObject() {
-        var ex = assertThrows(ParseException.class, () -> JSON5.parse("testParseMissingCommaInObject", "{a: 1 b: 2}"));
+        var ex = assertThrows(ParseException.class, () -> parse("{a: 1 b: 2}"));
         assertTrue(ex.getMessage().contains("comma"), "Error message should mention comma");
     }
 
     @Test
     void testParseMissingCommaInArray() {
-        var ex = assertThrows(ParseException.class, () -> JSON5.parse("testParseMissingCommaInArray", "[1 2]"));
-        assertTrue(ex.getMessage().contains("comma"), "Error message should mention comma: " + ex.getMessage());
+        var ex = assertThrows(ParseException.class, () -> parse("[1 2]"));
+        assertContains("comma", ex.getMessage(), "Error message should mention comma: " + ex.getMessage());
     }
 
     @Test
     void testParseInvalidMemberName() {
-        var ex = assertThrows(ParseException.class, () -> JSON5.parse("testParseInvalidMemberName", "{123: \"value\"}"));
+        var ex = assertThrows(ParseException.class, () -> parse("{123: \"value\"}"));
         assertTrue(ex.getMessage().contains("member name"), "Error message should mention member name");
     }
 
@@ -266,7 +281,8 @@ class JSON5ParserTest {
 
     @Test
     void testParseIntegerDirectly() {
-        JSON5Parser parser = new JSON5Parser("testParseIntegerDirectly", "42");
+        final var source = new Source(info.getDisplayName(), "42");
+        JSON5Parser parser = new JSON5Parser(source);
         JSON5Integer result = parser.parseInteger();
         assertNotNull(result);
         assertEquals(42L, result.value);
@@ -274,14 +290,16 @@ class JSON5ParserTest {
 
     @Test
     void testParseIntegerWithDecimalFails() {
-        JSON5Parser parser = new JSON5Parser("testParseIntegerWithDecimalFails", "42.5");
+        final var source = new Source(info.getDisplayName(), "42.5");
+        JSON5Parser parser = new JSON5Parser(source);
         JSON5Integer result = parser.parseInteger();
         assertNull(result, "parseInteger should return null for decimal numbers");
     }
 
     @Test
     void testParseIntegerHex() {
-        JSON5Parser parser = new JSON5Parser("testParseIntegerHex", "0xFF");
+        final var source = new Source(info.getDisplayName(), "0xFF");
+        JSON5Parser parser = new JSON5Parser(source);
         JSON5Integer result = parser.parseInteger();
         assertNotNull(result);
         assertEquals(255L, result.value);
@@ -289,7 +307,8 @@ class JSON5ParserTest {
 
     @Test
     void testParseDecimalDirectly() {
-        JSON5Parser parser = new JSON5Parser("testParseDecimalDirectly", "42.5");
+        final var source = new Source(info.getDisplayName(), "42.5");
+        JSON5Parser parser = new JSON5Parser(source);
         JSON5Decimal result = parser.parseDecimal();
         assertNotNull(result);
         assertEquals(42.5, result.value);
@@ -297,14 +316,16 @@ class JSON5ParserTest {
 
     @Test
     void testParseDecimalWithIntegerFails() {
-        JSON5Parser parser = new JSON5Parser("testParseDecimalWithIntegerFails", "42");
+        final var source = new Source(info.getDisplayName(), "42");
+        JSON5Parser parser = new JSON5Parser(source);
         JSON5Decimal result = parser.parseDecimal();
         assertNull(result, "parseDecimal should return null for integer numbers");
     }
 
     @Test
     void testParseDecimalInfinity() {
-        JSON5Parser parser = new JSON5Parser("testParseDecimalInfinity", "Infinity");
+        final var source = new Source(info.getDisplayName(), "Infinity");
+        JSON5Parser parser = new JSON5Parser(source);
         JSON5Decimal result = parser.parseDecimal();
         assertNotNull(result);
         assertTrue(Double.isInfinite(result.value));
@@ -312,7 +333,8 @@ class JSON5ParserTest {
 
     @Test
     void testParseDecimalNaN() {
-        JSON5Parser parser = new JSON5Parser("testParseDecimalNaN", "NaN");
+        final var source = new Source(info.getDisplayName(), "NaN");
+        JSON5Parser parser = new JSON5Parser(source);
         JSON5Decimal result = parser.parseDecimal();
         assertNotNull(result);
         assertTrue(Double.isNaN(result.value));
@@ -323,13 +345,13 @@ class JSON5ParserTest {
     @Test
     void testParseObjectWithSingleLineComment() {
         String json = """
-            {
-                // This is a comment
-                name: "John",
-                age: 30
-            }
-            """;
-        JSON5Object result = JSON5.parse("testParseObjectWithSingleLineComment", json);
+                {
+                    // This is a comment
+                    name: "John",
+                    age: 30
+                }
+                """;
+        JSON5Object result = parse(json);
         assertEquals(2, result.size());
         assertEquals("John", result.get("name").stringValue());
         assertEquals(30L, result.get("age").longValue());
@@ -338,14 +360,14 @@ class JSON5ParserTest {
     @Test
     void testParseObjectWithBlockComment() {
         String json = """
-            {
-                /* This is a
-                   block comment */
-                name: "John",
-                age: 30
-            }
-            """;
-        JSON5Object result = JSON5.parse("testParseObjectWithBlockComment", json);
+                {
+                    /* This is a
+                       block comment */
+                    name: "John",
+                    age: 30
+                }
+                """;
+        JSON5Object result = parse(json);
         assertEquals(2, result.size());
         assertEquals("John", result.get("name").stringValue());
         assertEquals(30L, result.get("age").longValue());
@@ -354,12 +376,12 @@ class JSON5ParserTest {
     @Test
     void testParseObjectWithInlineComment() {
         String json = """
-            {
-                name: "John", // inline comment
-                age: 30 /* another comment */
-            }
-            """;
-        JSON5Object result = JSON5.parse("testParseObjectWithInlineComment", json);
+                {
+                    name: "John", // inline comment
+                    age: 30 /* another comment */
+                }
+                """;
+        JSON5Object result = parse(json);
         assertEquals(2, result.size());
         assertEquals("John", result.get("name").stringValue());
         assertEquals(30L, result.get("age").longValue());
@@ -368,13 +390,13 @@ class JSON5ParserTest {
     @Test
     void testParseArrayWithComments() {
         String json = """
-            [
-                1, // first element
-                2, /* second element */
-                3  // third element
-            ]
-            """;
-        JSON5Array result = JSON5.parse("testParseArrayWithComments", json);
+                [
+                    1, // first element
+                    2, /* second element */
+                    3  // third element
+                ]
+                """;
+        JSON5Array result = parse(json);
         assertEquals(3, result.size());
         assertEquals(1L, result.get(0).longValue());
         assertEquals(2L, result.get(1).longValue());
@@ -384,18 +406,18 @@ class JSON5ParserTest {
     @Test
     void testParseNestedStructureWithComments() {
         String json = """
-            {
-                // User data
-                user: {
-                    name: "Alice", // user name
-                    /* age field */
-                    age: 25
-                },
-                // Active status
-                active: true
-            }
-            """;
-        JSON5Object result = JSON5.parse("testParseNestedStructureWithComments", json);
+                {
+                    // User data
+                    user: {
+                        name: "Alice", // user name
+                        /* age field */
+                        age: 25
+                    },
+                    // Active status
+                    active: true
+                }
+                """;
+        JSON5Object result = parse(json);
         assertEquals(2, result.size());
 
         JSON5Object user = (JSON5Object) result.get("user");
@@ -408,12 +430,12 @@ class JSON5ParserTest {
     @Test
     void testParseCommentBeforeValue() {
         String json = """
-            // Comment before object
-            {
-                name: "test"
-            }
-            """;
-        JSON5Object result = JSON5.parse("testParseCommentBeforeValue", json);
+                // Comment before object
+                {
+                    name: "test"
+                }
+                """;
+        JSON5Object result = parse(json);
         assertEquals(1, result.size());
         assertEquals("test", result.get("name").stringValue());
     }
@@ -421,12 +443,12 @@ class JSON5ParserTest {
     @Test
     void testParseCommentAfterValue() {
         String json = """
-            {
-                name: "test"
-            }
-            // Comment after object
-            """;
-        JSON5Object result = JSON5.parse("testParseCommentAfterValue", json);
+                {
+                    name: "test"
+                }
+                // Comment after object
+                """;
+        JSON5Object result = parse(json);
         assertEquals(1, result.size());
         assertEquals("test", result.get("name").stringValue());
     }
@@ -434,14 +456,14 @@ class JSON5ParserTest {
     @Test
     void testParseMultipleConsecutiveComments() {
         String json = """
-            {
-                // Comment 1
-                // Comment 2
-                /* Block comment */
-                name: "test"
-            }
-            """;
-        JSON5Object result = JSON5.parse("testParseMultipleConsecutiveComments", json);
+                {
+                    // Comment 1
+                    // Comment 2
+                    /* Block comment */
+                    name: "test"
+                }
+                """;
+        JSON5Object result = parse(json);
         assertEquals(1, result.size());
         assertEquals("test", result.get("name").stringValue());
     }
@@ -451,21 +473,21 @@ class JSON5ParserTest {
     @Test
     void testParsePackageJsonLike() {
         String json = """
-            {
-                name: "my-package",
-                version: "1.0.0",
-                dependencies: {
-                    express: "^4.17.1",
-                    lodash: "~4.17.20"
-                },
-                scripts: {
-                    start: "node index.js",
-                    test: "jest"
+                {
+                    name: "my-package",
+                    version: "1.0.0",
+                    dependencies: {
+                        express: "^4.17.1",
+                        lodash: "~4.17.20"
+                    },
+                    scripts: {
+                        start: "node index.js",
+                        test: "jest"
+                    }
                 }
-            }
-            """;
+                """;
 
-        JSON5Object pkg = JSON5.parse("testParsePackageJsonLike", json);
+        JSON5Object pkg = parse(json);
 
         assertEquals("my-package", pkg.get("name").stringValue());
         assertEquals("1.0.0", pkg.get("version").stringValue());

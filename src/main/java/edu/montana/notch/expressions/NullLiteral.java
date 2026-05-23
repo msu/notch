@@ -1,11 +1,11 @@
 package edu.montana.notch.expressions;
 
-import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.runtime.NotchRuntime;
 
 public class NullLiteral extends NotchExpression {
-    public NullLiteral(String fileId, Token token) {
-        super(fileId, token.start, token.end);
+    public NullLiteral(Token token) {
+        super(token.span);
     }
 
     @Override

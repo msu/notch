@@ -13,8 +13,8 @@ public abstract class Coercion {
     }
 
     private static void registerDefaultCoercions() {
-        COERCIONS.add( new BoxedToPrimitive());
-        COERCIONS.add( new BigDecimalToInt());
+        COERCIONS.add(new BoxedToPrimitive());
+        COERCIONS.add(new BigDecimalToInt());
     }
 
     public static Coercion resolve(Class<?> from, Class<?> to) {

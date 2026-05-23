@@ -1,8 +1,8 @@
 package edu.montana.notch.statements;
 
+import edu.montana.notch.chisel.Span;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.chisel.Location;
 
 import java.util.Objects;
 
@@ -10,8 +10,8 @@ public class NotchPrint extends NotchStatement {
 
     NotchExpression expr;
 
-    public NotchPrint(Location start, NotchExpression expr, Location end) {
-        super(expr.fileId, start, end);
+    public NotchPrint(Span span, NotchExpression expr) {
+        super(span);
         this.expr = Objects.requireNonNull(expr);
     }
 

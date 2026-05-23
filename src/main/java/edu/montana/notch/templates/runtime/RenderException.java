@@ -1,109 +1,64 @@
 package edu.montana.notch.templates.runtime;
 
-import edu.montana.notch.runtime.NotchRuntimeException;
-import edu.montana.notch.runtime.SourceProvider;
-import edu.montana.notch.util.Text;
-import edu.montana.notch.chisel.Location;
 import edu.montana.notch.chisel.ParseException;
-import edu.montana.notch.chisel.Span;
-import edu.montana.notch.chisel.Spanned;
+import edu.montana.notch.chisel.TokenizeException;
+import edu.montana.notch.runtime.NotchRuntimeException;
+import edu.montana.notch.util.BetterList;
 
-import static edu.montana.notch.chisel.Span.mkSpan;
+import java.util.List;
 
-public class RenderException extends RuntimeException implements Spanned {
-    public final Span span;
+public class RenderException extends RuntimeException {
+    private final BetterList<Exception> children;
 
-    public RenderException(Span span, String message, Throwable t) {
-        super(message, t);
-        this.span = span;
-    }
-
-    public RenderException(Span span, Throwable throwable) {
-        super(throwable);
-        this.span = span;
-    }
-
-    public RenderException(Span span, String message) {
+    public RenderException(String message) {
         super(message);
-        this.span = span;
+        children = new BetterList<>();
     }
 
-    public RenderException(Location loc, String message) {
-        this(mkSpan(loc), message);
+    public RenderException(Exception e) {
+        children = new BetterList<>();
+        children.add(e);
     }
 
-    public RenderException(Location loc, String message, Throwable cause) {
-        this(mkSpan(loc), message, cause);
+    public RenderException(BetterList<Exception> errors) {
+        this.children = errors;
     }
 
-    public RenderException(Location start, Location end, String message) {
-        this(mkSpan(start, end), message);
-    }
+    public String render() {
+        var msg = new StringBuilder();
+        for (final var ex : children) {
+            if (ex instanceof ParseException e) {
+                e.diagnostic.render(msg);
+            } else if (ex instanceof TokenizeException e) {
+                e.diagnostic.render(msg);
+            } else if (ex instanceof NotchRuntimeException e) {
+                e.diagnostic.render(msg);
+            } else {
+                msg.append("uncaught exception:\n");
+                msg.append("- %s".formatted(ex));
+                msg.append('\n');
+            }
+        }
 
-    public RenderException(Location start, Location end, Throwable cause) {
-        this(mkSpan(start, end), cause);
-    }
+        if (super.getMessage() != null) {
+            msg.append("\nInternal Error: ");
+            msg.append(getMessage());
+        }
 
-    public RenderException(Location start, Location end, String message, Throwable cause) {
-        this(mkSpan(start, end), message, cause);
+        return msg.toString();
     }
 
     @Override
-    public Span span() {
-        return span;
+    public String getMessage() {
+        return render();
     }
 
-    public String render(SourceProvider sp) {
-        var msg = new StringBuilder();
-        if (getCause() instanceof NotchRuntimeException e) {
-            e.diagnostic.render(sp, msg);
-
-            msg.append('\n');
-            msg.append("Trace\n");
-            for (var elt : e.stackTrace.elements) {
-                msg.append("- ")
-                        .append(elt.hint())
-                        .append(" (")
-                        .append(elt.file())
-                        .append(":")
-                        .append(elt.span().start().line)
-                        .append(")")
-                        .append('\n');
-            }
-        } else if (getCause() instanceof ParseException e) {
-            msg.append("Parse Exception!\n");
-            msg.append("at ").append(e.span()).append('\n');
-            msg.append(e.getMessage());
-        }
-        return msg.toString();
+    public List<Exception> getChildren() {
+        return children;
     }
 
     @Override
     public String toString() {
-        var msg = new StringBuilder();
-        if (getCause() instanceof NotchRuntimeException e) {
-            msg.append("\n").append(e.getMessage()).append('\n');
-            for (var elt : e.stackTrace.elements) {
-                msg.append("- ")
-                        .append(elt.file())
-                        .append(" ")
-                        .append(elt.span().start().line)
-                        .append(":")
-                        .append(elt.span().start().column)
-                        .append('\n');
-            }
-        }
-
-        Throwable t = this;
-        do {
-            if (t instanceof Spanned spanned) {
-                msg.append("  at %s | %s - %s\n".formatted(spanned.span().start().display(), Text.simpleClassName(t), t.getMessage()));
-            } else {
-                msg.append("      %s - %s\n".formatted(Text.simpleClassName(t), t.getMessage()));
-                break;
-            }
-            t = t.getCause();
-        } while (t != null);
-        return msg.toString();
+        return render();
     }
 }

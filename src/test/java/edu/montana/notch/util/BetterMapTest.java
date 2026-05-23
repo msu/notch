@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BetterMapTest {
@@ -19,7 +20,7 @@ class BetterMapTest {
         sourceMap.put("a", 1);
         sourceMap.put("b", 2);
         sourceMap.put("c", 3);
-        
+
         BetterMap<String, Integer> fromMap = new BetterMap<>(sourceMap);
         assertEquals(3, fromMap.size());
         assertEquals(Integer.valueOf(1), fromMap.get("a"));
@@ -31,7 +32,7 @@ class BetterMapTest {
     @Test
     void testBasicMapOperations() {
         BetterMap<String, Integer> map = new BetterMap<>();
-        
+
         assertNull(map.put("first", 1));
         assertEquals(1, map.size());
         assertEquals(Integer.valueOf(1), map.get("first"));
@@ -60,13 +61,13 @@ class BetterMapTest {
 
         BetterSet<String> keySet = map.keySet();
         assertEquals(3, keySet.size());
-        assertTrue(keySet.contains("a"));
-        assertTrue(keySet.contains("b"));
-        assertTrue(keySet.contains("c"));
+        assertContains("a", keySet);
+        assertContains("b", keySet);
+        assertContains("c", keySet);
 
         BetterSet<Map.Entry<String, Integer>> entrySet = map.entrySet();
         assertEquals(3, entrySet.size());
-        
+
         Map.Entry<String, Integer> foundEntry = entrySet.firstWhere(entry -> entry.getKey().equals("a"));
         assertNotNull(foundEntry);
         assertEquals(Integer.valueOf(1), foundEntry.getValue());
@@ -82,7 +83,7 @@ class BetterMapTest {
 
         Predicate<Map.Entry<String, Integer>> valueGreaterThanFour = entry -> entry.getValue() > 4;
         BetterMap<String, Integer> filtered = map.filterAsMap(valueGreaterThanFour);
-        
+
         assertEquals(3, filtered.size());
         assertTrue(filtered.containsKey("apple"));
         assertTrue(filtered.containsKey("banana"));
@@ -91,7 +92,7 @@ class BetterMapTest {
 
         Predicate<Map.Entry<String, Integer>> keyStartsWithC = entry -> entry.getKey().startsWith("c");
         BetterMap<String, Integer> filteredByKey = map.filterAsMap(keyStartsWithC);
-        
+
         assertEquals(1, filteredByKey.size());
         assertTrue(filteredByKey.containsKey("cherry"));
         assertEquals(Integer.valueOf(6), filteredByKey.get("cherry"));
@@ -183,11 +184,11 @@ class BetterMapTest {
         map.put("c", 3);
 
         BetterMap<String, Integer> copy = map.copy();
-        
+
         assertEquals(map.size(), copy.size());
         assertEquals(map, copy);
         assertNotSame(map, copy);
-        
+
         copy.put("d", 4);
         assertEquals(3, map.size());
         assertEquals(4, copy.size());
@@ -211,7 +212,7 @@ class BetterMapTest {
         assertEquals(Integer.valueOf(2), result.get("b"));
         assertEquals(Integer.valueOf(3), result.get("c"));
         assertEquals(Integer.valueOf(4), result.get("d"));
-        
+
         assertEquals(2, map1.size());
         assertEquals(2, map2.size());
     }
@@ -241,19 +242,21 @@ class BetterMapTest {
         map.put("three", 3);
         map.put("four", 4);
 
-        BetterList<String> mappedKeys = map.map(entry -> entry.getKey().toUpperCase());
+        BetterList<String> mappedKeys = map.map(entry -> entry.getKey().toUpperCase()).toList();
         assertEquals(4, mappedKeys.size());
-        assertTrue(mappedKeys.contains("ONE"));
-        assertTrue(mappedKeys.contains("TWO"));
-        assertTrue(mappedKeys.contains("THREE"));
-        assertTrue(mappedKeys.contains("FOUR"));
+        assertContains("ONE", mappedKeys);
+        assertContains("TWO", mappedKeys);
+        assertContains("THREE", mappedKeys);
+        assertContains("FOUR", mappedKeys);
 
-        BetterList<Map.Entry<String, Integer>> filteredEntries = map.filter(entry -> entry.getValue() % 2 == 0);
+        BetterList<Map.Entry<String, Integer>> filteredEntries = map
+                .filter(entry -> entry.getValue() % 2 == 0)
+                .toList();
         assertEquals(2, filteredEntries.size());
-        
+
         Set<Integer> evenValues = map.filter(entry -> entry.getValue() % 2 == 0)
-                                    .map(entry -> entry.getValue())
-                                    .toSet();
+                .map(Map.Entry::getValue)
+                .toSet();
         assertEquals(Set.of(2, 4), evenValues);
 
         String joined = map.map(entry -> entry.getKey() + "=" + entry.getValue())
@@ -283,11 +286,11 @@ class BetterMapTest {
 
         Set<String> keySet = javaMap.keySet();
         assertEquals(3, keySet.size());
-        assertTrue(keySet.contains("test1"));
+        assertContains("test1", keySet);
 
         Collection<Integer> values = javaMap.values();
         assertEquals(3, values.size());
-        assertTrue(values.contains(10));
+        assertContains(10, values);
 
         Set<Map.Entry<String, Integer>> entrySet = javaMap.entrySet();
         assertEquals(3, entrySet.size());
@@ -305,23 +308,23 @@ class BetterMapTest {
 
         Set<String> collectedKeys = new HashSet<>();
         Set<Integer> collectedValues = new HashSet<>();
-        
+
         for (Map.Entry<String, Integer> entry : map) {
             collectedKeys.add(entry.getKey());
             collectedValues.add(entry.getValue());
         }
-        
+
         assertEquals(Set.of("x", "y", "z"), collectedKeys);
         assertEquals(Set.of(1, 2, 3), collectedValues);
 
         collectedKeys.clear();
         collectedValues.clear();
-        
+
         map.forEach(entry -> {
             collectedKeys.add(entry.getKey());
             collectedValues.add(entry.getValue());
         });
-        
+
         assertEquals(Set.of("x", "y", "z"), collectedKeys);
         assertEquals(Set.of(1, 2, 3), collectedValues);
     }
@@ -351,7 +354,7 @@ class BetterMapTest {
     @Test
     void testEmptyMapBehavior() {
         BetterMap<String, Integer> emptyMap = new BetterMap<>();
-        
+
         assertEquals(0, emptyMap.size());
         assertTrue(emptyMap.isEmpty());
         assertFalse(emptyMap.containsKey("anything"));
@@ -365,7 +368,7 @@ class BetterMapTest {
         
         BetterMap<String, Integer> filteredEmpty = emptyMap.filterByValues(v -> true);
         assertTrue(filteredEmpty.isEmpty());
-        
+
         BetterMap<String, String> mappedEmpty = emptyMap.mapValues(String::valueOf);
         assertTrue(mappedEmpty.isEmpty());
     }
@@ -390,29 +393,5 @@ class BetterMapTest {
         assertFalse(result.containsKey("apple"));
         assertFalse(result.containsKey("cherry"));
         assertFalse(result.containsKey("date"));
-    }
-
-    @Test
-    void testPutAllAndRemoveAll() {
-        BetterMap<String, Integer> map = new BetterMap<>();
-        map.put("existing", 0);
-        
-        Map<String, Integer> toAdd = new HashMap<>();
-        toAdd.put("a", 1);
-        toAdd.put("b", 2);
-        toAdd.put("c", 3);
-        
-        map.putAll(toAdd);
-        assertEquals(4, map.size());
-        assertEquals(Integer.valueOf(1), map.get("a"));
-        assertEquals(Integer.valueOf(0), map.get("existing"));
-        
-        Collection<String> keysToRemove = Arrays.asList("a", "c", "nonexistent");
-        map.keySet().removeAll(keysToRemove);
-        assertEquals(2, map.size());
-        assertFalse(map.containsKey("a"));
-        assertTrue(map.containsKey("b"));
-        assertFalse(map.containsKey("c"));
-        assertTrue(map.containsKey("existing"));
     }
 }

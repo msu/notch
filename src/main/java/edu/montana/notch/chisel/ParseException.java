@@ -1,7 +1,5 @@
 package edu.montana.notch.chisel;
 
-import edu.montana.notch.util.Text;
-
 public class ParseException extends RuntimeException {
     public final Diagnostic diagnostic;
 

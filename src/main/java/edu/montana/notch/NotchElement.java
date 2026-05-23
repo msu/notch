@@ -1,20 +1,20 @@
 package edu.montana.notch;
 
-import edu.montana.notch.expressions.NotchErrorExpression;
-import edu.montana.notch.chisel.Location;
 import edu.montana.notch.chisel.Span;
+import edu.montana.notch.chisel.Spanned;
+import edu.montana.notch.expressions.NotchErrorExpression;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
-public class NotchElement {
-    public final String fileId;
-    public final Location start, end;
+public class NotchElement implements Spanned {
+    public final Span span;
     private final List<NotchElement> children = new LinkedList<>();
 
-    public NotchElement(String fileId, Location start, Location end) {
-        this.fileId = Objects.requireNonNull(fileId, "file id was null");
-        this.start = Objects.requireNonNull(start, "start location must not be null");
-        this.end = Objects.requireNonNull(end, "end location must not be null");
+    public NotchElement(Span span) {
+        this.span = span;
     }
 
     protected <T extends NotchElement> T addChild(T child) {
@@ -23,7 +23,7 @@ public class NotchElement {
     }
 
     protected <V extends NotchElement, T extends Collection<V>> T addChildren(T children) {
-        if(children != null) {
+        if (children != null) {
             for (V child : children) {
                 addChild(child);
             }
@@ -44,7 +44,8 @@ public class NotchElement {
         }
     }
 
+    @Override
     public Span span() {
-        return new Span(start, end);
+        return span;
     }
 }

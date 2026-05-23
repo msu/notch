@@ -1,7 +1,7 @@
 package edu.montana.notch.expressions;
 
-import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.runtime.NotchRuntime;
 
 public class NotchLogicalExpression extends NotchExpression {
     private final Token op;
@@ -9,7 +9,7 @@ public class NotchLogicalExpression extends NotchExpression {
     private NotchExpression rhs;
 
     public NotchLogicalExpression(Token op, NotchExpression lhs, NotchExpression rhs) {
-        super(lhs.fileId, lhs.start, rhs.end);
+        super(lhs.span.through(rhs));
         this.op = op;
         this.lhs = addChild(lhs);
         this.rhs = addChild(rhs);
@@ -18,14 +18,14 @@ public class NotchLogicalExpression extends NotchExpression {
     @Override
     public Object evaluate(NotchRuntime runtime) {
         Object lhsValue = runtime.evaluate(lhs);
-        if(op.str().equals("and") || op.str().equals("&&")) {
-            if(!runtime.isTruthy(lhsValue)) {
+        if (op.str().equals("and") || op.str().equals("&&")) {
+            if (!runtime.isTruthy(lhsValue)) {
                 return false;
             }
             Object rhsValue = runtime.evaluate(rhs);
             return runtime.isTruthy(rhsValue);
         } else {
-            if(runtime.isTruthy(lhsValue)) {
+            if (runtime.isTruthy(lhsValue)) {
                 return true;
             }
             Object rhsValue = runtime.evaluate(rhs);
