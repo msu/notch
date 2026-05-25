@@ -17,7 +17,7 @@ Both implement the `NotchTemplateLoader` interface so you can also write your ow
 
 ## Building a registry
 
-```plaintext
+```notch
 loader = new NotchTemplateFilesystemLoader("/path/to/templates")
 registry = new NotchTemplateRegistry(loader)
 BasicNotchTemplateCommands.registerAll(registry)
@@ -29,13 +29,13 @@ BasicNotchTemplateCommands.registerAll(registry)
 
 Suppose `/path/to/templates/greeting.nt` contains:
 
-```plaintext
+```notch
 Hello, ${ name }!
 ```
 
 Then:
 
-```plaintext
+```notch
 output = registry.render("greeting", {name = "world"})
 print(output)
 ```

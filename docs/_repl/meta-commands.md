@@ -53,7 +53,7 @@ The REPL colorizes input in real time. Tokens map to colors via the terminal's c
 
 Parse and runtime errors are rendered with a file location and a caret pointing at the failing token:
 
-```plaintext
+```notch
 notch > 1 +
 [notch-repl:1:5]
   1 + 

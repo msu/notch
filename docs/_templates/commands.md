@@ -10,7 +10,7 @@ Calling `BasicNotchTemplateCommands.registerAll(registry)` on a fresh registry a
 
 - **`if <expr>` / `elseif <expr>` / `else` / `end`** - conditional blocks. The contents between `if` (or a passing `elseif` branch) and the matching `end` render only when the predicate is true.
 
-```plaintext
+```notch
 # if user.admin
   Admin panel
 # else
@@ -20,7 +20,7 @@ Calling `BasicNotchTemplateCommands.registerAll(registry)` on a fresh registry a
 
 - **`for <name> in <expr>` / `end`** - iterate over an iterable. The current item is bound to `<name>` inside the block.
 
-```plaintext
+```notch
 # for item in items
   - ${ item }
 # end

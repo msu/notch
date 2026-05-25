@@ -8,19 +8,19 @@ A closure is an anonymous function value. The syntax uses a backslash, an option
 
 ## Zero arguments
 
-```plaintext
+```notch
 \-> 1
 ```
 
 ## One argument
 
-```plaintext
+```notch
 \ s -> s.length
 ```
 
 ## Multiple arguments
 
-```plaintext
+```notch
 \ x, y -> x == y
 ```
 
@@ -28,7 +28,7 @@ A closure is an anonymous function value. The syntax uses a backslash, an option
 
 The arrow can also be followed by a brace-delimited statement block instead of a single expression:
 
-```plaintext
+```notch
 \ x -> {
   y = x + 1
   print(y)
@@ -42,7 +42,7 @@ The block body runs its statements top-to-bottom. The value of the closure is th
 
 Closures can be passed to methods that expect functions:
 
-```plaintext
+```notch
 ['a', 'ab', 'abc'].map(\ s -> s.length)
 ```
 
@@ -52,7 +52,7 @@ Returns `[1, 2, 3]`.
 
 Map values can be closures:
 
-```plaintext
+```notch
 x = {foo = \-> "bar"}
 print(x.foo())
 print(x[:foo]())
@@ -64,7 +64,7 @@ Both print `bar`.
 
 Notch closures convert to JVM functional interfaces:
 
-```plaintext
+```notch
 (\ x, y -> x == y).toBiFunction()
 (\ x, y -> x == y).toBiPredicate()
 ```

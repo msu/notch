@@ -28,7 +28,7 @@ Notch has two operators that are not built from a single token.
 
 ### Fallback
 
-```plaintext
+```notch
 expr ?: expr
 ```
 
@@ -36,7 +36,7 @@ The fallback operator evaluates the left-hand side; if the result is null or und
 
 ### Conditional
 
-```plaintext
+```notch
 expr if expr [else expr]
 ```
 
@@ -44,14 +44,14 @@ The conditional expression evaluates the second expression as a predicate. If it
 
 ### Emptiness
 
-```plaintext
+```notch
 expr is empty
 expr is not empty
 ```
 
 Tests whether a value is empty. Empty means: an empty string, an empty list, an empty map, or `null`.
 
-```plaintext
+```notch
 "" is empty           # true
 [1] is not empty      # true
 null is empty         # true

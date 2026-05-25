@@ -16,7 +16,7 @@ A query is a chain of accessors starting from the root:
 
 Combine accessors to drill in:
 
-```plaintext
+```notch
 .user.address[0].zip
 ```
 
@@ -34,7 +34,7 @@ Each accessor compiles to one of these `QueryExpression` nodes:
 
 ## Running a query
 
-```plaintext
+```notch
 query = QueryParser.parseExpression(".user.name")
 result = QueryEngine.eval(query, parsedValue)
 ```

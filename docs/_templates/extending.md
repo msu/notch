@@ -17,7 +17,7 @@ The canonical reference is `BasicNotchTemplateCommands.java`, which registers al
 
 ## Registration
 
-```plaintext
+```notch
 registry = new NotchTemplateRegistry(loader)
 BasicNotchTemplateCommands.registerAll(registry)
 registry.addCommand("upper", new MyUpperCommand())
@@ -25,7 +25,7 @@ registry.addCommand("upper", new MyUpperCommand())
 
 Templates can then use the new command:
 
-```plaintext
+```notch
 # upper
 hello
 # end

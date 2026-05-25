@@ -232,28 +232,19 @@ section {
     border-bottom: 1px solid var(--border-muted);
   }
 
-  .demo-body {
+  // Hero demo: re-skin Jekyll's .highlight wrapper to fit the framed pane.
+  // (Color theme comes from _syntax.scss, which is now dark site-wide.)
+  .demo-code .highlight {
     margin: 0;
-    padding: 1rem 1.1rem;
     flex: 1 1 auto;
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    line-height: 1.55;
-    background: #1e2228;
-    color: #cecdc3;
-    overflow-x: auto;
-  }
+    border-radius: 0;
 
-  // Flexoki-dark syntax colors, scoped so they don't override the light
-  // syntax theme used in the docs pages.
-  .demo-code .demo-body {
-    .k  { color: #8b7ec8; font-weight: bold; }
-    .nn { color: #d0a215; }
-    .nc { color: #d0a215; font-weight: bold; }
-    .nf { color: #4385be; }
-    .s1 { color: #879a39; }
-    .o  { color: #3aa99f; }
-    .c1 { color: #878580; font-style: italic; }
+    pre {
+      padding: 1rem 1.1rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
   }
 
   @media (max-width: 700px) {
