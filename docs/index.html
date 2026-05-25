@@ -4,52 +4,67 @@ title: Notch
 ---
 
 <section class="hero">
+  <h1 class="visually-hidden">Notch</h1>
   <div class="hero-banner">
-    <svg class="hero-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <svg class="hero-glyph" viewBox="0 0 24 24" role="img" aria-label="Notch">
       <path d="M3 3 H9 L12 9 L15 3 H21 V21 H3 Z" fill="#BC5215"/>
+      <text class="hero-wordmark" x="3.25" y="20.25" text-anchor="start">Notch</text>
     </svg>
-    <div class="hero-headlines">
-      <h1>Notch</h1>
-      <p class="tagline">{{ site.tagline }}</p>
-    </div>
+    <p class="tagline">A scripting language for Java & Minecraft, from <a href="https://www.cs.montana.edu">Montana State University</a>
+    </p>
   </div>
-  <p>
-    Notch is a powerful and customizable scripting and programming language. It was built for use with the Sunny templating engine but is not at all coupled with it.
-  </p>
-  <p>
-    It is intended to be used with the Java ecosystem and has sane integrations with JVM types.
-  </p>
 </section>
 
-<section class="design-goals">
-  <h2>Design goals</h2>
-  <ul>
-    <li>seamless JVM-type integration</li>
-    <li>simplicity for ease of reading and writing</li>
-    <li>sane <code>null</code> propagation and defined semantics for weird type interactions</li>
-    <li>outstanding developer experience</li>
-    <li>syntax extensibility</li>
-  </ul>
+<section class="code-demo">
+  <div class="demo-pane demo-code">
+    <div class="demo-title">example.notch</div>
+<pre class="demo-body"><code><span class="k">import</span> <span class="nn">java.time.LocalDate</span>
+
+today <span class="o">=</span> <span class="nc">LocalDate</span>.<span class="nf">now</span>()
+
+<span class="k">for</span> name <span class="k">in</span> [<span class="s1">'Alice'</span>, <span class="s1">'Bob'</span>, <span class="s1">'Carol'</span>]
+  <span class="nf">print</span>(<span class="s1">'Hello, '</span> <span class="o">+</span> name <span class="o">+</span> <span class="s1">'! Today is '</span> <span class="o">+</span> today)
+<span class="k">end</span></code></pre>
+  </div>
 </section>
 
-<section class="install">
-  <h2>Install</h2>
-  <p>Notch is a Maven project. Clone the repository and build with Maven:</p>
-  <pre><code>git clone https://github.com/msu/notch.git
-cd notch
-mvn package</code></pre>
-  <p>Then run the REPL:</p>
-  <pre><code>java -jar target/notch-1.0-SNAPSHOT.jar</code></pre>
-</section>
-
-<section class="reference-links">
+<section class="docs-grid">
   <h2>Documentation</h2>
-  <ul>
-    <li><a href="{{ '/syntax/overview/' | relative_url }}">Syntax</a> - primary expressions, operators, statements, closures.</li>
-    <li><a href="{{ '/jvm/overview/' | relative_url }}">JVM integration</a> - calling Java methods, type coercions.</li>
-    <li><a href="{{ '/repl/getting-started/' | relative_url }}">REPL</a> - interactive shell, history, meta-commands.</li>
-    <li><a href="{{ '/chisel/overview/' | relative_url }}">Chisel</a> - the language-agnostic foundation Notch is built on.</li>
-    <li><a href="{{ '/templates/overview/' | relative_url }}">Templates</a> - the built-in template engine for rendering text with embedded Notch expressions.</li>
-    <li><a href="{{ '/json5/overview/' | relative_url }}">JSON5</a> - JSON5 parser and a small query language.</li>
-  </ul>
+  <div class="docs-cards">
+    <a class="docs-card" href="{{ '/syntax/overview/' | relative_url }}">
+      <div class="docs-card-icon" aria-hidden="true">📝</div>
+      <h3>Syntax</h3>
+      <p>Primary expressions, operators, statements, closures.</p>
+    </a>
+    <a class="docs-card" href="{{ '/jvm/overview/' | relative_url }}">
+      <div class="docs-card-icon" aria-hidden="true">☕</div>
+      <h3>JVM Integration</h3>
+      <p>Calling Java methods, type coercions.</p>
+    </a>
+    <a class="docs-card" href="{{ '/repl/getting-started/' | relative_url }}">
+      <div class="docs-card-icon" aria-hidden="true">💻</div>
+      <h3>REPL</h3>
+      <p>Interactive shell, history, meta-commands.</p>
+    </a>
+    <a class="docs-card" href="{{ '/chisel/overview/' | relative_url }}">
+      <div class="docs-card-icon" aria-hidden="true">🪨</div>
+      <h3>Chisel</h3>
+      <p>The language-agnostic foundation Notch is built on.</p>
+    </a>
+    <a class="docs-card" href="{{ '/templates/overview/' | relative_url }}">
+      <div class="docs-card-icon" aria-hidden="true">📄</div>
+      <h3>Templates</h3>
+      <p>Built-in template engine for rendering text with embedded Notch expressions.</p>
+    </a>
+    <a class="docs-card" href="{{ '/json5/overview/' | relative_url }}">
+      <div class="docs-card-icon" aria-hidden="true">🗂️</div>
+      <h3>JSON5</h3>
+      <p>JSON5 parser and a small query language.</p>
+    </a>
+    <a class="docs-card" href="{{ '/sunny/overview/' | relative_url }}">
+      <div class="docs-card-icon" aria-hidden="true">☀️</div>
+      <h3>Sunny Templates</h3>
+      <p>The Sunny templating engine that Notch was originally built for.</p>
+    </a>
+  </div>
 </section>

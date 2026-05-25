@@ -10,10 +10,12 @@
   <body class="{% if page.layout == 'docs' or page.collection %}docs-page{% else %}home-layout{% endif %}">
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
+    {% include docs-toolbar.html %}
     {% include navigation.html %}
     <main id="main-content" tabindex="-1">
       {{ content }}
     </main>
     {% include footer.html %}
+    <script type="module" src="{{ '/assets/js/docs.js' | relative_url }}"></script>
   </body>
 </html>

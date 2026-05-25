@@ -36,7 +36,7 @@
   }
 
   html.sidebar-collapsed .site-footer {
-    margin-left: 0;
+    margin-left: var(--nav-rail-width);
   }
 }
 
@@ -66,7 +66,7 @@
   }
 
   html.sidebar-collapsed .footer-attribution {
-    left: 50vw;
+    left: calc(50vw - var(--nav-rail-width));
   }
 }
 

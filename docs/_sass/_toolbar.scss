@@ -4,18 +4,16 @@
   z-index: 50;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem;
+  gap: 0.5rem;
+  padding: 0.5rem var(--body-px);
   margin-left: calc(-1 * var(--body-px));
   margin-right: calc(-1 * var(--body-px));
   background: var(--toolbar-bg);
   border-bottom: 1px solid var(--toolbar-border);
-  transition: opacity 0.2s ease;
 
-  @media (max-width: 768px) {
-    top: var(--mobile-header-height);
-  }
 
+  // Docs pages zero out body padding at desktop, so the toolbar no longer
+  // needs negative margins to reach the viewport edge.
   @media (min-width: 769px) {
     body.docs-page & {
       margin-left: 0;
@@ -24,27 +22,57 @@
   }
 }
 
-html.sidebar-collapsed .docs-toolbar {
-  opacity: 0;
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
 
-  > * {
-    pointer-events: none;
+// Hamburger lives in the toolbar but is only visible on mobile.
+.toolbar-hamburger {
+  display: none;
+  width: 36px;
+  height: 36px;
+  gap: 5px;
+
+  span {
+    width: 22px;
+    height: 2px;
   }
 }
 
-html.sidebar-collapsed .docs-toolbar:hover {
-  opacity: 1;
+// Inline nav lists embedded in the toolbar (project links on the left,
+// external links on the right).
+.toolbar-nav {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
 
-  > * {
-    pointer-events: auto;
+  a {
+    display: inline-block;
+    padding: 0.4rem 0.65rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius);
+    transition: color 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      color: var(--text);
+      background: var(--primary-hover);
+    }
+  }
+
+  @media (max-width: 768px) {
+    display: none;
   }
 }
 
 .toolbar-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
   height: 36px;
   background: transparent;
   border: none;
@@ -52,7 +80,7 @@ html.sidebar-collapsed .docs-toolbar:hover {
   color: var(--text);
   cursor: pointer;
   position: relative;
-  padding: 0;
+  padding: 0 0.5rem;
   font-size: 1rem;
   transition: background 0.15s ease;
 
@@ -61,46 +89,80 @@ html.sidebar-collapsed .docs-toolbar:hover {
   }
 }
 
-.sidebar-toggle {
-  @media (max-width: 768px) {
-    display: none;
-  }
-}
-
-// Centered "Notch" home link in the docs toolbar.
-//
-// Position: fixed relative to the VIEWPORT (not absolute relative to the
-// toolbar). This keeps Notch at exactly viewport-center regardless of
-// sidebar state. If it were absolute-positioned inside the toolbar, the
-// toolbar would widen when main loses its left margin on sidebar-collapse
-// and Notch would shift horizontally along with it -- the user would see
-// the Notch text slide during the transition. Anchoring to the viewport
-// keeps it visually stable.
-//
-// Vertical: aligned within the toolbar band by matching top:0 + height to
-// the toolbar's effective height (toolbar-btn 36px + 0.5rem padding * 2).
 .toolbar-home {
-  position: fixed;
-  top: 0;
-  left: 50vw;
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 0.45rem;
   height: var(--toolbar-height);
-  padding: 0 0.6rem;
+  padding: 0 0.4rem;
   font-weight: 600;
   font-size: var(--font-size-base);
   color: var(--text);
   text-decoration: none;
   border-radius: var(--radius);
-  // Above the toolbar (z-index 50) so click target reliably hits the link
-  // and not a sibling button at the same coordinates.
-  z-index: 60;
   transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
     background: var(--primary-hover);
+  }
+
+  // On mobile the hamburger sits on the left and search on the right; the
+  // logo absolute-positions to viewport center so it stays balanced
+  // between them. Also scaled up so the mark reads as a header.
+  @media (max-width: 768px) {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    height: auto;
+    padding: 0.25rem 0.5rem;
+    gap: 0.55rem;
+    font-size: 1.25rem;
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      flex: 0 0 32px;
+    }
+  }
+}
+
+// Search button: icon + label + OS-specific keyboard hint. Hidden bits
+// collapse to icon-only on narrow viewports.
+.search-btn {
+  gap: 0.5rem;
+  min-width: 220px;
+  border: 1px solid var(--border-muted);
+  background: var(--card-bg);
+  color: var(--text-muted);
+  justify-content: flex-start;
+  padding-right: 0.4rem;
+
+  .search-btn-label {
+    flex: 1 1 auto;
+    text-align: left;
+    font-size: var(--font-size-sm);
+  }
+
+  .search-btn-shortcut {
+    padding: 0.1rem 0.4rem;
+    font-size: 0.7rem;
+    background: var(--kbd-bg);
+    color: var(--kbd-text);
+    border-radius: var(--radius);
+    font-family: var(--font-sans);
+  }
+
+  @media (max-width: 600px) {
+    min-width: 0;
+    border: none;
+    background: transparent;
+    padding: 0 0.5rem;
+
+    .search-btn-label,
+    .search-btn-shortcut {
+      display: none;
+    }
   }
 }
 
@@ -129,11 +191,7 @@ html.sidebar-collapsed .docs-toolbar:hover {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: var(--toolbar-height);
-
-  @media (max-width: 768px) {
-    padding-top: 112px;
-  }
+  padding-top: calc(var(--toolbar-height) + 1rem);
 }
 
 .search-container {

@@ -1,13 +1,7 @@
 <div class="docs-toolbar" role="toolbar" aria-label="Documentation tools">
-  <button class="toolbar-btn sidebar-toggle" type="button" aria-label="Toggle sidebar" aria-expanded="true">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false">
-      <path d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/>
-    </svg>
-  </button>
-  <button class="toolbar-btn search-btn" type="button" aria-label="Search documentation">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false">
-      <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/>
-    </svg>
+  <button class="hamburger toolbar-hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="main-nav">
+    <span></span>
+    <span></span>
   </button>
   <a href="{{ '/' | relative_url }}" class="toolbar-home" aria-label="Notch home">
     <svg class="brand-mark" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -15,6 +9,22 @@
     </svg>
     <span class="brand-wordmark">Notch</span>
   </a>
+  <ul class="toolbar-nav">
+    <li><a href="{{ '/syntax/overview/' | relative_url }}">Docs</a></li>
+    <li><a href="{{ '/sunny/overview/' | relative_url }}">Sunny</a></li>
+  </ul>
+  <div class="toolbar-spacer"></div>
+  <ul class="toolbar-nav toolbar-nav-end">
+    <li><a href="https://github.com/msu/notch" rel="noopener">GitHub</a></li>
+    <li><a href="https://www.cs.montana.edu" rel="noopener">MSU CS</a></li>
+  </ul>
+  <button class="toolbar-btn search-btn" type="button" aria-label="Search documentation">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false">
+      <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/>
+    </svg>
+    <span class="search-btn-label">Search</span>
+    <kbd class="search-btn-shortcut" aria-hidden="true"><span class="kbd-mod">Ctrl</span>K</kbd>
+  </button>
 </div>
 
 <div class="search-overlay" hidden role="dialog" aria-modal="true" aria-label="Search documentation">

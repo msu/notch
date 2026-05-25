@@ -5,6 +5,12 @@ export function init() {
   const overlay = document.querySelector('.search-overlay');
   if (!searchBtn || !overlay) return;
 
+  // Render the platform-appropriate modifier key in the toolbar shortcut
+  // hint. Apple platforms use Cmd; everything else uses Ctrl.
+  const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+  const mod = searchBtn.querySelector('.kbd-mod');
+  if (mod) mod.textContent = isMac ? '⌘' : 'Ctrl';
+
   const input = overlay.querySelector('.search-input');
   const resultsList = overlay.querySelector('.search-results');
   const emptyState = overlay.querySelector('.search-empty');
