@@ -1,93 +1,53 @@
-/* Notch docs stylesheet. Assembled from formerly-SCSS partials into a single plain CSS file using native CSS nesting. Strict-nesting compatible (Safari 16.5+, Chrome 112+, Firefox 117+). Do not edit by hand without preserving source order; cascade depends on it. Source order: variables, reset, typography, elements, syntax, utilities, navigation, responsive, docs, toolbar, footer, main. */
-
-/* ===== _variables.scss ===== */
-/* Light theme only. The variable architecture is preserved so a future theme */
-/* can be added as a single new `html[data-theme="x"]` block plus re-enabling */
-/* a toggle, with no Sass refactor across other partials. */
+/* Hand-assembled single CSS file (no Sass). Source order matters for cascade. */
+/* Strict-nesting compatible: Safari 16.5+, Chrome 112+, Firefox 117+. Bare-type */
+/* nested selectors MUST be prefixed with & or they silently fail on Safari 16.5. */
 
 :root {
   --nav-width: clamp(200px, 20vw, 250px);
-
-  /* Colors - Light theme */
   --bg: #f5f5f5;
   --text: #2d3748;
   --text-muted: #718096;
   --border-muted: #e2e8f0;
-
   --primary: #e2e8f0;
   --primary-hover: #cbd5e0;
   --primary-inverse: #2d3748;
   --primary-underline: rgba(45, 55, 72, 0.3);
-
   --card-bg: #ffffff;
-
-  /* Form elements */
   --input-bg: #ffffff;
   --input-border: #e2e8f0;
   --input-text: #2d3748;
   --input-placeholder: #a0aec0;
   --input-focus: #4a5568;
-
-  /* Typography */
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --font-size: 100%;
   --font-weight: 400;
   --line-height: 1.5;
-
-  /* Fluid typography */
   --font-size-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.875rem);
   --font-size-base: clamp(0.95rem, 0.9rem + 0.25vw, 1.1rem);
-
-  /* Spacing */
   --spacing: 1rem;
-  --block-spacing-y: 1rem;
-  --block-spacing-x: 1rem;
-
-  /* Border */
   --radius: 0.25rem;
   --border-width: 1px;
-
-  /* Code */
   --code-bg: #edf2f7;
   --code-text: #BC5215;
-
-  /* Mark */
   --mark-bg: #faf089;
   --mark-text: #2d3748;
-
-  /* Toolbar */
   --toolbar-bg: #edf2f7;
   --toolbar-border: #e2e8f0;
-
-  /* Table */
   --table-border: var(--border-muted);
-
-  /* Kbd */
   --kbd-bg: #e2e8f0;
   --kbd-text: #2d3748;
-
-  /* Accent (links, callout borders) - distinct from --code-text orange */
   --accent: #2c5282;
   --accent-hover: #1a365d;
   --accent-bg-soft: #ebf2fa;
-
-  /* Callout */
   --callout-border: var(--accent);
   --callout-bg: var(--accent-bg-soft);
-
-  /* Content reading column cap */
   --content-max-width: 72ch;
-
-  /* Layout heights */
-  --toolbar-height: 52px; /* docs toolbar sticky band (single band on mobile too) */
-
-  /* Animation timing */
-  --transition: 0.15s ease; /* fast hover transitions (links, buttons, inputs) */
-  --transition-state: 0.3s ease; /* layout state transitions (sidebar collapse, footer slide) */
+  --toolbar-height: 52px;
+  --transition: 0.15s ease;
+  --transition-state: 0.3s ease;
 }
 
-/* ===== _reset.scss ===== */
 *,
 *::before,
 *::after {
@@ -126,7 +86,6 @@ main {
   display: block;
 }
 
-/* ===== _typography.scss ===== */
 h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
   margin-bottom: var(--spacing);
@@ -168,7 +127,6 @@ strong {
   font-weight: 700;
 }
 
-/* ===== _elements.scss ===== */
 section {
   margin-bottom: 3rem;
 }
@@ -346,11 +304,9 @@ input {
   }
 }
 
-/* ===== _syntax.scss ===== */
-/* Flexoki-dark syntax highlighting for Rouge-generated `.highlight` markup. */
-/* The dark background mirrors the hero demo on the home page so docs code */
-/* blocks have the same contrast. */
-
+/* Token rules below are matched by spans emitted from _plugins/notch_lexer.rb. */
+/* Classes follow Rouge's standard naming (.c=comment, .k=keyword, .s=string, */
+/* .n*=name, .m*=number, .o=operator, .p=punctuation, .g*=generic, .err=error). */
 .highlight {
   background-color: #1e2228;
   border-radius: var(--radius);
@@ -374,26 +330,14 @@ input {
   & table td { padding: 5px; }
   & table pre { margin: 0; }
 
-  /* Flexoki-dark Rouge token colors. Required because _plugins/notch_lexer.rb */
-  /* now emits proper Rouge classes for ```notch fences. */
-
-  /* Comments */
   .c, .cd, .cm, .c1, .cs { color: #878580; font-style: italic; }
   .cp { color: #878580; }
-
-  /* Keywords */
   .k, .kc, .kd, .kn, .kp, .kr, .kv { color: #8b7ec8; font-weight: bold; }
   .kt { color: #d0a215; font-weight: bold; }
-
-  /* Strings */
   .s, .sb, .sc, .sd, .s2, .se, .sh, .si, .sx, .s1 { color: #879a39; }
   .sr { color: #3aa99f; }
   .ss { color: #da702c; }
-
-  /* Numbers */
   .m, .mb, .mf, .mh, .mi, .mo, .mx, .il { color: #da702c; }
-
-  /* Names */
   .na { color: #d0a215; }
   .nb { color: #4385be; }
   .nc { color: #d0a215; font-weight: bold; }
@@ -408,14 +352,8 @@ input {
   .nv, .vc, .vg, .vi { color: #ce5d97; }
   .bp { color: #4385be; }
   .n  { color: #cecdc3; }
-
-  /* Operators */
   .o, .ow { color: #3aa99f; }
-
-  /* Punctuation */
   .p { color: #cecdc3; }
-
-  /* Generic */
   .gd { color: #d14d41; background-color: rgba(209, 77, 65, 0.15); }
   .ge { font-style: italic; }
   .gh { color: #cecdc3; font-weight: bold; }
@@ -426,15 +364,10 @@ input {
   .gs { font-weight: bold; }
   .gt { color: #d14d41; }
   .gu { color: #3aa99f; font-weight: bold; }
-
-  /* Errors */
   .err { color: #d14d41; background-color: transparent; }
-
-  /* Whitespace */
   .w { color: #878580; }
 }
 
-/* ===== _utilities.scss ===== */
 .skip-link {
   position: absolute;
   top: -100%;
@@ -470,7 +403,6 @@ input:focus:not(:focus-visible) {
   outline: none;
 }
 
-/* ===== _navigation.scss ===== */
 #main-nav {
   position: fixed;
   top: var(--toolbar-height);
@@ -486,8 +418,6 @@ input:focus:not(:focus-visible) {
   transition: width var(--transition-state);
 }
 
-/* Sidebar collapse toggle: chevron arrow that rotates 180° when the */
-/* sidebar collapses into rail mode. */
 #main-nav .sidebar-toggle {
   align-self: flex-end;
   display: inline-flex;
@@ -527,17 +457,11 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   }
 }
 
-/* Each collection (Syntax / JVM / REPL / Chisel) is rendered as its own */
-/* `.docs-nav-section`. Sections stack vertically with a small gap so the */
-/* section boundaries are scannable but quiet. Only the section matching the */
-/* current page's collection gets `.current` (visually emphasized heading). */
 .docs-nav-section + .docs-nav-section {
   margin-top: 1.25rem;
 }
 
 #main-nav .name {
-  /* Small-caps muted heading, parallel to the right TOC's */
-  /* `.docs-toc-heading` ("ON THIS PAGE"). No background pill. */
   margin: 0;
   padding: 0;
   font-size: 0.75rem;
@@ -548,16 +472,12 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   white-space: nowrap;
 }
 
-/* Current section's heading: bump from muted to full text colour so users */
-/* can see at a glance which collection contains the page they're on. */
 .docs-nav-section.current .name a {
   color: var(--text) !important;
 }
 
 #main-nav ul {
   flex-direction: column;
-  /* No vertical auto-margin: the chapter list sits right under the heading */
-  /* instead of being pushed to the middle of the sidebar. */
   margin: 0;
   padding: 0;
 }
@@ -566,9 +486,7 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   padding: 0.5rem 0;
 }
 
-/* mobile-name: section label that appears inside the docs-toolbar on mobile */
-/* only. On desktop the .toolbar-home wordmark + the left sidebar carry the */
-/* section context, so this stays hidden. */
+/* .mobile-name only renders inside .docs-toolbar on mobile (display:none on desktop). */
 .mobile-name {
   display: none;
   font-size: 1.1rem;
@@ -628,8 +546,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   display: none;
 }
 
-/* ===== SIDEBAR RESIZE HANDLE ===== */
-
 .sidebar-resize-indicator {
   position: absolute;
   top: 0;
@@ -652,8 +568,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   }
 }
 
-/* ===== RESPONSIVE NAV STYLES ===== */
-
 @media (max-width: 768px) {
   .toolbar-hamburger {
     display: flex;
@@ -665,14 +579,10 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
     padding-top: var(--toolbar-height);
     border: none;
     border-bottom: 1px solid var(--border-muted);
-    /* Mobile dropdown needs a solid bg so it doesn't bleed through to the */
-    /* underlying page content (the desktop rule is transparent). */
-    background: var(--bg);
-    /* Nav is position:fixed with top:52 (toolbar-height) and z:100 (above */
-    /* the z:50 toolbar). translateY(-100%) alone only shifts up by the */
-    /* element's own height, leaving its bottom edge at y=top=52 -- still */
-    /* overlaying the toolbar with scrolled-into-view nav content. Add an */
-    /* extra var(--toolbar-height) so the entire element clears the viewport. */
+    background: var(--bg); /* solid bg required: desktop rule is transparent */
+    /* translateY needs `- var(--toolbar-height)` (not just -100%) to clear */
+    /* the viewport. With top:52 + height H, plain -100% leaves bottom at y=52 */
+    /* (overlapping the toolbar at z:50, since nav is z:100). */
     transform: translateY(calc(-100% - var(--toolbar-height)));
     transition: transform var(--transition-state);
     overflow-y: auto;
@@ -703,22 +613,8 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   }
 }
 
-/* ===== SIDEBAR COLLAPSE (desktop) ===== */
-/* When the hamburger collapses the left sidebar: */
-/*   - left sidebar slides off-screen (transform) */
-/*   - main loses its left margin so the toolbar expands to full viewport width */
-/*   - docs-layout caps at 1100px and centers, keeping content readable */
-/*   - right TOC hides too (both "sidebars" go away together) */
-/* */
-/* Footer is independent: it's already full-width via _sass/_footer.scss, so */
-/* no sidebar-collapsed override is needed for it. */
-
-/* Sidebar collapse: instead of sliding off-screen, the sidebar narrows */
-/* to a thin rail. The section list is hidden, but each section's name */
-/* becomes a vertical strip (writing-mode: vertical-rl) so users can still */
-/* scan which collections are available. Clicking a vertical name still */
-/* navigates to that collection. */
-
+/* Sidebar collapse (desktop): sidebar narrows to a rail showing only vertical */
+/* section names (writing-mode: vertical-rl). The chapter list hides. */
 :root {
   --nav-rail-width: 44px;
 }
@@ -776,7 +672,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   }
 }
 
-/* ===== _responsive.scss ===== */
 @media (max-width: 768px) {
   body {
     --body-px: 1rem;
@@ -800,7 +695,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   }
 }
 
-/* ===== _docs.scss ===== */
 /* ===== DOCS NAV (replaces site nav on docs pages) ===== */
 
 #main-nav.docs-nav {
@@ -816,7 +710,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
     white-space: normal;
 
     & a {
-      /* Inherit the small-caps muted-gray style from `#main-nav .name`. */
       color: var(--text-muted);
       text-decoration: none;
 
@@ -841,8 +734,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
 
   > a {
     display: block;
-    /* Tighter than 0.3rem to match the right TOC's compact item rhythm */
-    /* (`.docs-toc-list li a { padding: 0.2rem 0 0.2rem 0.75rem }`). */
     padding: 0.25rem 0.75rem;
     color: var(--text-muted);
     text-decoration: none;
@@ -864,8 +755,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   }
 }
 
-/* ===== CONTENT ===== */
-
 @media (min-width: 769px) {
   body.docs-page {
     padding: 0;
@@ -873,13 +762,8 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
 }
 
 .docs-content {
-  /* Fill the available flex space inside .docs-layout (instead of sizing to */
-  /* its intrinsic .docs-body width). This makes .docs-content's right edge */
-  /* sit at the TOC's left edge, so the next arrow's right padding gutter is */
-  /* visually adjacent to content rather than glued to the TOC. min-width:0 */
-  /* is the standard flex-shrinking-correctly idiom -- without it, long */
-  /* unbreakable content (code blocks, tables) can blow out the column. */
-  /* Prose stays readable via .docs-body's own max-width: var(--content-max-width). */
+  /* min-width: 0 is required so long unbreakable content (code, tables) */
+  /* doesn't blow out the flex column. */
   flex: 1 1 0;
   min-width: 0;
   padding: 2rem clamp(1rem, 3vw, 2rem);
@@ -939,8 +823,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   }
 }
 
-/* ===== RIGHT TOC ===== */
-
 .docs-layout {
   display: flex;
   gap: 0;
@@ -989,8 +871,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
     transition: color 0.15s ease, border-color 0.15s ease;
 
     &:hover { color: var(--text); }
-    /* Match the left sidebar's active item: dark left border + light pill */
-    /* background + dark text. Keeps the two side rails visually parallel. */
     &.active {
       color: var(--text);
       background: var(--primary);
@@ -999,10 +879,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
     }
   }
 }
-
-/* ===== RESPONSIVE TOC ===== */
-/* Show the right-side TOC once the viewport is wide enough that the sidebar */
-/* (~250px) + content column (~72ch ~ 700px) + TOC (220px) still fit. */
 
 @media (min-width: 1024px) {
   .docs-toc {
@@ -1016,11 +892,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   }
 }
 
-/* No prev/next pagination. The left sidebar (which now shows all four */
-/* collections + chapters) is the only chapter navigation; the right TOC */
-/* handles in-page anchors. */
-
-/* ===== _toolbar.scss ===== */
 .docs-toolbar {
   position: sticky;
   top: 0;
@@ -1128,14 +999,8 @@ body.home-layout .toolbar-hamburger {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  /* No explicit height: was `height: var(--toolbar-height)` which made this */
-  /* element 52px tall and forced the toolbar's rendered height to ~68px */
-  /* (52 + the toolbar's own 0.5rem * 2 padding). That caused the */
-  /* `#main-nav { top: var(--toolbar-height) }` sidebar to start at y=52 */
-  /* -- ~17px BEHIND the toolbar's actual bottom edge -- so sidebar items */
-  /* briefly appeared behind the toolbar during scroll. Letting toolbar-home */
-  /* size to its content (the 22px brand-mark + wordmark text) makes the */
-  /* toolbar's rendered height match --toolbar-height exactly. */
+  /* DO NOT add `height: var(--toolbar-height)`: it inflates toolbar render */
+  /* height past 52px, leaving sidebar (#main-nav top:52) overlapped by toolbar. */
   padding: 0 0.4rem;
   font-weight: 600;
   font-size: var(--font-size-base);
@@ -1148,9 +1013,6 @@ body.home-layout .toolbar-hamburger {
     background: var(--primary-hover);
   }
 
-  /* On mobile the hamburger sits on the left and search on the right; the */
-  /* logo absolute-positions to viewport center so it stays balanced */
-  /* between them. Also scaled up so the mark reads as a header. */
   @media (max-width: 768px) {
     position: absolute;
     left: 50%;
@@ -1169,8 +1031,6 @@ body.home-layout .toolbar-hamburger {
   }
 }
 
-/* Search button: icon + label + OS-specific keyboard hint. Hidden bits */
-/* collapse to icon-only on narrow viewports. */
 .search-btn {
   gap: 0.5rem;
   min-width: 220px;
@@ -1208,9 +1068,6 @@ body.home-layout .toolbar-hamburger {
   }
 }
 
-/* The notch glyph: a square with a V-notch cut into its top edge, filled */
-/* with the orange code-text accent (`#BC5215`). Pairs with the lowercase */
-/* `notch` wordmark to give the toolbar real brand presence. */
 .brand-mark {
   flex: 0 0 22px;
   width: 22px;
@@ -1224,7 +1081,6 @@ body.home-layout .toolbar-hamburger {
   color: var(--text);
 }
 
-/* Search overlay */
 .search-overlay {
   position: fixed;
   inset: 0;
@@ -1333,9 +1189,8 @@ body.home-layout .toolbar-hamburger {
   font-size: var(--font-size-sm);
 }
 
-/* Hoisted out of nested .docs-toolbar { @media ... { body.docs-page & } }.
-   Strict CSS nesting (Safari 16.5+) rejects compound selectors whose first
-   token is a bare type identifier even when a trailing & is present. */
+/* Hoisted: strict CSS nesting rejects `body.docs-page &` inside .docs-toolbar */
+/* because the compound's first token is a bare type. */
 @media (min-width: 769px) {
   body.docs-page .docs-toolbar {
     margin-left: 0;
@@ -1344,11 +1199,8 @@ body.home-layout .toolbar-hamburger {
 }
 
 
-/* ===== _footer.scss ===== */
 .site-footer {
-  /* Higher z-index than the fixed sidebar (#main-nav has z-index: 100) and a */
-  /* solid background so when scrolled to the bottom the sidebar doesn't show */
-  /* through the footer's left edge. */
+  /* z-index 150 > #main-nav z:100 so footer doesn't show sidebar underneath. */
   position: relative;
   z-index: 150;
   display: flex;
@@ -1360,24 +1212,15 @@ body.home-layout .toolbar-hamburger {
   background: var(--bg);
   font-size: 0.9rem;
   color: var(--text-muted);
-  /* Cancel body's horizontal padding so the footer truly spans edge-to-edge */
-  /* (mobile + home pages). Desktop docs pages override the left margin */
-  /* below so the footer tracks the sidebar like the toolbar does. */
+  /* Negative margins cancel body's horizontal padding so footer is edge-to-edge. */
   margin-left: calc(-1 * var(--body-px));
   margin-right: calc(-1 * var(--body-px));
 }
 
-/* On desktop docs pages, mirror the toolbar's behavior: footer starts at */
-/* the right of the sidebar when expanded and slides to 0 when the sidebar */
-/* collapses. Same 0.3s easing as main/toolbar so the whole bottom band */
-/* moves as one with the layout shift. */
 @media (min-width: 769px) {
   body.docs-page .site-footer {
     margin-left: var(--nav-width);
-    /* Body padding is zeroed on docs-page desktop (see `body.docs-page` in */
-    /* _docs.scss), so the default negative margin-right would push the */
-    /* footer past the viewport. Cancel it here so the footer sits flush */
-    /* with the viewport's right edge. */
+    /* Cancel the negative right margin: body padding is zeroed on docs-page desktop. */
     margin-right: 0;
     transition: margin-left var(--transition-state);
   }
@@ -1395,14 +1238,8 @@ body.home-layout .toolbar-hamburger {
   }
 }
 
-/* On desktop docs pages, anchor the attribution text to viewport center so */
-/* it aligns vertically with the toolbar's centered "Notch" wordmark */
-/* (which uses position: fixed; left: 50vw). The footer's outer box still */
-/* follows the sidebar via the `margin-left` rule above, but the text inside */
-/* is positioned absolutely against the viewport-center axis: */
-/*   expanded: footer's left = nav-width, so text needs (50vw - nav-width) */
-/*             from footer's left to land at viewport center. */
-/*   collapsed: footer's left = 0, so text needs 50vw. */
+/* Attribution text anchored to viewport center via calc(50vw - nav-width). */
+/* Aligns with toolbar-home which uses left:50vw + translate(-50%). */
 @media (min-width: 769px) {
   body.docs-page .footer-attribution {
     position: absolute;
@@ -1418,7 +1255,6 @@ body.home-layout .toolbar-hamburger {
 }
 
 
-/* ===== main.scss (body) ===== */
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 90px;
@@ -1462,11 +1298,9 @@ main {
   padding-top: 2rem;
 }
 
-/* Fix 1: center the landing-page content REGARDLESS of viewport. */
-/* At viewports < ~1170px the `max-width: 1100px` on main has no effect */
-/* (main fills the body content area; `margin: auto` resolves to 0). So */
-/* also center each `<section>` inside main with its own auto margins. */
-/* This makes the centering effect visible at every reasonable viewport. */
+/* Both main AND inner section get auto margins: at viewports <~1170px main */
+/* fills the body content area so its margin:auto resolves to 0; the inner */
+/* section centering is what makes the layout look centered everywhere. */
 body.home-layout > main {
   max-width: 1100px;
   margin-left: auto !important;
@@ -1479,9 +1313,6 @@ body.home-layout > main {
   }
 }
 
-/* Fix 6: use the new --accent variable on links across docs + home, */
-/* so links aren't the same dark slate as body text. Inline code chips */
-/* inside links keep their orange (--code-text) for visual consistency. */
 .docs-body a,
 .home-layout main a {
   color: var(--accent);
@@ -1502,9 +1333,6 @@ section {
   width: 100%;
 }
 
-/* Home-page hero: oversized brand glyph with the wordmark embedded in */
-/* white inside the lower slab of the mark, tagline and prose stacked */
-/* below, divider separating the hero from the rest of the page. */
 .hero {
   padding: 2.5rem 0 0;
   margin-bottom: 0;
@@ -1556,8 +1384,6 @@ section {
   }
 }
 
-/* Documentation card grid: 2-up on wide viewports, stacked on mobile. */
-/* Each card is a full-bleed link so the whole tile is clickable. */
 .docs-grid {
   margin: 0 0 2.5rem;
 
@@ -1612,8 +1438,6 @@ section {
   }
 }
 
-/* Two-pane code demo below the hero: source on the left, sample output on */
-/* the right, both inside minimal windows with a chrome title bar. */
 .code-demo {
   display: flex;
   justify-content: center;
@@ -1640,8 +1464,7 @@ section {
     border-bottom: 1px solid var(--border-muted);
   }
 
-  /* Hero demo: re-skin Jekyll's .highlight wrapper to fit the framed pane. */
-  /* (Color theme comes from the .highlight block above, which is now dark site-wide.) */
+  /* Re-skins Jekyll-Rouge .highlight inside the demo frame; colors inherit from .highlight above. */
   .demo-code .highlight {
     margin: 0;
     flex: 1 1 auto;
