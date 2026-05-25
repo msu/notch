@@ -374,12 +374,64 @@ input {
   & table td { padding: 5px; }
   & table pre { margin: 0; }
 
-  /* Rouge token-color rules (.c, .k, .s, .n*, .o, .p, .g*, .err, .w) */
-  /* were removed because no language with a Rouge lexer is currently used */
-  /* on this site -- Notch code blocks render as plain text. If a `notch` */
-  /* Rouge lexer is added later (or another language gets fenced), the */
-  /* Flexoki-dark color rules can be re-added here. The wrapper styles */
-  /* above provide the dark background and inherit text color. */
+  /* Flexoki-dark Rouge token colors. Required because _plugins/notch_lexer.rb */
+  /* now emits proper Rouge classes for ```notch fences. */
+
+  /* Comments */
+  .c, .cd, .cm, .c1, .cs { color: #878580; font-style: italic; }
+  .cp { color: #878580; }
+
+  /* Keywords */
+  .k, .kc, .kd, .kn, .kp, .kr, .kv { color: #8b7ec8; font-weight: bold; }
+  .kt { color: #d0a215; font-weight: bold; }
+
+  /* Strings */
+  .s, .sb, .sc, .sd, .s2, .se, .sh, .si, .sx, .s1 { color: #879a39; }
+  .sr { color: #3aa99f; }
+  .ss { color: #da702c; }
+
+  /* Numbers */
+  .m, .mb, .mf, .mh, .mi, .mo, .mx, .il { color: #da702c; }
+
+  /* Names */
+  .na { color: #d0a215; }
+  .nb { color: #4385be; }
+  .nc { color: #d0a215; font-weight: bold; }
+  .nd { color: #4385be; }
+  .ne { color: #d14d41; font-weight: bold; }
+  .nf { color: #4385be; }
+  .ni { color: #3aa99f; }
+  .nl { color: #da702c; }
+  .nn { color: #d0a215; }
+  .no { color: #da702c; }
+  .nt { color: #d14d41; }
+  .nv, .vc, .vg, .vi { color: #ce5d97; }
+  .bp { color: #4385be; }
+  .n  { color: #cecdc3; }
+
+  /* Operators */
+  .o, .ow { color: #3aa99f; }
+
+  /* Punctuation */
+  .p { color: #cecdc3; }
+
+  /* Generic */
+  .gd { color: #d14d41; background-color: rgba(209, 77, 65, 0.15); }
+  .ge { font-style: italic; }
+  .gh { color: #cecdc3; font-weight: bold; }
+  .gi { color: #879a39; background-color: rgba(135, 154, 57, 0.15); }
+  .go { color: #878580; }
+  .gp { color: #d0a215; font-weight: bold; }
+  .gr { color: #d14d41; }
+  .gs { font-weight: bold; }
+  .gt { color: #d14d41; }
+  .gu { color: #3aa99f; font-weight: bold; }
+
+  /* Errors */
+  .err { color: #d14d41; background-color: transparent; }
+
+  /* Whitespace */
+  .w { color: #878580; }
 }
 
 /* ===== _utilities.scss ===== */
