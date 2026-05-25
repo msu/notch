@@ -8,7 +8,7 @@ order: 2
 
 ## Basic parse
 
-```plaintext
+```notch
 parser = new JSON5Parser("config.json5", source)
 value  = parser.parseValue()
 ```
@@ -19,7 +19,7 @@ The first argument is a `fileId` used in error messages. The second is the JSON5
 
 If you have already tokenized the source through chisel and want to share that work, `JSON5Parser` also accepts a `TokenStream`:
 
-```plaintext
+```notch
 parser = new JSON5Parser(tokenStream)
 value  = parser.parseValue()
 ```

@@ -10,13 +10,13 @@ Notch source is built out of expressions. The smallest expressions are called pr
 
 Integer literal:
 
-```plaintext
+```notch
 42
 ```
 
 Integer literals also accept hexadecimal, binary, and octal prefixes:
 
-```plaintext
+```notch
 0xff      # 255
 0b101     # 5
 0o77      # 63
@@ -24,20 +24,20 @@ Integer literals also accept hexadecimal, binary, and octal prefixes:
 
 Boolean literals:
 
-```plaintext
+```notch
 true
 false
 ```
 
 Null literal:
 
-```plaintext
+```notch
 null
 ```
 
 String literal (single or double quoted):
 
-```plaintext
+```notch
 'hello'
 "hello"
 ```
@@ -46,20 +46,20 @@ String literal (single or double quoted):
 
 Lines beginning with `//` are comments and ignored by the parser:
 
-```plaintext
+```notch
 // this is a comment
 x = 1   // trailing comments work too
 ```
 
 ## List literal
 
-```plaintext
+```notch
 [1, 2, 3]
 ```
 
 A trailing comma is allowed:
 
-```plaintext
+```notch
 [1, 2, 3,]
 ```
 
@@ -67,7 +67,7 @@ A trailing comma is allowed:
 
 Map keys may be bare identifiers, double-quoted strings, or terse strings prefixed with `:`.
 
-```plaintext
+```notch
 {foo = 1, bar = 2}
 {"foo foo" = 1, bar = 2}
 {:foo123 = 1, bar = 2}
@@ -75,7 +75,7 @@ Map keys may be bare identifiers, double-quoted strings, or terse strings prefix
 
 Map values can be any expression, including closures:
 
-```plaintext
+```notch
 {foo = \-> "bar"}
 ```
 
@@ -83,7 +83,7 @@ Map values can be any expression, including closures:
 
 Identifiers refer to bindings in the current scope. Parentheses group expressions:
 
-```plaintext
+```notch
 (1 + 2) * 3
 ```
 

@@ -492,24 +492,27 @@ label {
 }
 
 /* ===== _syntax.scss ===== */
-/* Flexoki light-theme syntax highlighting for Rouge-generated `.highlight` */
-/* markup. Background matches `--code-bg` so docs code blocks look identical */
-/* to the raw <pre><code> blocks styled in _elements.scss. */
+/* Flexoki-dark syntax highlighting for Rouge-generated `.highlight` markup. */
+/* The dark background mirrors the hero demo on the home page so docs code */
+/* blocks have the same contrast. */
 
 .highlight {
-  background-color: var(--code-bg);
+  background-color: #1e2228;
   border-radius: var(--radius);
   margin: var(--spacing) 0;
   overflow-x: auto;
+  color: #cecdc3;
 
   & pre {
     margin: 0;
     padding: var(--spacing);
     background-color: transparent;
+    color: inherit;
   }
 
   & code {
     background-color: transparent;
+    color: inherit;
     padding: 0;
   }
 
@@ -517,59 +520,60 @@ label {
   & table pre { margin: 0; }
 
   /* Comments */
-  .c, .cd, .cm, .c1, .cs { color: #6F6E69; font-style: italic; }
-  .cp { color: #6F6E69; }
+  .c, .cd, .cm, .c1, .cs { color: #878580; font-style: italic; }
+  .cp { color: #878580; }
 
   /* Keywords */
-  .k, .kc, .kd, .kn, .kp, .kr, .kv { color: #5E409D; font-weight: bold; }
-  .kt { color: #24837B; font-weight: bold; }
+  .k, .kc, .kd, .kn, .kp, .kr, .kv { color: #8b7ec8; font-weight: bold; }
+  .kt { color: #d0a215; font-weight: bold; }
 
   /* Strings */
-  .s, .sb, .sc, .sd, .s2, .se, .sh, .si, .sx, .s1 { color: #66800B; }
-  .sr { color: #24837B; }
-  .ss { color: #BC5215; }
+  .s, .sb, .sc, .sd, .s2, .se, .sh, .si, .sx, .s1 { color: #879a39; }
+  .sr { color: #3aa99f; }
+  .ss { color: #da702c; }
 
   /* Numbers */
-  .m, .mb, .mf, .mh, .mi, .mo, .mx, .il { color: #BC5215; }
+  .m, .mb, .mf, .mh, .mi, .mo, .mx, .il { color: #da702c; }
 
   /* Names */
-  .na { color: #AD8301; }
-  .nb { color: #205EA6; }
-  .nc { color: #AD8301; font-weight: bold; }
-  .nd { color: #205EA6; }
-  .ne { color: #AF3029; font-weight: bold; }
-  .nf { color: #205EA6; font-weight: bold; }
-  .ni { color: #24837B; }
-  .nl { color: #BC5215; }
-  .nn { color: #AD8301; }
-  .no { color: #BC5215; }
-  .nt { color: #AF3029; }
-  .nv, .vc, .vg, .vi { color: #A02F6F; }
-  .bp { color: #205EA6; }
+  .na { color: #d0a215; }
+  .nb { color: #4385be; }
+  .nc { color: #d0a215; font-weight: bold; }
+  .nd { color: #4385be; }
+  .ne { color: #d14d41; font-weight: bold; }
+  .nf { color: #4385be; }
+  .ni { color: #3aa99f; }
+  .nl { color: #da702c; }
+  .nn { color: #d0a215; }
+  .no { color: #da702c; }
+  .nt { color: #d14d41; }
+  .nv, .vc, .vg, .vi { color: #ce5d97; }
+  .bp { color: #4385be; }
+  .n  { color: #cecdc3; }
 
   /* Operators */
-  .o, .ow { color: #24837B; }
+  .o, .ow { color: #3aa99f; }
 
   /* Punctuation */
-  .p { color: var(--text); }
+  .p { color: #cecdc3; }
 
   /* Generic */
-  .gd { color: #AF3029; background-color: rgba(175, 48, 41, 0.1); }
+  .gd { color: #d14d41; background-color: rgba(209, 77, 65, 0.15); }
   .ge { font-style: italic; }
-  .gh { color: var(--text); font-weight: bold; }
-  .gi { color: #66800B; background-color: rgba(102, 128, 11, 0.1); }
-  .go { color: #6F6E69; }
-  .gp { color: #AD8301; font-weight: bold; }
-  .gr { color: #AF3029; }
+  .gh { color: #cecdc3; font-weight: bold; }
+  .gi { color: #879a39; background-color: rgba(135, 154, 57, 0.15); }
+  .go { color: #878580; }
+  .gp { color: #d0a215; font-weight: bold; }
+  .gr { color: #d14d41; }
   .gs { font-weight: bold; }
-  .gt { color: #AF3029; }
-  .gu { color: #24837B; font-weight: bold; }
+  .gt { color: #d14d41; }
+  .gu { color: #3aa99f; font-weight: bold; }
 
   /* Errors */
-  .err { color: #AF3029; background-color: transparent; }
+  .err { color: #d14d41; background-color: transparent; }
 
   /* Whitespace */
-  .w { color: #6F6E69; }
+  .w { color: #878580; }
 }
 
 /* ===== _utilities.scss ===== */
@@ -1759,28 +1763,19 @@ section {
     border-bottom: 1px solid var(--border-muted);
   }
 
-  .demo-body {
+  /* Hero demo: re-skin Jekyll's .highlight wrapper to fit the framed pane. */
+  /* (Color theme comes from the .highlight block above, which is now dark site-wide.) */
+  .demo-code .highlight {
     margin: 0;
-    padding: 1rem 1.1rem;
     flex: 1 1 auto;
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    line-height: 1.55;
-    background: #1e2228;
-    color: #cecdc3;
-    overflow-x: auto;
-  }
+    border-radius: 0;
 
-  /* Flexoki-dark syntax colors, scoped so they don't override the light */
-  /* syntax theme used in the docs pages. */
-  .demo-code .demo-body {
-    .k  { color: #8b7ec8; font-weight: bold; }
-    .nn { color: #d0a215; }
-    .nc { color: #d0a215; font-weight: bold; }
-    .nf { color: #4385be; }
-    .s1 { color: #879a39; }
-    .o  { color: #3aa99f; }
-    .c1 { color: #878580; font-style: italic; }
+    & pre {
+      padding: 1rem 1.1rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
   }
 
   @media (max-width: 700px) {

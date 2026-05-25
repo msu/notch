@@ -10,7 +10,7 @@ Notch ships with an interactive REPL backed by JLine 3.
 
 Clone and build:
 
-```plaintext
+```notch
 git clone https://github.com/msu/notch.git
 cd notch
 mvn package
@@ -18,13 +18,13 @@ mvn package
 
 ## Launch the REPL
 
-```plaintext
+```notch
 java -jar target/notch-1.0-SNAPSHOT.jar
 ```
 
 You should see:
 
-```plaintext
+```notch
 notch >
 ```
 
@@ -32,7 +32,7 @@ notch >
 
 Type an expression and press Enter:
 
-```plaintext
+```notch
 notch > 1 + 1
 2
 notch > print('hello')
@@ -45,7 +45,7 @@ notch > [1, 2, 3].size()
 
 When Notch needs more input to complete an expression, it shows a continuation prompt:
 
-```plaintext
+```notch
 notch > if true
       >   print('foo')
       > else

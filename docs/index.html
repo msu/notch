@@ -18,13 +18,15 @@ title: Notch
 <section class="code-demo">
   <div class="demo-pane demo-code">
     <div class="demo-title">example.notch</div>
-<pre class="demo-body"><code><span class="k">import</span> <span class="nn">java.time.LocalDate</span>
+{% highlight notch %}
+import java.time.LocalDate
 
-today <span class="o">=</span> <span class="nc">LocalDate</span>.<span class="nf">now</span>()
+today = LocalDate.now()
 
-<span class="k">for</span> name <span class="k">in</span> [<span class="s1">'Alice'</span>, <span class="s1">'Bob'</span>, <span class="s1">'Carol'</span>]
-  <span class="nf">print</span>(<span class="s1">'Hello, '</span> <span class="o">+</span> name <span class="o">+</span> <span class="s1">'! Today is '</span> <span class="o">+</span> today)
-<span class="k">end</span></code></pre>
+for name in ['Alice', 'Bob', 'Carol']
+  print('Hello, ' + name + '! Today is ' + today)
+end
+{% endhighlight %}
   </div>
 </section>
 
@@ -53,18 +55,13 @@ today <span class="o">=</span> <span class="nc">LocalDate</span>.<span class="nf
     </a>
     <a class="docs-card" href="{{ '/templates/overview/' | relative_url }}">
       <div class="docs-card-icon" aria-hidden="true">📄</div>
-      <h3>Templates</h3>
-      <p>Built-in template engine for rendering text with embedded Notch expressions.</p>
+      <h3>Notch Templates</h3>
+      <p>Template engine for rendering text with embedded Notch expressions.</p>
     </a>
     <a class="docs-card" href="{{ '/json5/overview/' | relative_url }}">
       <div class="docs-card-icon" aria-hidden="true">🗂️</div>
       <h3>JSON5</h3>
       <p>JSON5 parser and a small query language.</p>
-    </a>
-    <a class="docs-card" href="{{ '/sunny/overview/' | relative_url }}">
-      <div class="docs-card-icon" aria-hidden="true">☀️</div>
-      <h3>Sunny Templates</h3>
-      <p>The Sunny templating engine that Notch was originally built for.</p>
     </a>
   </div>
 </section>

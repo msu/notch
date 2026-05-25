@@ -8,7 +8,7 @@ Notch is designed to live inside the Java ecosystem. JVM classes, methods, and p
 
 ## Calling methods
 
-```plaintext
+```notch
 java.lang.System.out.println("hello!")
 ```
 
@@ -18,7 +18,7 @@ When more than one overload of a method exists, Notch picks the best match by pa
 
 Call a constructor by invoking the type value:
 
-```plaintext
+```notch
 list = java.util.ArrayList()
 list.add("a")
 list.add("b")
@@ -35,7 +35,7 @@ A property access or method call on `null` produces a diagnostic error message t
 
 Property access works on JVM objects via their getter methods. Both bean-style and direct field names are accepted.
 
-```plaintext
+```notch
 list = [1, 2, 3]
 list.size      # 3
 list.size()    # 3, same thing
@@ -43,7 +43,7 @@ list.size()    # 3, same thing
 
 Snake-case and camelCase access both resolve to the same property:
 
-```plaintext
+```notch
 java.lang.Object.displayName
 java.lang.Object.display_name
 ```
@@ -52,7 +52,7 @@ java.lang.Object.display_name
 
 Fully-qualified class names resolve to type values:
 
-```plaintext
+```notch
 java.lang.String
 ```
 
@@ -60,19 +60,19 @@ Returns a `NotchType` describing the class.
 
 JVM primitives are accessible as bare identifiers:
 
-```plaintext
+```notch
 int
 ```
 
 ## Static methods
 
-```plaintext
+```notch
 java.util.List.of(1, 2, 3)
 ```
 
 ## Static properties
 
-```plaintext
+```notch
 java.lang.Character.TYPE
 ```
 
@@ -80,7 +80,7 @@ java.lang.Character.TYPE
 
 Java enums iterate via the `values` static accessor:
 
-```plaintext
+```notch
 for v in java.time.DayOfWeek.values
   print(v)
 end

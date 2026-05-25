@@ -8,13 +8,13 @@ Notch statements are evaluated for their side effects. The two main statement fo
 
 ## if statement
 
-```plaintext
+```notch
 if true print('foo') else print('bar') end
 ```
 
 The `else` branch is optional:
 
-```plaintext
+```notch
 if true print('foo') end
 ```
 
@@ -22,7 +22,7 @@ if true print('foo') end
 
 `for` iterates over any iterable: lists, strings (per-character), maps.
 
-```plaintext
+```notch
 for x in 'foo' print(x) end
 ```
 
@@ -30,13 +30,13 @@ Prints `f`, `o`, `o` on separate lines.
 
 The optional `index` clause binds the iteration index:
 
-```plaintext
+```notch
 for x in 'foo' index i print(i) print(x) end
 ```
 
 Outside the loop, the loop variable is `<undefined>`:
 
-```plaintext
+```notch
 for x in 'foo' index i print(i) print(x) end
 print(x)
 ```
@@ -49,7 +49,7 @@ A block is a sequence of statements terminated by `end`. The `if` and `for` form
 
 The single-expression variants are:
 
-```plaintext
+```notch
 stmt-then    := block | 'then' expr
 stmt-fallback := 'else' block 'end' | 'otherwise' expr
 ```

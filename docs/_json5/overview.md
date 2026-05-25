@@ -16,7 +16,7 @@ order: 1
 
 Plain JSON is strict by design. JSON5 is more pleasant to author and read by hand:
 
-```plaintext
+```notch
 {
   // comments are allowed
   name: 'notch',

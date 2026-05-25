@@ -10,7 +10,7 @@ This page sketches how to build a small language using chisel primitives. The No
 
 Compose token types into a `Tokenizer`:
 
-```plaintext
+```notch
 Tokenizer T = new Tokenizer()
     .withTokenType(WHITESPACE)
     .withTokenType(BOOL)
@@ -27,7 +27,7 @@ Tokenizer T = new Tokenizer()
 
 Extend `BasicParser`:
 
-```plaintext
+```notch
 public class MyParser extends BasicParser {
     public MyParser(String fileId, String src) {
         this(T.tokenize(fileId, src));

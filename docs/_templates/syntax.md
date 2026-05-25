@@ -10,7 +10,7 @@ Every byte of a template falls into one of three categories.
 
 Anything not matched by an expression or command marker is literal text. It is written to the output verbatim, including whitespace and newlines.
 
-```plaintext
+```notch
 Hello, world!
 ```
 
@@ -20,7 +20,7 @@ renders as `Hello, world!`.
 
 The marker `${ ... }` evaluates the contents as a Notch expression and substitutes the result into the output. The bracketed content goes through the full Notch parser, so any Notch expression form is allowed.
 
-```plaintext
+```notch
 2 + 2 = ${ 2 + 2 }
 ```
 
@@ -28,7 +28,7 @@ renders as `2 + 2 = 4`.
 
 Expressions can reference bindings the caller passes to `render`:
 
-```plaintext
+```notch
 Hello, ${ name }!
 ```
 
@@ -38,7 +38,7 @@ with `{name = "world"}` renders as `Hello, world!`.
 
 A line that starts with `#` is a template command. Commands drive control flow, layout, variable binding, and other directives.
 
-```plaintext
+```notch
 # for item in items
   - ${ item }
 # end
@@ -46,7 +46,7 @@ A line that starts with `#` is a template command. Commands drive control flow, 
 
 with `{items = ["a", "b", "c"]}` renders as:
 
-```plaintext
+```notch
   - a
   - b
   - c

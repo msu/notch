@@ -1,22 +1,21 @@
 source "https://rubygems.org"
 
-# GitHub Pages gem - includes Jekyll and supported plugins
-gem "github-pages", "~> 231", group: :jekyll_plugins
+# Deployed via GitHub Actions (not legacy branch deploy), so we use plain
+# Jekyll rather than the `github-pages` gem -- that gem forces safe mode
+# and randomizes plugins_dir, which would block the custom Notch Rouge
+# lexer in _plugins/.
+gem "jekyll", "~> 4.3"
+gem "webrick"
 
-# Additional plugins (explicit for clarity; already in github-pages)
 group :jekyll_plugins do
   gem "jekyll-seo-tag"
   gem "jekyll-sitemap"
 end
 
-# Windows and JRuby timezone data
+# Windows / JRuby timezone data
 platforms :mingw, :x64_mingw, :mswin, :jruby do
-  gem "tzinfo", "~> 1.2"
+  gem "tzinfo", "~> 2.0"
   gem "tzinfo-data"
 end
 
-# Performance-booster for watching directories on Windows
 gem "wdm", "~> 0.1.1", :platforms => [:mingw, :x64_mingw, :mswin]
-
-gem "jekyll", "~> 3.9"
-gem "webrick"
