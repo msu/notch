@@ -8,10 +8,11 @@
   * Notch templates are a flagship feature, needs good docs for 431 usage
 * Needs syntax highlighting
 
-# Language FeaturesT
+# Language Features
 * Needs to at least support classes/objects
 * `Foo.new()` for constructors (may actually already do this)
 * Spec on null/undefined behaviors
+* The `Notch` class should have an API making it easy to eval/exec notch code, create notch classes, etc.
 
 # Executable
 * Need to figure out how to ship a notch.exe that supports the langauge (can't use graal)
