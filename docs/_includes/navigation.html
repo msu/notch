@@ -1,22 +1,5 @@
-<header class="mobile-header">
-    {% if page.collection == 'syntax' %}
-    <a href="{{ '/syntax/' | relative_url }}" class="mobile-name">Syntax</a>
-    {% elsif page.collection == 'jvm' %}
-    <a href="{{ '/jvm/' | relative_url }}" class="mobile-name">JVM</a>
-    {% elsif page.collection == 'repl' %}
-    <a href="{{ '/repl/' | relative_url }}" class="mobile-name">REPL</a>
-    {% elsif page.collection == 'chisel' %}
-    <a href="{{ '/chisel/' | relative_url }}" class="mobile-name">Chisel</a>
-    {% else %}
-    <span class="mobile-name">{{ site.title }}</span>
-    {% endif %}
-    <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="main-nav">
-        <span></span>
-        <span></span>
-    </button>
-</header>
-
-<div class="nav-overlay" aria-hidden="true"></div>
+<div class="nav-overlay" aria-hidden="true"
+    _="on click if first <.hamburger/> matches .active trigger click on first <.hamburger/> end"></div>
 
 {%- comment -%}
 Collection order + display labels for the docs sidebar. Index-aligned arrays:
@@ -35,7 +18,32 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
 
 {% if is_docs_page %}
 <nav id="main-nav" class="docs-nav" aria-label="Documentation navigation" role="navigation">
-    <button class="sidebar-toggle" type="button" aria-label="Toggle sidebar" aria-expanded="true">
+    <button class="sidebar-toggle" type="button" aria-label="Toggle sidebar" aria-expanded="true"
+        _="init
+             if first <html/> matches .sidebar-collapsed
+               set @aria-expanded to 'false'
+               set @aria-label to 'Show sidebar'
+             else
+               set @aria-expanded to 'true'
+               set @aria-label to 'Hide sidebar'
+             end
+           on click
+             toggle .sidebar-collapsed on <html/>
+             if first <html/> matches .sidebar-collapsed
+               set @aria-expanded to 'false'
+               set @aria-label to 'Show sidebar'
+               call localStorage.setItem('sidebar-collapsed', 'true')
+             else
+               set @aria-expanded to 'true'
+               set @aria-label to 'Hide sidebar'
+               call localStorage.setItem('sidebar-collapsed', 'false')
+             end
+           on resize from window
+             if window.innerWidth <= 768
+               remove .sidebar-collapsed from <html/>
+             else if localStorage.getItem('sidebar-collapsed') is 'true'
+               add .sidebar-collapsed to <html/>
+             end">
         <svg class="sidebar-toggle-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
@@ -62,6 +70,27 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
             </section>
         {% endfor %}
     </div>
-    <div class="sidebar-resize-indicator" aria-hidden="true"></div>
+    <div class="sidebar-resize-indicator" aria-hidden="true"
+        _="init
+             set savedWidth to parseInt(localStorage.getItem('nav-width'))
+             if savedWidth >= 160 and savedWidth <= 400
+               call document.documentElement.style.setProperty('--nav-width', savedWidth + 'px')
+             end
+           on mousedown
+             halt the event's default
+             if window.innerWidth <= 768 exit end
+             add .dragging to me
+             set body.style.userSelect to 'none'
+             repeat forever
+               wait for mousemove(clientX, type) or mouseup(clientX, type) from document
+               set newWidth to Math.min(400, Math.max(160, clientX))
+               call document.documentElement.style.setProperty('--nav-width', newWidth + 'px')
+               if type is 'mouseup'
+                 remove .dragging from me
+                 set body.style.userSelect to ''
+                 call localStorage.setItem('nav-width', newWidth)
+                 exit
+               end
+             end"></div>
 </nav>
 {% endif %}

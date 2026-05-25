@@ -30,10 +30,6 @@ kramdown:
   syntax_highlighter: rouge
   smart_quotes: ["apos", "apos", "quot", "quot"]
 
-# Sass/SCSS settings
-sass:
-  style: compressed
-
 # Permalink structure
 permalink: pretty
 

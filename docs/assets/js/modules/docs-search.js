@@ -1,4 +1,6 @@
-import { CONFIG } from './config.js';
+const SEARCH_INDEX_URL = '/search.json';
+const SEARCH_MIN_CHARS = 2;
+const SEARCH_MAX_RESULTS = 10;
 
 export function init() {
   const searchBtn = document.querySelector('.search-btn');
@@ -35,7 +37,7 @@ export function init() {
   }
 
   function loadIndex() {
-    fetch(CONFIG.SEARCH_INDEX_URL)
+    fetch(SEARCH_INDEX_URL)
       .then(response => response.json())
       .then(data => { searchIndex = data; })
       .catch(() => { searchIndex = []; });
@@ -45,7 +47,7 @@ export function init() {
   // content = +10 (capped at 5 per doc); each per-term title hit = +10;
   // each per-term content hit = +1 (capped at 5 per doc per term).
   function search(query) {
-    if (!searchIndex || query.length < CONFIG.SEARCH_MIN_CHARS) {
+    if (!searchIndex || query.length < SEARCH_MIN_CHARS) {
       resultsList.innerHTML = '';
       emptyState.hidden = true;
       return;
@@ -84,7 +86,7 @@ export function init() {
       return { doc, score };
     }).filter(entry => entry.score > 0)
       .sort((a, b) => b.score - a.score)
-      .slice(0, CONFIG.SEARCH_MAX_RESULTS);
+      .slice(0, SEARCH_MAX_RESULTS);
 
     if (scored.length === 0) {
       resultsList.innerHTML = '';
