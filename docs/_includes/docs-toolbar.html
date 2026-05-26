@@ -28,19 +28,6 @@
     </svg>
     <span class="brand-wordmark">Notch</span>
   </a>
-  {% if page.collection == 'syntax' %}
-  <a href="{{ '/syntax/' | relative_url }}" class="mobile-name">Syntax</a>
-  {% elsif page.collection == 'jvm' %}
-  <a href="{{ '/jvm/' | relative_url }}" class="mobile-name">JVM</a>
-  {% elsif page.collection == 'repl' %}
-  <a href="{{ '/repl/' | relative_url }}" class="mobile-name">REPL</a>
-  {% elsif page.collection == 'chisel' %}
-  <a href="{{ '/chisel/' | relative_url }}" class="mobile-name">Chisel</a>
-  {% elsif page.collection == 'templates' %}
-  <a href="{{ '/templates/' | relative_url }}" class="mobile-name">Templates</a>
-  {% elsif page.collection == 'json5' %}
-  <a href="{{ '/json5/' | relative_url }}" class="mobile-name">JSON5</a>
-  {% endif %}
   <ul class="toolbar-nav">
     <li><a href="{{ '/syntax/overview/' | relative_url }}">Docs</a></li>
     <li><a href="{{ '/templates/overview/' | relative_url }}">Templates</a></li>
@@ -51,7 +38,7 @@
     <li><a href="https://www.cs.montana.edu" rel="noopener">MSU CS</a></li>
   </ul>
   <button class="toolbar-btn search-btn" type="button" aria-label="Search documentation">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false">
+    <svg class="search-btn-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
       <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/>
     </svg>
     <span class="search-btn-label">Search</span>

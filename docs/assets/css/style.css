@@ -486,23 +486,62 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   padding: 0.5rem 0;
 }
 
-/* .mobile-name only renders inside .docs-toolbar on mobile (display:none on desktop). */
-.mobile-name {
-  display: none;
-  font-size: 1.1rem;
+/* Section label that appears at the top of each docs page (replaces the */
+/* old in-toolbar .mobile-name -- frees up tight mobile header space). */
+.docs-section-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text);
-  text-decoration: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+/* Site-only #main-nav (rendered on non-docs pages so the mobile hamburger */
+/* has something to slide down). Desktop hides it; mobile uses it as a */
+/* drawer carrying the site links. */
+#main-nav.site-only {
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
+
+/* Top-level site links inside #main-nav. Hidden on desktop (the same */
+/* links live in .toolbar-nav); shown in the mobile drawer. */
+#main-nav .nav-site-links {
+  display: none;
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+
+  & li {
+    padding: 0;
+  }
+
+  & a {
+    display: block;
+    padding: 0.6rem 0;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 1.05rem;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border-muted);
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
 
   @media (max-width: 768px) {
-    display: inline-block;
-    margin-left: auto;
-    margin-right: 0.5rem;
+    display: block;
   }
+}
+
+/* On site-only nav (non-docs pages), hide the sidebar-toggle/resize bits */
+/* -- they only matter on docs pages where there's a collection sidebar. */
+#main-nav.site-only .sidebar-toggle,
+#main-nav.site-only .sidebar-resize-indicator {
+  display: none;
 }
 
 .hamburger {
@@ -575,15 +614,15 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
 
   #main-nav {
     width: 100%;
-    max-height: 70vh;
-    padding-top: var(--toolbar-height);
+    max-height: calc(100vh - var(--toolbar-height));
+    /* z-index below the toolbar (50) so the toolbar masks the nav while */
+    /* it slides, making the drawer appear to emerge from under the bar. */
+    z-index: 40;
+    padding: 1rem;
     border: none;
     border-bottom: 1px solid var(--border-muted);
-    background: var(--bg); /* solid bg required: desktop rule is transparent */
-    /* translateY needs `- var(--toolbar-height)` (not just -100%) to clear */
-    /* the viewport. With top:52 + height H, plain -100% leaves bottom at y=52 */
-    /* (overlapping the toolbar at z:50, since nav is z:100). */
-    transform: translateY(calc(-100% - var(--toolbar-height)));
+    background: var(--bg);
+    transform: translateY(-100%);
     transition: transform var(--transition-state);
     overflow-y: auto;
 
@@ -594,12 +633,12 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
 
   .nav-overlay {
     position: fixed;
-    top: 0;
+    top: var(--toolbar-height);
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.4);
-    z-index: 99;
+    z-index: 30;
 
     &.visible {
       display: block;
@@ -935,15 +974,13 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
     width: 22px;
     height: 2px;
   }
+
+  /* Push to the right edge of the toolbar on mobile (standard pattern). */
+  @media (max-width: 768px) {
+    order: 99;
+  }
 }
 
-/* On non-docs pages (home, 404) there is no #main-nav sidebar to open, */
-/* so the hamburger has nothing to toggle into view. Hide it -- the home */
-/* page's .docs-cards grid + the toolbar-home Notch link already cover */
-/* navigation on mobile for these layouts. */
-body.home-layout .toolbar-hamburger {
-  display: none;
-}
 
 /* Inline nav lists embedded in the toolbar (project links on the left, */
 /* external links on the right). */
@@ -1040,6 +1077,12 @@ body.home-layout .toolbar-hamburger {
   justify-content: flex-start;
   padding-right: 0.4rem;
 
+  .search-btn-icon {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+  }
+
   .search-btn-label {
     flex: 1 1 auto;
     text-align: left;
@@ -1055,11 +1098,18 @@ body.home-layout .toolbar-hamburger {
     font-family: var(--font-sans);
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 768px) {
     min-width: 0;
     border: none;
     background: transparent;
     padding: 0 0.5rem;
+    color: var(--text);
+
+    .search-btn-icon {
+      width: 24px;
+      height: 24px;
+      flex: 0 0 24px;
+    }
 
     .search-btn-label,
     .search-btn-shortcut {
@@ -1372,14 +1422,25 @@ section {
     max-width: 42rem;
   }
 
-  @media (max-width: 600px) {
-    padding: 1.75rem 0 2rem;
-    margin-bottom: 1.75rem;
+  /* Mobile: stack logo + tagline, both centered. Logo allowed to */
+  /* expand wider since it now anchors the hero alone. */
+  @media (max-width: 768px) {
+    padding: 1.5rem 0 0;
 
     .hero-banner {
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
       gap: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero-glyph {
+      width: clamp(240px, 55vw, 380px);
+    }
+
+    .tagline {
+      text-align: center;
+      max-width: 32rem;
     }
   }
 }
@@ -1442,6 +1503,11 @@ section {
   display: flex;
   justify-content: center;
   margin: 0 0 2.5rem;
+
+  @media (max-width: 768px) {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
 
   .demo-pane {
     width: 100%;
