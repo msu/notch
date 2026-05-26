@@ -1,5 +1,24 @@
 <div class="docs-toolbar" role="toolbar" aria-label="Documentation tools">
-  <button class="hamburger toolbar-hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="main-nav">
+  <button class="hamburger toolbar-hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="main-nav"
+    _="on click
+         toggle .open on <#main-nav/>
+         then toggle .active on me
+         then toggle .visible on <.nav-overlay/>
+         then if me matches .active
+                set @aria-expanded to 'true'
+                set @aria-hidden of <.nav-overlay/> to 'false'
+                set body.style.overflow to 'hidden'
+              else
+                set @aria-expanded to 'false'
+                set @aria-hidden of <.nav-overlay/> to 'true'
+                set body.style.overflow to ''
+              end
+       on keydown[key is 'Escape'] from window
+         if first <#main-nav/> matches .open trigger click on me end
+       on resize from window
+         if window.innerWidth > 768 and first <#main-nav/> matches .open trigger click on me end
+       on click from <#main-nav a/>
+         if window.innerWidth <= 768 and first <#main-nav/> matches .open trigger click on me end">
     <span></span>
     <span></span>
   </button>
@@ -9,6 +28,19 @@
     </svg>
     <span class="brand-wordmark">Notch</span>
   </a>
+  {% if page.collection == 'syntax' %}
+  <a href="{{ '/syntax/' | relative_url }}" class="mobile-name">Syntax</a>
+  {% elsif page.collection == 'jvm' %}
+  <a href="{{ '/jvm/' | relative_url }}" class="mobile-name">JVM</a>
+  {% elsif page.collection == 'repl' %}
+  <a href="{{ '/repl/' | relative_url }}" class="mobile-name">REPL</a>
+  {% elsif page.collection == 'chisel' %}
+  <a href="{{ '/chisel/' | relative_url }}" class="mobile-name">Chisel</a>
+  {% elsif page.collection == 'templates' %}
+  <a href="{{ '/templates/' | relative_url }}" class="mobile-name">Templates</a>
+  {% elsif page.collection == 'json5' %}
+  <a href="{{ '/json5/' | relative_url }}" class="mobile-name">JSON5</a>
+  {% endif %}
   <ul class="toolbar-nav">
     <li><a href="{{ '/syntax/overview/' | relative_url }}">Docs</a></li>
     <li><a href="{{ '/templates/overview/' | relative_url }}">Templates</a></li>
