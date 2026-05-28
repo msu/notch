@@ -52,12 +52,24 @@ jobs:
           mkdir -p staging
           cp target/notch.jar staging/
 
-      - name: Run jpackage
+      - name: Run jpackage (Unix)
+        if: runner.os != 'Windows'
         run: >
           jpackage --type app-image --name notch
           --input staging --main-jar notch.jar
           --main-class edu.montana.notch.console.NotchShell
           --dest target/jpackage
+          --java-options "--enable-native-access=ALL-UNNAMED"
+
+      - name: Run jpackage (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: >
+          jpackage --type app-image --name notch
+          --input staging --main-jar notch.jar
+          --main-class edu.montana.notch.console.NotchShell
+          --dest target/jpackage
+          --win-console
           --java-options "--enable-native-access=ALL-UNNAMED"
 
       - name: Archive (Unix)
