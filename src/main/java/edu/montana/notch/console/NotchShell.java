@@ -52,7 +52,8 @@ public class NotchShell {
         }
     }
 
-    public static void main(String[] args) {
+    public
+    static void main(String[] args) {
         start(true);
     }
 
