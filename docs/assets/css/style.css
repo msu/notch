@@ -1401,14 +1401,6 @@ section {
     height: auto;
   }
 
-  .hero-wordmark {
-    fill: #fff;
-    font-family: inherit;
-    font-weight: 800;
-    font-size: 5.25px;
-    letter-spacing: -0.15px;
-  }
-
   .tagline {
     flex: 1 1 auto;
     margin: 0;
