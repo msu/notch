@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="Notch">
+  <defs>
+    <style type="text/css">
+      @font-face {
+        font-family: "InterEmbed";
+        font-weight: 800;
+        font-style: normal;
+        src: url("data:font/woff2;base64,d09GMgABAAAAAAMcAA0AAAAABdgAAALLAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbIBwqBmAAVAqDJIJxATYCJAMYCw4ABCAFgnoHIBuwBAAeg+NuCRGToQwx71Fiv5UI4td+s3fv/seTS6JZxqNqNk1kKIXULRQPzUoGA+uqai1AD5w9EC/CnQPwgvN/FmDqpvbWZQG3hSNMcE6QNLDHxuIIJ3deQvEEjTCwNN2mfwxE12ZB7SRQA8iEUAiBKu3cMNN5JTUwkOBfQEMMCsB2MzvuJEo4KIHlVPRwHhAohvlr4L7mZC9usysglTnIuCmC78LScmk1TqIMKZ/8s4Lyc3wFAWlPuA26GSBDjnqcQD3eOKhRIZPM6TZAhfwL86ytsMRi8wsJK7FrunvfgAcACRBCyESTi42Fib3xSFOJKNZSygimw02klNI6UQR/MoM+ZMY/umc880VtB6VGM+5inGg88159593nMt5kpCl/b98TsQJhPBIeWHyAcffvNs28R8nWeCRrxI/zR/a1F++yv44yghFnzJmyBMLn7YqVkVWte8KG66tMPsyNkEL4vBs1EJyfNz5ndmCDwUSTt7MSDK/f8XfeFHbr1inc33k7qJXYsj8z1qK+rb20R7F6/jzF+p7Sjm7zxsxoxyOW990YPaYVwudaVYhs/dgJO+68OX6xdVJbu7SuViIf5+340wNOY+uZ7UY9ks2zZkk29ATYsPtmDP3ucZeK+karDIPbQ/9XKowjdx9Yv9JnEbfIqNUIIJA469+X0m6e8t2AMwB8jaueHatXfs/4X1i/2eAjyGWc0vfwGq4V6PfuVsRDvkSRwRToeYCkMwoKW+jSNxTkZqjHoOQWVfbpe2VurWwLJ5IhWICeCp0qqEydUyq3YFQz6ajCmKvfXNIZLKaoqA2nJdFvAOEhSoRIcTzUGNDLQyElopeWhwpaKlK9uhEeMg0iBqho6dTb5BqG0OqURUWuR5Ve/QbJddKKESYix8n6SQBCoVhRIkUDHiuRm6xKtdJm8gl8oUideI8pSKgoeaDM3JCThP4uuA0AAA==") format("woff2");
+      }
+      text { font-family: "InterEmbed", system-ui, sans-serif; }
+    </style>
+  </defs>
+  <path d="M3 3 H9 L12 9 L15 3 H21 V21 H3 Z" fill="#BC5215"/>
+  <text x="3.25" y="20.25" text-anchor="start" fill="#fff" font-weight="800" font-size="5.25" letter-spacing="-0.15">Notch</text>
+</svg>
