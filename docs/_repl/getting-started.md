@@ -1,30 +1,24 @@
 ---
 title: "Getting Started"
-subtitle: "Install, launch the REPL, run a first script"
+subtitle: "Working with notch from the terminal"
 order: 1
 ---
 
-Notch ships with an interactive REPL backed by JLine 3.
 
-## Install
 
-Clone and build:
+## Install Notch first
 
-```notch
-git clone https://github.com/msu/notch.git
-cd notch
-mvn package
-```
+See the [install page]({{ '/install/' | relative_url }}) for the one-line install on macOS, Linux, and Windows. Once installed, `notch` is on your `PATH`.
 
 ## Launch the REPL
 
-```notch
-java -jar target/notch-1.0-SNAPSHOT.jar
+```
+notch
 ```
 
 You should see:
 
-```notch
+```
 notch >
 ```
 
