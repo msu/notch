@@ -1,0 +1,31 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/iron_block",
+    "iron": "minecraft:block/iron_block",
+    "crafting": "minecraft:block/crafting_table_top"
+  },
+  "elements": [
+    {
+      "__comment": "The iron-block body. Its top face stays iron so it shows as a border around the inset surface.",
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": { "texture": "#iron", "cullface": "north" },
+        "east":  { "texture": "#iron", "cullface": "east" },
+        "south": { "texture": "#iron", "cullface": "south" },
+        "west":  { "texture": "#iron", "cullface": "west" },
+        "up":    { "texture": "#iron", "cullface": "up" },
+        "down":  { "texture": "#iron", "cullface": "down" }
+      }
+    },
+    {
+      "__comment": "Crafting-table-top surface inset by 2px on each side, sitting a hair above the iron top.",
+      "from": [2, 16, 2],
+      "to": [14, 16.01, 14],
+      "faces": {
+        "up": { "texture": "#crafting", "uv": [2, 2, 14, 14] }
+      }
+    }
+  ]
+}

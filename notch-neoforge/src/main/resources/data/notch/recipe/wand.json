@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": "#c:rods/wooden",
+    "Y": "minecraft:book"
+  },
+  "pattern": [
+    " Y",
+    "X "
+  ],
+  "result": {
+    "id": "notch:wand",
+    "count": 1
+  }
+}

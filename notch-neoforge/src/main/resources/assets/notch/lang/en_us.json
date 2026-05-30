@@ -1,0 +1,13 @@
+{
+  "itemGroup.notch": "Notch",
+  "block.notch.programming_table": "Programming Table",
+  "item.notch.wand": "Wand",
+
+  "notch.configuration.title": "Notch Configs",
+  "notch.configuration.section.notch.common.toml": "Notch Configs",
+  "notch.configuration.section.notch.common.toml.title": "Notch Configs",
+  "notch.configuration.items": "Item List",
+  "notch.configuration.logDirtBlock": "Log Dirt Block",
+  "notch.configuration.magicNumberIntroduction": "Magic Number Text",
+  "notch.configuration.magicNumber": "Magic Number"
+}

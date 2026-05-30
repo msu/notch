@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#minecraft:planks",
+    "#minecraft:planks",
+    "#minecraft:planks",
+    "#minecraft:planks",
+    "#c:ingots/iron",
+    "#c:dusts/redstone"
+  ],
+  "result": {
+    "id": "notch:programming_table",
+    "count": 1
+  }
+}
