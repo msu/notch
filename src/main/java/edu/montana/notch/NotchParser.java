@@ -12,6 +12,8 @@ import static edu.montana.notch.util.Exceptions.rethrow;
 import static edu.montana.notch.util.Text.repr;
 
 public class NotchParser extends BasicParser {
+    private int loopDepth = 0;
+
     public NotchParser(TokenStream tokens) {
         super(tokens);
         ignoredTokenTypes.add("_ws");
@@ -595,7 +597,18 @@ public class NotchParser extends BasicParser {
         if (forStmt != null) {
             return forStmt;
         }
-
+        var breakStmt = parseBreakStatement();
+        if (breakStmt != null) {
+            return breakStmt;
+        }
+        var continueStmt = parseContinueStatement();
+        if (continueStmt != null) {
+            return continueStmt;
+        }
+        var repeatStmt = parseRepeatStatement();
+        if (repeatStmt != null) {
+            return repeatStmt;
+        }
         var assignmentStmt = parseAssignmentStatement();
         if (assignmentStmt != null) {
             return assignmentStmt;
@@ -605,6 +618,79 @@ public class NotchParser extends BasicParser {
                 .note("expected a statement")
                 .highlight(currentToken());
         throw new ParseException(diag);
+    }
+
+    private NotchStatement parseRepeatStatement() {
+        var start = tokens.location();
+        if (!takeIdent("repeat")) return null;
+        if (takeIdent("while")) {
+            NotchExpression cond = requireExpression("expected condition after 'while'");
+            List<NotchStatement> body = parseLoopBody();
+            requireKeyword("end", "Unterminated repeat statement");
+            final var span = new Span(source(), start, lastToken().end());
+            return new NotchRepeatWhile(span, cond, body);
+        }
+        if (takeIdent("until")) {
+            NotchExpression cond = requireExpression("expected condition after 'until'");
+            List<NotchStatement> body = parseLoopBody();
+            requireKeyword("end", "Unterminated repeat statement");
+            final var span = new Span(source(), start, lastToken().end());
+            return new NotchRepeatUntil(span, cond, body);
+        }
+
+        NotchExpression count = requireExpression("expected count expression after 'repeat'");
+        if (!takeIdent("times")) {
+            final var diag = new Diagnostic()
+                    .note("expected 'times' after count expression in 'repeat'")
+                    .highlight(currentToken());
+            throw new ParseException(diag);
+        }
+        List<NotchStatement> body = parseLoopBody();
+        requireKeyword("end", "Unterminated repeat statement");
+        final var span = new Span(source(), start, lastToken().end());
+        return new NotchRepeatTimes(span, count, body);
+    }
+
+    private List<NotchStatement> parseLoopBody() {
+        List<NotchStatement> body = new ArrayList<>();
+        try {
+            loopDepth++;
+            while (!atEnd() && !peekKeyword("end")) {
+                body.add(parseStatement());
+            }
+        } finally {
+            loopDepth--;
+        }
+        return body;
+    }
+
+    private NotchBreak parseBreakStatement() {
+        var start = tokens.location();
+        if (takeIdent("break")) {
+            final var span = new Span(source(), start, lastToken().end());
+            requireInLoop(span, "break");
+            return new NotchBreak(span);
+        }
+        return null;
+    }
+
+    private NotchContinue parseContinueStatement() {
+        var start = tokens.location();
+        if (takeIdent("continue")) {
+            final var span = new Span(source(), start, lastToken().end());
+            requireInLoop(span, "continue");
+            return new NotchContinue(span);
+        }
+        return null;
+    }
+
+    private void requireInLoop(Span span, String keyword) {
+        if (loopDepth == 0) {
+            final var diag = new Diagnostic()
+                    .note("'" + keyword + "' outside a loop")
+                    .highlight(span);
+            throw new ParseException(diag);
+        }
     }
 
     private NotchStatement parseAssignmentStatement() {
@@ -632,11 +718,7 @@ public class NotchParser extends BasicParser {
                 indexIdentifier = requireIdent("expected a variable name for the ");
             }
 
-            List<NotchStatement> loopBodyStatements = new ArrayList<>();
-
-            while (!atEnd() && !peekKeyword("end")) {
-                loopBodyStatements.add(parseStatement());
-            }
+            List<NotchStatement> loopBodyStatements = parseLoopBody();
 
             requireKeyword("end", "Unterminated for statement");
 

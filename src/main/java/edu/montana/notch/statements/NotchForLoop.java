@@ -10,6 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static edu.montana.notch.runtime.LoopBody.Control.BREAK;
+import static edu.montana.notch.runtime.LoopBody.runIteration;
+
 public class NotchForLoop extends NotchStatement {
 
     public final Token loopVariable;
@@ -37,9 +40,7 @@ public class NotchForLoop extends NotchStatement {
                     if (indexVariable != null) {
                         runtime.defineOrUpdate(((String) indexVariable.data), index++);
                     }
-                    for (NotchStatement notchStatement : loopBody) {
-                        runtime.execute(notchStatement);
-                    }
+                    if (runIteration(runtime, loopBody) == BREAK) return;
                 }
             }
         }
