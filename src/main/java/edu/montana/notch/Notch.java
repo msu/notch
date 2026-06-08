@@ -6,9 +6,12 @@ import edu.montana.notch.chisel.Tokenizer;
 import edu.montana.notch.chisel.type.LiteralTokenType;
 import edu.montana.notch.console.NotchShell;
 import edu.montana.notch.expressions.NotchExpression;
+import edu.montana.notch.runtime.Drain;
+import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.types.coercions.Coercion;
 
-import java.io.StringWriter;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static edu.montana.notch.chisel.type.BooleanTokenType.BOOL;
 import static edu.montana.notch.chisel.type.CStringTokenType.STR;
@@ -50,6 +53,31 @@ public class Notch {
             }
         }
         return (T) result;
+    }
+
+    public static final NotchTemplates TEMPLATES = new NotchTemplates();
+
+    public static String render(String path, Object... kv) {
+        return TEMPLATES.renderTemplate(path, toMap(kv));
+    }
+
+    public static void render(String path, Appendable out, Object... kv) {
+        TEMPLATES.renderTemplate(path, toMap(kv), new Drain(out));
+    }
+
+    private static Map<String, Object> toMap(Object[] kv) {
+        if (kv == null || kv.length == 0) return Map.of();
+        if ((kv.length & 1) != 0) {
+            throw new IllegalArgumentException("render() requires an even number of key/value arguments");
+        }
+        var map = new LinkedHashMap<String, Object>(kv.length / 2);
+        for (int i = 0; i < kv.length; i += 2) {
+            if (!(kv[i] instanceof String key)) {
+                throw new IllegalArgumentException("render() key at index " + i + " must be a String, got " + (kv[i] == null ? "null" : kv[i].getClass().getName()));
+            }
+            map.put(key, kv[i + 1]);
+        }
+        return map;
     }
 
     public static void main(String[] args) {

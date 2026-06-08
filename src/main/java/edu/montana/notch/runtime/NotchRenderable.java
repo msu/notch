@@ -7,5 +7,5 @@ public interface NotchRenderable {
 
     String getQualifiedName();
 
-    void render(BetterList<Object> args, NotchRuntime runtime, StringBuilder sb);
+    void render(BetterList<Object> args, NotchRuntime runtime, Drain out);
 }

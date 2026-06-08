@@ -4,6 +4,7 @@ import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.expressions.NotchMethodInvocation;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
@@ -32,7 +33,7 @@ public class ExpandCommand extends NotchTemplateCommand {
     }
 
     @Override
-    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
+    public void render(NotchTemplateRuntime runtime, Drain out) {
         var value = runtime.evaluate(macroExpression.root);
         if (!(value instanceof NotchTemplateRenderable macro)) {
             var diag = new Diagnostic();
@@ -46,6 +47,6 @@ public class ExpandCommand extends NotchTemplateCommand {
             var argValue = runtime.evaluate(arg);
             argValues.add(argValue);
         }
-        macro.render(argValues, runtime, sb);
+        macro.render(argValues, runtime, out);
     }
 }

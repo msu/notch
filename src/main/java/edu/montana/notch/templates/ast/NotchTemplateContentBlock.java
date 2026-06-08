@@ -2,6 +2,7 @@ package edu.montana.notch.templates.ast;
 
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Spanned;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentCommand;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentExpression;
@@ -28,12 +29,12 @@ public class NotchTemplateContentBlock implements Spanned {
     }
 
     public String globalRender(NotchTemplateRuntime runtime) {
-        final var out = new StringBuilder();
-        globalRender(runtime, out);
-        return out.toString();
+        final var sb = new StringBuilder();
+        globalRender(runtime, new Drain(sb));
+        return sb.toString();
     }
 
-    public void globalRender(NotchTemplateRuntime runtime, StringBuilder out) {
+    public void globalRender(NotchTemplateRuntime runtime, Drain out) {
         final var globals = collectGlobals();
         try {
             for (var global : globals) {
@@ -58,7 +59,7 @@ public class NotchTemplateContentBlock implements Spanned {
         }
     }
 
-    public void render(NotchTemplateRuntime runtime, StringBuilder out) {
+    public void render(NotchTemplateRuntime runtime, Drain out) {
         for (var item : content()) {
             try {
                 if (Objects.requireNonNull(item) instanceof NotchTemplateContentText itemText) {

@@ -2,6 +2,7 @@ package edu.montana.notch.templates.runtime;
 
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.expressions.NotchExpression;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
@@ -87,11 +88,11 @@ public class NotchTemplateRuntime extends NotchRuntime {
         return out == null ? text : out.toString();
     }
 
-    public void render(NotchTemplateCommand cmd, StringBuilder out) {
+    public void render(NotchTemplateCommand cmd, Drain out) {
         cmd.render(this, out);
     }
 
-    public void render(NotchExpression expression, StringBuilder out) {
+    public void render(NotchExpression expression, Drain out) {
         try (var ignoredTrace = trace(expression, source.id)) {
             var value = evaluate(expression);
             if (!isUndefined(value)) {

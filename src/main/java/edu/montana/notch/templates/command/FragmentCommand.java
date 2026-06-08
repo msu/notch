@@ -2,6 +2,7 @@ package edu.montana.notch.templates.command;
 
 import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplateParser;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
@@ -38,10 +39,10 @@ public class FragmentCommand extends NotchTemplateCommand implements NotchTempla
     }
 
     @Override
-    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
+    public void render(NotchTemplateRuntime runtime, Drain out) {
         runtime.defineOrUpdate(name.str(), fragment);
         try (var ignored = runtime.pushScope()) {
-            content.render(runtime, sb);
+            content.render(runtime, out);
         }
     }
 
@@ -66,10 +67,10 @@ public class FragmentCommand extends NotchTemplateCommand implements NotchTempla
         }
 
         @Override
-        public void render(BetterList<Object> args, NotchTemplateRuntime runtime, StringBuilder sb) {
+        public void render(BetterList<Object> args, NotchTemplateRuntime runtime, Drain out) {
             var child = new NotchTemplateRuntime(source(), runtime);
             try (var ignoreScope = child.pushScope()) {
-                content.render(child, sb);
+                content.render(child, out);
             }
         }
     }
