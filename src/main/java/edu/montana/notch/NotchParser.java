@@ -214,7 +214,12 @@ public class NotchParser extends BasicParser {
         var expr = parseComparisonExpression();
         if (expr == null) return null;
 
-        while (peek("==", "!=")) {
+        while (peek("==", "!=") || peekKeyword("is")) {
+            //"is" precedent level "(a + b) is empty" correct
+            if (takeKeyword("is")) {
+                expr = parseIsOperation(expr);
+                continue;
+            }
             Token op = take();
             var rhs = parseComparisonExpression();
             if (rhs == null) {
@@ -350,8 +355,6 @@ public class NotchParser extends BasicParser {
                     notchExpression = parseMethodInvocation(notchExpression);
                 } else if (peek("[")) {
                     notchExpression = parseIndexOperation(notchExpression);
-                } else if (takeKeyword("is")) {
-                    notchExpression = parseIsOperation(notchExpression);
                 } else {
                     break;
                 }
@@ -362,15 +365,24 @@ public class NotchParser extends BasicParser {
 
     private NotchExpression parseIsOperation(NotchExpression lhs) {
         var isInverted = takeKeyword("not");
-
-        if (takeIdent("empty")) {
-            return new IsEmptyExpression(lhs, isInverted, tokens.prev());
-        } else {
-            final var diag = new Diagnostic()
-                    .note("expected property after " + (isInverted ? "'is not'" : "'is'"))
-                    .highlight(currentToken());
-            throw new ParseException(diag);
+        var isToken = lastToken();
+        if (peekIdent("empty")) {
+            int beforeEmpty = tokens.index;
+            tokens.take();
+            if (!peek("(") && !peek(".")) {
+                return new IsEmptyExpression(lhs, isInverted, tokens.prev());
+            }
+            tokens.index = beforeEmpty;
         }
+        NotchExpression rhs = parseComparisonExpression();
+        if (rhs == null) {
+            throw new ParseException(new Diagnostic()
+                    .note("expected expression after " + (isInverted ? "'is not'" : "'is'"))
+                    .highlight(currentToken()));
+        }
+        String opStr = isInverted ? "!=" : "==";
+        Token Op = new Token(isToken.span(), opStr, opStr);
+        return new NotchEquality(Op, lhs, rhs);
     }
 
     private NotchExpression parseIndexOperation(NotchExpression root) {
