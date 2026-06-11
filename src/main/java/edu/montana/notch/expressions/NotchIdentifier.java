@@ -34,6 +34,9 @@ public class NotchIdentifier extends NotchExpression implements DotPathMember {
 
     @Override
     public String getDotPath() {
+        if (this.token.str().equals("this")) {
+            return null;
+        }
         return this.token.str();
     }
 }

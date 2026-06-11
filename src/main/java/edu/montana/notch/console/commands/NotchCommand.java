@@ -48,7 +48,9 @@ public final class NotchCommand {
             NotchElement element = parser.parse();
             if (element instanceof NotchExpression expr) {
                 Object result = runtime.evaluate(expr);
-                System.out.println(result);
+                if (!runtime.isUndefined(result)) {
+                    System.out.println(result);
+                }
             } else if (element instanceof NotchStatement stmt) {
                 runtime.execute(stmt);
             }

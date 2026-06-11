@@ -17,7 +17,12 @@ public class NotchTokenTypeKeyword implements TokenType {
     public final BetterSet<String> keywords = new BetterSet<>();
 
     private NotchTokenTypeKeyword(String... keywords) {
-        this.keywords.addAll(Set.of("if", "for", "else", "end", "in", "is", "not", "null", "as"));
+        this.keywords.addAll(Set.of(
+                "if", "for", "else", "end", "in", "is", "not", "null", "as",
+                "repeat", "while", "until", "times", "break", "continue",
+                "print",
+                "function", "return", "class", "new", "this", "field"
+        ));
         this.keywords.addAll(Arrays.asList(keywords));
     }
 
