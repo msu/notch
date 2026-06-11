@@ -234,16 +234,45 @@ public class NotchParser extends BasicParser {
         NotchExpression expr = parseAdditiveExpression();
         if (expr == null) return null;
 
-        while (peek("<", "<=", ">", ">=")) {
-            Token op = take();
-            var rhs = parseAdditiveExpression();
-            if (rhs == null) {
-                final var diag = new Diagnostic()
-                        .note("expected expression after '+' operator")
-                        .highlight(currentToken());
-                throw new ParseException(diag);
+        while (peek("<", "<=", ">", ">=")
+                || peekIdent("starts", "ends", "contains")) {
+            if (peek("<", "<=", ">", ">=")) {
+                Token op = take();
+                var rhs = parseAdditiveExpression();
+                if (rhs == null) {
+                    final var diag = new Diagnostic()
+                            .note("expected expression after comparison operator")
+                            .highlight(currentToken());
+                    throw new ParseException(diag);
+                }
+                expr = new NotchComparisonExpression(op, expr, rhs);
+            } else if (takeIdent("starts")) {
+                requireIdent("with", "expected 'with' after 'starts'");
+                var rhs = parseAdditiveExpression();
+                if (rhs == null) {
+                    throw new ParseException(new Diagnostic()
+                            .note("expected expression after 'starts with'")
+                            .highlight(currentToken()));
+                }
+                expr = new NotchStartsWithExpression(expr, rhs);
+            } else if (takeIdent("ends")) {
+                requireIdent("with", "expected 'with' after 'ends'");
+                var rhs = parseAdditiveExpression();
+                if (rhs == null) {
+                    throw new ParseException(new Diagnostic()
+                            .note("expected expression after 'ends with'")
+                            .highlight(currentToken()));
+                }
+                expr = new NotchEndsWithExpression(expr, rhs);
+            } else if (takeIdent("contains")) {
+                var rhs = parseAdditiveExpression();
+                if (rhs == null) {
+                    throw new ParseException(new Diagnostic()
+                            .note("expected expression after 'contains'")
+                            .highlight(currentToken()));
+                }
+                expr = new NotchContainsExpression(expr, rhs);
             }
-            expr = new NotchComparisonExpression(op, expr, rhs);
         }
         return expr;
     }
