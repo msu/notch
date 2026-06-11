@@ -481,7 +481,7 @@ public class NotchParser extends BasicParser {
         }
 
         if (peek("{")) {
-            return parseMapLiteral();
+            return parseBraceLiteral();
         }
 
         if (peekKeyword("null")) {
@@ -511,37 +511,40 @@ public class NotchParser extends BasicParser {
         return null;
     }
 
-    private NotchExpression parseMapLiteral() {
+    private NotchExpression parseBraceLiteral() {
         Span start = currentToken().span;
-        if (take("{")) {
-            Map<String, NotchExpression> mapValues = new LinkedHashMap<>();
-            while (!atEnd() && !peek("}")) {
-                String key;
-                if (peek("ident")) {
-                    key = take().str();
-                } else if (peek("string")) {
-                    key = String.valueOf(take().data);
-                } else {
-                    final var diag = new Diagnostic()
-                            .note("expected a key")
-                            .highlight(currentToken());
-                    throw new ParseException(diag);
-                }
-                require("=", "Expected a '=` to separate a key from a value in the map");
-                NotchExpression notchExpression = parseExpression();
-                mapValues.put(key, notchExpression);
-                if (!peek("}")) {
-                    require(",", "Expected a comma to separate elements in the list");
-                } else {
-                    take(","); // allow a trailing comma
-                }
-            }
-            require("}", "Expected a '}' to close the map");
-            final var span = start.through(lastToken());
-            NotchMapLiteral notchListLiteral = new NotchMapLiteral(span, mapValues);
-            return notchListLiteral;
+        if (!take("{")) return null;
+        if (take("}")) {
+            return new NotchMapLiteral(start.through(lastToken()), new ArrayList<>(), new ArrayList<>());
         }
-        return null;
+        if (take(",")) {
+            require("}", "expected '}' to close the empty set '{,}'");
+            return new NotchSetLiteral(start.through(lastToken()), new ArrayList<>());
+        }
+        NotchExpression first = parseExpression();
+        if (take("->")) {
+            List<NotchExpression> keys = new ArrayList<>();
+            List<NotchExpression> values = new ArrayList<>();
+            keys.add(first);
+            values.add(parseExpression());
+            while (take(",")) {
+                if (peek("}")) break;
+                keys.add(parseExpression());
+                require("->", "expected '->' between a map key and value");
+                values.add(parseExpression());
+            }
+            require("}", "expected '}' to close the map");
+            return new NotchMapLiteral(start.through(lastToken()), keys, values);
+        } else {
+            List<NotchExpression> values = new ArrayList<>();
+            values.add(first);
+            while (take(",")) {
+                if (peek("}")) break;
+                values.add(parseExpression());
+            }
+            require("}", "expected '}' to close the set");
+            return new NotchSetLiteral(start.through(lastToken()), values);
+        }
     }
 
     private NotchExpression parseClosureExpression() {
