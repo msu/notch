@@ -7,6 +7,7 @@ import edu.montana.notch.chisel.*;
 import edu.montana.notch.console.ShellContext;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchRuntime;
+import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.statements.NotchStatement;
 import org.jline.reader.LineReader;
 
@@ -56,8 +57,21 @@ public final class NotchCommand {
             }
             if (recordOnSuccess) appendIfRecording(reader, source);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(userFacingMessage(e));
         }
+    }
+
+    //TODO: Better way? (NotchCommand.java or Diagnostic.java)
+    private static String userFacingMessage(Throwable e) {
+        Diagnostic diagnostic = null;
+        if (e instanceof NotchRuntimeException nre) {
+            diagnostic = nre.diagnostic;
+        } else if (e instanceof ParseException pe) {
+            diagnostic = pe.diagnostic;
+        } else if (e instanceof TokenizeException te) {
+            diagnostic = te.diagnostic;
+        }
+        return diagnostic != null ? diagnostic.render(false) : e.getMessage();
     }
 
     private static void appendIfRecording(LineReader reader, Source source) {
