@@ -4,6 +4,7 @@ import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentCommand;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
@@ -46,7 +47,7 @@ public abstract class NotchTemplateCommand implements Spanned {
     public void preRender(NotchTemplateRuntime runtime) {
     }
 
-    public abstract void render(NotchTemplateRuntime runtime, StringBuilder sb);
+    public abstract void render(NotchTemplateRuntime runtime, Drain out);
 
     public void postRender(NotchTemplateRuntime runtime) {
     }

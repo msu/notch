@@ -2,6 +2,7 @@ package edu.montana.notch.runtime;
 
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchExpression;
+import edu.montana.notch.statements.NotchReturn;
 import edu.montana.notch.statements.NotchStatement;
 
 import java.util.Collections;
@@ -12,7 +13,7 @@ import java.util.function.*;
 import static edu.montana.notch.runtime.NotchRuntime.UNDEFINED;
 
 public record NotchClosure(NotchRuntime closure, List<Token> parameters, NotchExpression expression,
-                           List<NotchStatement> statements)
+                           List<NotchStatement> statements, String name)
         implements Function, Runnable, Callable, Consumer, Supplier, Predicate, BiConsumer {
 
     public Object call(List<Object> args) {
@@ -28,16 +29,25 @@ public record NotchClosure(NotchRuntime closure, List<Token> parameters, NotchEx
             if (expression != null) {
                 return closure.evaluate(expression);
             } else {
-                for (NotchStatement statement : statements) {
-                    closure.execute(statement);
+                try {
+                    for (NotchStatement statement : statements) {
+                        closure.execute(statement);
+                    }
+                    return UNDEFINED;
+                } catch (NotchRuntimeException nre) {
+                    if (nre.getCause() instanceof NotchReturn.ReturnSignal rs) {
+                        return rs.value;
+                    }
+                    throw nre;
                 }
-                // TODO - support return statements eventually
-                return UNDEFINED;
             }
         }
     }
 
     public String getQualifiedName() {
+        if (name != null) {
+            return "<function:%s>".formatted(name);
+        }
         var ste = closure.stackTraceElements.getLast();
         final var span = ste.span();
         return "<closure:%s:%d:%d>".formatted(span.sourceId(), span.start().line, span.start().column);

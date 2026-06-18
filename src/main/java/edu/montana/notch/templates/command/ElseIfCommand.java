@@ -2,6 +2,7 @@ package edu.montana.notch.templates.command;
 
 import edu.montana.notch.NotchParser;
 import edu.montana.notch.expressions.NotchExpression;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplateParser;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
@@ -27,12 +28,12 @@ public class ElseIfCommand extends NotchTemplateCommand {
     }
 
     @Override
-    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
+    public void render(NotchTemplateRuntime runtime, Drain out) {
         var conditionValue = runtime.evaluate(condition);
         if (runtime.isTruthy(conditionValue)) {
-            body.render(runtime, sb);
+            body.render(runtime, out);
         } else {
-            body.terminalCommand().render(runtime, sb);
+            body.terminalCommand().render(runtime, out);
         }
 
     }

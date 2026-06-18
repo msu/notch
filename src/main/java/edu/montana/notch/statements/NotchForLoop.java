@@ -10,19 +10,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class NotchForLoop extends NotchStatement {
+public class NotchForLoop extends NotchLoop {
 
     public final Token loopVariable;
     public final Token indexVariable;
     public final NotchExpression expr;
-    public final List<NotchStatement> loopBody;
 
-    public NotchForLoop(Span span, Token loopVariable, NotchExpression expr, Token indexVariable, List<NotchStatement> loopBody) {
-        super(span);
+    public NotchForLoop(Span span, Token loopVariable, NotchExpression expr, Token indexVariable, List<NotchStatement> body) {
+        super(span, body);
         this.loopVariable = Objects.requireNonNull(loopVariable);
         this.expr = Objects.requireNonNull(expr);
         this.indexVariable = indexVariable;
-        this.loopBody = List.copyOf(Objects.requireNonNull(loopBody));
     }
 
     @Override
@@ -37,9 +35,7 @@ public class NotchForLoop extends NotchStatement {
                     if (indexVariable != null) {
                         runtime.defineOrUpdate(((String) indexVariable.data), index++);
                     }
-                    for (NotchStatement notchStatement : loopBody) {
-                        runtime.execute(notchStatement);
-                    }
+                    if (runBody(runtime) == Control.BREAK) return;
                 }
             }
         }

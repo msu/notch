@@ -16,8 +16,7 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
   {% if page.collection == coll %}{% assign is_docs_page = true %}{% endif %}
 {% endfor %}
 
-{% if is_docs_page %}
-<nav id="main-nav" class="docs-nav" aria-label="Documentation navigation" role="navigation">
+<nav id="main-nav" class="docs-nav{% unless is_docs_page %} site-only{% endunless %}" aria-label="Documentation navigation" role="navigation">
     <button class="sidebar-toggle" type="button" aria-label="Toggle sidebar" aria-expanded="true"
         _="init
              if first <html/> matches .sidebar-collapsed
@@ -48,8 +47,15 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
             <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
     </button>
+    <ul class="nav-site-links" role="menubar">
+        <li><a href="{{ '/' | relative_url }}">Home</a></li>
+        <li><a href="{{ '/syntax/overview/' | relative_url }}">Docs</a></li>
+        <li><a href="{{ '/templates/overview/' | relative_url }}">Notch Templates</a></li>
+        <li><a href="https://github.com/msu/notch" rel="noopener">GitHub</a></li>
+        <li><a href="https://www.cs.montana.edu" rel="noopener">MSU CS</a></li>
+    </ul>
     <div class="nav-content">
-        {% for coll in docs_collections %}
+        {% if is_docs_page %}{% for coll in docs_collections %}
             {% assign idx = forloop.index0 %}
             {% assign label = collection_labels[idx] %}
             {% assign first_url = collection_first_url[idx] %}
@@ -68,7 +74,7 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
                     {% endfor %}
                 </ul>
             </section>
-        {% endfor %}
+        {% endfor %}{% endif %}
     </div>
     <div class="sidebar-resize-indicator" aria-hidden="true"
         _="init
@@ -93,4 +99,3 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
                end
              end"></div>
 </nav>
-{% endif %}

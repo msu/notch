@@ -1,9 +1,8 @@
 package edu.montana.notch.console;
 
-import edu.montana.notch.Notch;
+import edu.montana.notch.NotchParser;
+import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.chisel.Source;
-import edu.montana.notch.chisel.Token;
-import edu.montana.notch.chisel.TokenStream;
 import edu.montana.notch.chisel.TokenizeException;
 import org.jline.reader.EOFError;
 import org.jline.reader.ParsedLine;
@@ -28,21 +27,26 @@ public class NotchJLineParser extends DefaultParser {
     }
 
     private static boolean isBlockIncomplete(String buffer) {
-        TokenStream stream;
+        var parser = buildParser(buffer);
+        if (parser == null) return false;
+        try {
+            parser.parseAsStatement();
+            return false;
+        } catch (ParseException e) {
+            if (!parser.atEnd()) return false;
+            var notes = e.diagnostic.getNotes();
+            if (notes.isEmpty()) return false;
+            var first = notes.getFirst();
+            return first != null && first.startsWith("Unterminated");
+        }
+    }
+
+    private static NotchParser buildParser(String buffer) {
         try {
             final var src = new Source("repl-incomplete-check", buffer);
-            stream = Notch.TOKENIZER.create(src).tokenize();
+            return new NotchParser(src);
         } catch (TokenizeException e) {
-            return false;
+            return null;
         }
-        int depth = 0;
-        for (Token t : stream.toList()) {
-            if (t.type.equals("_ws")) continue;
-            if (!t.type.equals("keyword")) continue;
-            String kw = t.str();
-            if ("if".equals(kw) || "for".equals(kw)) depth++;
-            else if ("end".equals(kw)) depth--;
-        }
-        return depth > 0;
     }
 }

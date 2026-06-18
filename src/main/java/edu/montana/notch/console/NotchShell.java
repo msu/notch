@@ -14,7 +14,6 @@ import edu.montana.notch.logging.NotchLogging;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.Parser;
-import org.jline.terminal.Attributes;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.slf4j.Logger;
@@ -37,12 +36,9 @@ public class NotchShell {
 
     public static void start(boolean immediate) {
         if (INST == null) {
-            Attributes attributes = new Attributes();
-            attributes.setLocalFlag(Attributes.LocalFlag.ISIG, true);
             var shell = new NotchShell(immediate);
             Terminal terminal = safelyEval(() -> TerminalBuilder.builder()
                     .system(true)
-                    .attributes(attributes)
                     .build());
 
             if (terminal.getType().equals(Terminal.TYPE_DUMB)) log.warn("Terminal type is Dumb");
@@ -52,7 +48,8 @@ public class NotchShell {
         }
     }
 
-    public static void main(String[] args) {
+    public
+    static void main(String[] args) {
         start(true);
     }
 

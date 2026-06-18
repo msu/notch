@@ -4,6 +4,7 @@ import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplateParser;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
@@ -119,20 +120,20 @@ public class ContentCommand extends NotchTemplateCommand {
     }
 
     @Override
-    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
+    public void render(NotchTemplateRuntime runtime, Drain out) {
         final var mode = runtime.storage(LayoutCommand.MODE);
         final var blocks = runtime.storage(LayoutCommand.BLOCKS);
 
         if (mode == LayoutCommand.Mode.ContentFile) {
             final var s = new StringBuilder();
-            content.render(runtime, s);
+            content.render(runtime, new Drain(s));
             blocks.put(blockName.str(), s.toString());
         } else if (mode == LayoutCommand.Mode.LayoutFile) {
             final var blockContent = blocks.get(blockName == null ? null : blockName.str());
             if (blockContent != null) {
-                sb.append(blockContent);
+                out.append(blockContent);
             } else {
-                content.render(runtime, sb);
+                content.render(runtime, out);
             }
         } else {
             throw new UnsupportedOperationException("unknown mode: " + mode);

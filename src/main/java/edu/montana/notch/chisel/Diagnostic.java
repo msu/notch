@@ -34,12 +34,20 @@ public class Diagnostic {
     }
 
     public String render() {
+        return render(true);
+    }
+
+    public String render(boolean includeStackTrace) {
         var out = new StringBuilder();
-        render(out);
+        render(out, includeStackTrace);
         return out.toString();
     }
 
     public void render(StringBuilder sb) {
+        render(sb, true);
+    }
+
+    public void render(StringBuilder sb, boolean includeStackTrace) {
         var highlighting = new HashMap<Highlight, List<String>>();
         int maxLineNoSize = 0;
         for (var highlight : highlights) {
@@ -107,7 +115,9 @@ public class Diagnostic {
             }
         }
 
-        renderStackTrace(sb);
+        if (includeStackTrace) {
+            renderStackTrace(sb);
+        }
     }
 
     private void renderStackTrace(StringBuilder out) {

@@ -4,6 +4,7 @@ import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplateParser;
@@ -74,7 +75,7 @@ public class MacroCommand extends NotchTemplateCommand implements NotchTemplateI
     }
 
     @Override
-    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
+    public void render(NotchTemplateRuntime runtime, Drain out) {
         runtime.defineOrUpdate(getMacroName(), macro);
     }
 
@@ -99,7 +100,7 @@ public class MacroCommand extends NotchTemplateCommand implements NotchTemplateI
         }
 
         @Override
-        public void render(BetterList<Object> args, NotchTemplateRuntime runtime, StringBuilder sb) {
+        public void render(BetterList<Object> args, NotchTemplateRuntime runtime, Drain out) {
             var child = new NotchTemplateRuntime(source(), runtime);
             try (var scope = child.pushScope()) {
                 scope.define("arguments", args);
@@ -122,7 +123,7 @@ public class MacroCommand extends NotchTemplateCommand implements NotchTemplateI
                         scope.define(name.str(), value);
                     }
                 }
-                content.render(child, sb);
+                content.render(child, out);
             }
         }
     }

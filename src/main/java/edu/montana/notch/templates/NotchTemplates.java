@@ -2,6 +2,7 @@ package edu.montana.notch.templates;
 
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.Tokenizer;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
 import edu.montana.notch.templates.command.FragmentCommand;
 import edu.montana.notch.templates.loader.ClasspathNotchTemplateLoader;
@@ -68,6 +69,12 @@ public class NotchTemplates {
 
 
     public String renderTemplate(String uriStr, Map<String, Object> vars) {
+        final var sb = new StringBuilder();
+        renderTemplate(uriStr, vars, new Drain(sb));
+        return sb.toString();
+    }
+
+    public void renderTemplate(String uriStr, Map<String, Object> vars, Drain out) {
         Long initialTime = null;
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Rendering {} with symbols [{}]", uriStr, vars.keySet().stream().sorted().collect(Collectors.joining(", ")));
@@ -76,7 +83,7 @@ public class NotchTemplates {
         try {
             var uri = parseUri(uriStr);
             var source = loader.loadSource(uri.path);
-            return renderFromSource(source, uri.fragment, vars);
+            renderFromSource(source, uri.fragment, vars, out);
         } finally {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Rendered {} in {}ms", uriStr, System.currentTimeMillis() - initialTime);
@@ -85,6 +92,12 @@ public class NotchTemplates {
     }
 
     public String renderTemplate(String uri, NotchTemplateRuntime parent) {
+        final var sb = new StringBuilder();
+        renderTemplate(uri, parent, new Drain(sb));
+        return sb.toString();
+    }
+
+    public void renderTemplate(String uri, NotchTemplateRuntime parent, Drain out) {
         Long initialTime = null;
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Rendering {} with symbols [{}]", uri, parent.getInScopeSymbols().stream().sorted().collect(Collectors.joining(", ")));
@@ -94,7 +107,7 @@ public class NotchTemplates {
             var intent = parseUri(uri);
             var source = loader.loadSource(intent.path);
             var runtime = new NotchTemplateRuntime(source, parent);
-            return renderFromSource(source, intent.fragment, runtime);
+            renderFromSource(source, intent.fragment, runtime, out);
         } finally {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Rendered {} in {}ms", uri, System.currentTimeMillis() - initialTime);
@@ -103,8 +116,14 @@ public class NotchTemplates {
     }
 
     public String renderFromSource(Source source, String fragment, Map<String, Object> vars) {
+        final var sb = new StringBuilder();
+        renderFromSource(source, fragment, vars, new Drain(sb));
+        return sb.toString();
+    }
+
+    public void renderFromSource(Source source, String fragment, Map<String, Object> vars, Drain out) {
         final var runtime = new NotchTemplateRuntime(source, this, vars);
-        return renderFromSource(source, fragment, runtime);
+        renderFromSource(source, fragment, runtime, out);
     }
 
     private NotchTemplateContentBlock parseSource(Source source) {
@@ -118,8 +137,14 @@ public class NotchTemplates {
     }
 
     public String renderString(String template, Map<String, Object> vars) {
+        final var sb = new StringBuilder();
+        renderString(template, vars, new Drain(sb));
+        return sb.toString();
+    }
+
+    public void renderString(String template, Map<String, Object> vars, Drain out) {
         final var source = new Source("template", template);
-        return renderFromSource(source, null, vars);
+        renderFromSource(source, null, vars, out);
     }
 
 
@@ -140,12 +165,18 @@ public class NotchTemplates {
     }
 
     public String renderFromSource(Source source, String fragmentName, NotchTemplateRuntime runtime) {
+        final var sb = new StringBuilder();
+        renderFromSource(source, fragmentName, runtime, new Drain(sb));
+        return sb.toString();
+    }
+
+    public void renderFromSource(Source source, String fragmentName, NotchTemplateRuntime runtime, Drain out) {
         final var contentBlock = parseSource(source);
         if (fragmentName != null) {
             final var fragment = findFragment(fragmentName, contentBlock);
-            return fragment.render(new BetterList<>(), runtime);
+            fragment.render(new BetterList<>(), runtime, out);
         } else {
-            return contentBlock.globalRender(runtime);
+            contentBlock.globalRender(runtime, out);
         }
     }
 

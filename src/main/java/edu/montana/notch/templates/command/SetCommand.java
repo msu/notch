@@ -2,6 +2,7 @@ package edu.montana.notch.templates.command;
 
 import edu.montana.notch.NotchParser;
 import edu.montana.notch.expressions.NotchExpression;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.chisel.Token;
@@ -23,7 +24,7 @@ public class SetCommand extends NotchTemplateCommand {
     }
 
     @Override
-    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
+    public void render(NotchTemplateRuntime runtime, Drain out) {
         runtime.defineOrUpdate(name.str(), runtime.evaluate(value));
     }
 }

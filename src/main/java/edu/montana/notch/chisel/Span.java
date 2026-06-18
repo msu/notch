@@ -41,7 +41,7 @@ public record Span(Source source, Location start, Location end) implements Spann
     public Span through(Span span) {
         assert (this.end.index <= span.end.index);
         assert (this.source.id.equals(span.source.id));
-        return new Span(source, start, end);
+        return new Span(source, start, span.end);
     }
 
     public Span through(Location end) {

@@ -2,6 +2,7 @@ package edu.montana.notch.templates.command;
 
 import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplateParser;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
@@ -32,7 +33,7 @@ public class LayoutCommand extends NotchTemplateCommand {
     }
 
     @Override
-    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
+    public void render(NotchTemplateRuntime runtime, Drain out) {
         final var layoutContent = runtime.templates().getTemplateContent(templateName.str());
         final var contentGlobals = bodyContent.collectGlobals();
         final var layoutGlobals = layoutContent.collectGlobals();
@@ -55,7 +56,7 @@ public class LayoutCommand extends NotchTemplateCommand {
             }
 
             final var contentSb = new StringBuilder();
-            bodyContent.render(contentRuntime, contentSb);
+            bodyContent.render(contentRuntime, new Drain(contentSb));
             blocks.put(null, contentSb.toString());
 
             for (final var global : contentGlobals) {
@@ -63,7 +64,7 @@ public class LayoutCommand extends NotchTemplateCommand {
             }
         }
 
-        layoutContent.render(layoutRuntime, sb);
+        layoutContent.render(layoutRuntime, out);
 
         for (final var global : contentGlobals) {
             global.postRender(layoutRuntime);

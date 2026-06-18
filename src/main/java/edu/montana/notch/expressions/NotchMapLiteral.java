@@ -4,24 +4,26 @@ import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.util.BetterMap;
 
-import java.util.Map;
+import java.util.List;
 
 public class NotchMapLiteral extends NotchExpression {
-    private final Map<String, NotchExpression> mapValues;
+    public final List<NotchExpression> keys;
+    public final List<NotchExpression> values;
 
-    public NotchMapLiteral(Span span, Map<String, NotchExpression> mapValues) {
+    public NotchMapLiteral(Span span, List<NotchExpression> keys, List<NotchExpression> values) {
         super(span);
-        this.mapValues = Map.copyOf(mapValues);
-        addChildren(mapValues.values());
+        this.keys = keys;
+        this.values = values;
+
+        addChildren(keys);
+        addChildren(values);
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
         BetterMap<Object, Object> betterMap = new BetterMap<>();
-        for (Map.Entry<String, NotchExpression> s : mapValues.entrySet()) {
-            String key = s.getKey();
-            Object val = runtime.evaluate(s.getValue());
-            betterMap.put(key, val);
+        for (int i = 0; i < keys.size(); i++) {
+            betterMap.put(runtime.evaluate(keys.get(i)), runtime.evaluate(values.get(i)));
         }
         return betterMap;
     }

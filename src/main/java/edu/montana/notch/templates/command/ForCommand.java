@@ -3,6 +3,7 @@ package edu.montana.notch.templates.command;
 import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchExpression;
+import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplateParser;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
@@ -33,7 +34,7 @@ public class ForCommand extends NotchTemplateCommand {
     }
 
     @Override
-    public void render(NotchTemplateRuntime runtime, StringBuilder sb) {
+    public void render(NotchTemplateRuntime runtime, Drain out) {
         var iterableValue = iterable.evaluate(runtime);
         var iterable = runtime.coerceIterable(this.iterable.span(), iterableValue);
 
@@ -43,13 +44,13 @@ public class ForCommand extends NotchTemplateCommand {
                 for (Object o : iterable) {
                     scope.define("index", i);
                     scope.define(varName.str(), o);
-                    content.render(runtime, sb);
+                    content.render(runtime, out);
                     i += 1;
                 }
             }
 
             if (i == 0) {
-                content.terminalCommand().render(runtime, sb);
+                content.terminalCommand().render(runtime, out);
             }
         }
     }
