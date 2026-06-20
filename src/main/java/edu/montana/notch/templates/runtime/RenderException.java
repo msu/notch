@@ -5,6 +5,7 @@ import edu.montana.notch.chisel.TokenizeException;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.util.BetterList;
 
+import java.io.*;
 import java.util.List;
 
 public class RenderException extends RuntimeException {
@@ -36,6 +37,12 @@ public class RenderException extends RuntimeException {
             } else {
                 msg.append("uncaught exception:\n");
                 msg.append("- %s".formatted(ex));
+                ex.printStackTrace(new PrintWriter(new OutputStream() {
+                    @Override
+                    public void write(int b) {
+                        msg.append((char) b);
+                    }
+                }));
                 msg.append('\n');
             }
         }

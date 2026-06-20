@@ -132,7 +132,7 @@ public class ContentCommand extends NotchTemplateCommand {
             final var blockContent = blocks.get(blockName == null ? null : blockName.str());
             if (blockContent != null) {
                 out.append(blockContent);
-            } else {
+            } else if (content != null) {
                 content.render(runtime, out);
             }
         } else {
