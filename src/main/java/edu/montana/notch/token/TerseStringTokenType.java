@@ -12,7 +12,7 @@ public class TerseStringTokenType implements TokenType {
     }
 
     protected boolean isTerseCharacter(char c) {
-        return c != ' ' && c != ')' && c != ',' && c != ']' && c != '}' && c != '\0';
+        return c != ' ' && c != ')' && c != ',' && c != ']' && c != '}' && c != '\0' && c != '\r' && c != '\n';
     }
 
     @Override
