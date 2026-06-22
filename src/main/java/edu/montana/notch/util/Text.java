@@ -2,6 +2,7 @@ package edu.montana.notch.util;
 
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -264,6 +265,20 @@ public class Text {
 
     public static String base64Encode(String value) {
         return Base64.getEncoder().encodeToString(value.getBytes());
+    }
+
+    public static String closest(String target, Collection<String> candidates, int maxDistance) {
+        String t = target.toLowerCase();
+        String best = null;
+        int min = Integer.MAX_VALUE;
+        for (String c : candidates) {
+            int d = levenshteinDistance(t, c.toLowerCase());
+            if (d < min) {
+                min = d;
+                best = c;
+            }
+        }
+        return min <= maxDistance ? best : null;
     }
 
     public static int levenshteinDistance(String s1, String s2) {

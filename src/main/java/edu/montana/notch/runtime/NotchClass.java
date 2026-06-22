@@ -41,17 +41,7 @@ public final class NotchClass {
     }
 
     public String closestDeclaredField(String name) {
-        String target = name.toLowerCase();
-        String closest = null;
-        int minDistance = Integer.MAX_VALUE;
-        for (String field : declaredFields) {
-            int distance = Text.levenshteinDistance(target, field.toLowerCase());
-            if (distance < minDistance) {
-                minDistance = distance;
-                closest = field;
-            }
-        }
-        return minDistance <= 2 ? closest : null;
+        return Text.closest(name, declaredFields, 2);
     }
 
     public NotchInstance construct(NotchRuntime caller, List<Object> args) {
