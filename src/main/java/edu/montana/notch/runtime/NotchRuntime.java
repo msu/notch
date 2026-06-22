@@ -26,6 +26,7 @@ public class NotchRuntime {
     protected BetterList<NotchStackTraceElement> stackTraceElements = new BetterList<>();
     private Consumer<Object> out = System.out::println;
     private BetterMap<Key, Object> storage = new BetterMap<>();
+    private final Deque<Throwable> handledExceptions = new ArrayDeque<>();
 
     public NotchRuntime(Source source) {
         this(source, Map.of());
@@ -168,6 +169,18 @@ public class NotchRuntime {
     public NotchStackTrace currentStackTrace() {
         var trace = stackTraceElements.toArray(NotchStackTraceElement[]::new);
         return new NotchStackTrace(trace);
+    }
+
+    public void pushHandled(Throwable t) {
+        handledExceptions.push(t);
+    }
+
+    public void popHandled() {
+        handledExceptions.pop();
+    }
+
+    public Throwable currentHandled() {
+        return handledExceptions.peek();
     }
 
     public Number asNumber(Object value) {

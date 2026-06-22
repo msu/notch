@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-import static edu.montana.notch.runtime.NotchRuntime.UNDEFINED;
 import static edu.montana.notch.util.Exceptions.safelyEval;
 
 public class NotchMethodInvocation extends NotchExpression {
@@ -31,16 +30,16 @@ public class NotchMethodInvocation extends NotchExpression {
     public Object evaluate(NotchRuntime runtime) {
         Object functionObj = runtime.evaluate(root);
         if (functionObj == null || runtime.isUndefined(functionObj)) {
-            return UNDEFINED;
-            //var diag = new Diagnostic();
-            //diag.highlight(span());
-            //if (root instanceof NotchPropertyAccess pa) {
-            //    final var path = pa.getDotPath();
-            //    diag.note("unable to call %s was null".formatted(Text.repr(path)));
-            //} else {
-            //    diag.note("unable to call null");
-            //}
-            //throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
+            var diag = new Diagnostic();
+            diag.highlight(root.span());
+            if (root instanceof NotchPropertyAccess pa) {
+                diag.note("unable to call '%s', value was null".formatted(pa.getDotPath()));
+            } else if (root instanceof NotchIdentifier ni) {
+                diag.note("undefined function '%s'".formatted(ni.name()));
+            } else {
+                diag.note("unable to call expression, value was null or undefined");
+            }
+            throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
 
         var argValues = new ArrayList<>(args.size());

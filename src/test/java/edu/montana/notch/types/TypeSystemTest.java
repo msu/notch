@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class TypeSystemTest {
 
@@ -88,6 +89,14 @@ public class TypeSystemTest {
         var type = TypeSystem.getType(DemoType.class);
         var prop = type.getProperty("prop_four");
         assertNotNull(prop);
+    }
+
+    @Test
+    public void resolveThrowableTypeCachesBareNameHit() {
+        Class<?> first = TypeSystem.resolveThrowableType("IOException");
+        Class<?> second = TypeSystem.resolveThrowableType("IOException");
+        assertNotNull(first);
+        assertSame(first, second);
     }
 
     public static class DemoType {

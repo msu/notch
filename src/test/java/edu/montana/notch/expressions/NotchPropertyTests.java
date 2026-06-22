@@ -6,6 +6,8 @@ import static edu.montana.notch.NotchTestUtils.eval;
 import static edu.montana.notch.runtime.NotchRuntime.UNDEFINED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class NotchPropertyTests {
     @Test
@@ -27,15 +29,23 @@ public class NotchPropertyTests {
     }
 
     @Test
-    public void invokingNullIsUndefined() {
-        final var value = eval("foo.bar()", "foo", null);
-        assertEquals(UNDEFINED, value);
+    public void invokingNullThrowsError() {
+        try {
+            eval("foo.bar()", "foo", null);
+            fail("expected RuntimeException");
+        } catch (RuntimeException e) {
+            assertTrue(e.getMessage().contains("unable to call 'foo.bar'"));
+        }
     }
 
     @Test
-    public void noSuchMethodIsUndefined() {
-        final var value = eval("foo.bar()", new Foo());
-        assertEquals(UNDEFINED, value);
+    public void noSuchMethodThrowsError() {
+        try {
+            eval("foo.bar()", new Foo());
+            fail("expected RuntimeException");
+        } catch (RuntimeException e) {
+            assertTrue(e.getMessage().contains("unable to call 'foo.bar'"));
+        }
     }
 
     class Foo {
