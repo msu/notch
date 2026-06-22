@@ -2,7 +2,6 @@ package edu.montana.notch.util;
 
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -267,7 +266,7 @@ public class Text {
         return Base64.getEncoder().encodeToString(value.getBytes());
     }
 
-    public static String closest(String target, Collection<String> candidates, int maxDistance) {
+    public static String closest(String target, Iterable<String> candidates, int maxDistance) {
         String t = target.toLowerCase();
         String best = null;
         int min = Integer.MAX_VALUE;
