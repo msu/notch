@@ -7,6 +7,7 @@ import edu.montana.notch.runtime.NotchClosure;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.types.NotchJavaMethod;
+import edu.montana.notch.types.TypeSystem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,9 @@ public class NotchMethodInvocation extends NotchExpression {
                 diag.note("unable to call '%s', value was null".formatted(pa.getDotPath()));
             } else if (root instanceof NotchIdentifier ni) {
                 diag.note("undefined function '%s'".formatted(ni.name()));
+                if (TypeSystem.resolveThrowableType(ni.name()) != null) {
+                    diag.note("did you mean 'new %s(...)'?".formatted(ni.name()));
+                }
             } else {
                 diag.note("unable to call expression, value was null or undefined");
             }
@@ -72,6 +76,10 @@ public class NotchMethodInvocation extends NotchExpression {
             diag.setTitle("failed to invoke unknown value");
             diag.highlight(root.span());
             diag.note("the value had type " + NotchRuntime.className(functionObj));
+            //TypeSystem cached short name returning NotchJavaType instead of UNDEFINED
+            if (root instanceof NotchIdentifier ni && TypeSystem.resolveThrowableType(ni.name()) != null) {
+                diag.note("did you mean 'new %s(...)'?".formatted(ni.name()));
+            }
             throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
     }

@@ -47,6 +47,7 @@ public class NotchThrowStatement extends NotchStatement {
         var diag = new Diagnostic();
         diag.setTitle("cannot throw '" + name + "': not a throwable type");
         diag.highlight(span);
+        diag.note("expected a Java throwable (e.g. RuntimeException, IOException), 'NotchError', or 'new MyClass(...)' for user-defined classes");
         throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
     }
 }
