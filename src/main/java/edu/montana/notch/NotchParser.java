@@ -118,16 +118,41 @@ public class NotchParser extends BasicParser {
         if (!peekKeyword("catch", "recover")) return tryExpr;
 
         List<NotchCatch> clauses = new ArrayList<>();
-        NotchExpression recoverExpr = null;
-        int contLine = tryExpr.endLine();
-        while (!atEnd() && currentToken().startLine() == contLine) {
+        List<NotchInlineCatch.TypedRecover> typedRecovers = new ArrayList<>();
+        NotchExpression untypedRecover = null;
+        int lastEndLine = tryExpr.endLine();
+        while (!atEnd()) {
+            boolean sameLineAsLast = currentToken().startLine() == lastEndLine;
+            if (!sameLineAsLast && !peekKeyword("recover")) break;
             if (peekKeyword("catch")) {
                 clauses.add(parseInlineCatchClause());
-                contLine = lastToken().endLine();
+                lastEndLine = lastToken().endLine();
             } else if (peekKeyword("recover")) {
                 take();
-                recoverExpr = requireExpression("expected an expression after 'recover'");
-                break;
+                boolean tokensFollow = !atEnd() && currentToken().startLine() == lastToken().endLine();
+                boolean isTypedRecover = false;
+                if (tokensFollow && peek("ident")) {
+                    try (var _ = tokens.lookahead()) {
+                        take();
+                        Token second = currentToken();
+                        isTypedRecover = !atEnd()
+                                && second.startLine() == lastToken().endLine()
+                                && !second.type.equals("(");
+                    }
+                }
+                if (isTypedRecover) {
+                    QualifiedIdent type = parseQualifiedIdent();
+                    NotchExpression expr = parseConditionalExpr();
+                    if (expr == null) {
+                        var diag = new Diagnostic().note("expected expression after recover type");
+                        throw new ParseException(diag);
+                    }
+                    typedRecovers.add(new NotchInlineCatch.TypedRecover(type, expr));
+                    lastEndLine = lastToken().endLine();
+                } else {
+                    untypedRecover = requireExpression("expected an expression after 'recover'");
+                    break;
+                }
             } else {
                 var diag = new Diagnostic()
                         .note("unexpected token after inline catch: expected 'catch', 'recover', or end of line")
@@ -136,7 +161,7 @@ public class NotchParser extends BasicParser {
             }
         }
         final var span = tryExpr.span.through(lastToken());
-        return new NotchInlineCatch(span, tryExpr, clauses, recoverExpr);
+        return new NotchInlineCatch(span, tryExpr, clauses, typedRecovers, untypedRecover);
     }
 
 

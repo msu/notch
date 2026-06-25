@@ -3,21 +3,28 @@ package edu.montana.notch.expressions;
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.statements.NotchCatch;
+import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.util.Exceptions;
 
 import java.util.List;
 
 public class NotchInlineCatch extends NotchExpression {
+
+    public record TypedRecover(QualifiedIdent type, NotchExpression expr) {}
     private final NotchExpression tryExpr;
     private final List<NotchCatch> clauses;
-    private final NotchExpression recoverExpr;
+    private final List<TypedRecover> typedRecovers;
+    private final NotchExpression untypedRecover;
 
-    public NotchInlineCatch(Span span, NotchExpression tryExpr, List<NotchCatch> clauses, NotchExpression recoverExpr) {
+    public NotchInlineCatch(Span span, NotchExpression tryExpr, List<NotchCatch> clauses,
+                            List<TypedRecover> typedRecovers, NotchExpression untypedRecover) {
         super(span);
         this.tryExpr = addChild(tryExpr);
         this.clauses = clauses;
         for (NotchCatch c : clauses) addChildren(c.body);
-        this.recoverExpr = recoverExpr == null ? null : addChild(recoverExpr);
+        this.typedRecovers = typedRecovers;
+        for (TypedRecover r : typedRecovers) addChild(r.expr());
+        this.untypedRecover = untypedRecover == null ? null : addChild(untypedRecover);
     }
 
     @Override
@@ -36,7 +43,14 @@ public class NotchInlineCatch extends NotchExpression {
         } catch (Throwable fromBody) {
             throw Exceptions.rethrow(fromBody);
         }
-        if (recoverExpr != null) return runtime.evaluate(recoverExpr);
+        Object candidate = NotchCatch.unwrap(t);
+        for (TypedRecover r : typedRecovers) {
+            Class<?> wanted = NotchCatch.resolveType(runtime, r.type());
+            if (wanted == null || wanted.isInstance(candidate) || wanted.isInstance(t)) {
+                return runtime.evaluate(r.expr());
+            }
+        }
+        if (untypedRecover != null) return runtime.evaluate(untypedRecover);
         throw Exceptions.rethrow(t);
     }
 }

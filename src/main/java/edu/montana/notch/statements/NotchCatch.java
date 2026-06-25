@@ -21,6 +21,10 @@ public final class NotchCatch {
 
     public Class<?> resolve(NotchRuntime runtime) {
         if (type == null) return null;
+        return resolveType(runtime, type);
+    }
+
+    public static Class<?> resolveType(NotchRuntime runtime, QualifiedIdent type) {
         String typeName = type.qualifiedName();
         Class<?> wanted;
         if (typeName.equals("NotchError")) {
@@ -30,7 +34,7 @@ public final class NotchCatch {
         }
         if (wanted == null) {
             Diagnostic diag = new Diagnostic();
-            diag.setTitle("unknown exception type '" + type.qualifiedName() + "'");
+            diag.setTitle("unknown exception type '" + typeName + "'");
             diag.highlight(type);
             diag.note("expected a Throwable type (e.g. RuntimeException, IOException) or 'NotchError'");
             throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
@@ -50,7 +54,7 @@ public final class NotchCatch {
         return false;
     }
 
-    private static Object resolveCaughtCandidate(Throwable t) {
+    public static Object unwrap(Throwable t) {
         if (t instanceof NotchRuntimeException nre) {
             if (nre.thrownValue != null) return nre.thrownValue;
             if (nre.getCause() != null) return nre.getCause();
@@ -61,12 +65,12 @@ public final class NotchCatch {
 
     private static boolean caughtMatches(Class<?> wanted, Throwable thrown) {
         if (wanted == null) return true; //match everything
-        Object candidate = resolveCaughtCandidate(thrown);
+        Object candidate = unwrap(thrown);
         return wanted.isInstance(candidate) || wanted.isInstance(thrown);
     }
 
     public static boolean catchHandled(NotchRuntime runtime, Throwable t, List<NotchCatch> clauses) {
-        Object candidate = resolveCaughtCandidate(t);
+        Object candidate = unwrap(t);
         for (NotchCatch clause : clauses) {
             Class<?> wantedType = clause.resolve(runtime);
             if (caughtMatches(wantedType, t)) {
