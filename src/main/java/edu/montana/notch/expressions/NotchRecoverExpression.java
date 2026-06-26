@@ -8,20 +8,18 @@ import edu.montana.notch.util.Exceptions;
 
 import java.util.List;
 
-public class NotchInlineCatch extends NotchExpression {
+public class NotchRecoverExpression extends NotchExpression {
 
     public record TypedRecover(QualifiedIdent type, NotchExpression expr) {}
+
     private final NotchExpression tryExpr;
-    private final List<NotchCatch> clauses;
     private final List<TypedRecover> typedRecovers;
     private final NotchExpression untypedRecover;
 
-    public NotchInlineCatch(Span span, NotchExpression tryExpr, List<NotchCatch> clauses,
-                            List<TypedRecover> typedRecovers, NotchExpression untypedRecover) {
+    public NotchRecoverExpression(Span span, NotchExpression tryExpr,
+                                  List<TypedRecover> typedRecovers, NotchExpression untypedRecover) {
         super(span);
         this.tryExpr = addChild(tryExpr);
-        this.clauses = clauses;
-        for (NotchCatch c : clauses) addChildren(c.body);
         this.typedRecovers = typedRecovers;
         for (TypedRecover r : typedRecovers) addChild(r.expr());
         this.untypedRecover = untypedRecover == null ? null : addChild(untypedRecover);
@@ -38,11 +36,6 @@ public class NotchInlineCatch extends NotchExpression {
     }
 
     private Object handle(NotchRuntime runtime, Throwable t) {
-        try {
-            NotchCatch.catchHandled(runtime, t, clauses);
-        } catch (Throwable fromBody) {
-            throw Exceptions.rethrow(fromBody);
-        }
         Object candidate = NotchCatch.unwrap(t);
         for (TypedRecover r : typedRecovers) {
             Class<?> wanted = NotchCatch.resolveType(runtime, r.type());

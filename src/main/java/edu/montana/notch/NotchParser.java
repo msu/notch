@@ -107,95 +107,65 @@ public class NotchParser extends BasicParser {
     }
 
     public NotchExpression parseExpression() {
-        return parseInlineCatchExpr();
+        return parseRecoverExpr();
     }
 
-    private NotchExpression parseInlineCatchExpr() {
+    private NotchExpression parseRecoverExpr() {
         NotchExpression tryExpr = parseConditionalExpr();
         if (tryExpr == null) return null;
         if (atEnd()) return tryExpr;
         if (tokens.peek().startLine() != tryExpr.endLine()) return tryExpr;
-        if (!peekKeyword("catch", "recover")) return tryExpr;
 
-        List<NotchCatch> clauses = new ArrayList<>();
-        List<NotchInlineCatch.TypedRecover> typedRecovers = new ArrayList<>();
+        if (peekKeyword("catch")) {
+            var diag = new Diagnostic()
+                    .note("'catch' is not allowed in a recover expression")
+                    .note("use a try/catch block to catch exceptions with side effects")
+                    .highlight(currentToken());
+            throw new ParseException(diag);
+        }
+
+        if (!peekKeyword("recover")) return tryExpr;
+
+        List<NotchRecoverExpression.TypedRecover> typedRecovers = new ArrayList<>();
         NotchExpression untypedRecover = null;
         int lastEndLine = tryExpr.endLine();
         while (!atEnd()) {
             boolean sameLineAsLast = currentToken().startLine() == lastEndLine;
             if (!sameLineAsLast && !peekKeyword("recover")) break;
-            if (peekKeyword("catch")) {
-                clauses.add(parseInlineCatchClause());
-                lastEndLine = lastToken().endLine();
-            } else if (peekKeyword("recover")) {
+            if (peekKeyword("recover")) {
                 take();
-                boolean tokensFollow = !atEnd() && currentToken().startLine() == lastToken().endLine();
-                boolean isTypedRecover = false;
-                if (tokensFollow && peek("ident")) {
-                    try (var _ = tokens.lookahead()) {
-                        take();
-                        Token second = currentToken();
-                        isTypedRecover = !atEnd()
-                                && second.startLine() == lastToken().endLine()
-                                && !second.type.equals("(");
-                    }
+                boolean isTyped = false;
+                if (takeIdent("from")) {
+                    isTyped = true;
+                } else if (peek("ident") && !peekIdent("with")) {
+                    Token first  = peek();
+                    Token second = peek(1);
+                    isTyped = !second.type.equals("eoi")
+                            && second.startLine() == first.endLine()
+                            && !second.type.equals("(");
                 }
-                if (isTypedRecover) {
+                if (isTyped) {
                     QualifiedIdent type = parseQualifiedIdent();
+                    takeIdent("with");
                     NotchExpression expr = parseConditionalExpr();
                     if (expr == null) {
-                        var diag = new Diagnostic().note("expected expression after recover type");
-                        throw new ParseException(diag);
+                        throw new ParseException(new Diagnostic().note("expected expression after recover type"));
                     }
-                    typedRecovers.add(new NotchInlineCatch.TypedRecover(type, expr));
+                    typedRecovers.add(new NotchRecoverExpression.TypedRecover(type, expr));
                     lastEndLine = lastToken().endLine();
                 } else {
+                    takeIdent("with");
                     untypedRecover = requireExpression("expected an expression after 'recover'");
                     break;
                 }
             } else {
                 var diag = new Diagnostic()
-                        .note("unexpected token after inline catch: expected 'catch', 'recover', or end of line")
+                        .note("unexpected token after recover: expected 'recover' or end of line")
                         .highlight(currentToken());
                 throw new ParseException(diag);
             }
         }
-        final var span = tryExpr.span.through(lastToken());
-        return new NotchInlineCatch(span, tryExpr, clauses, typedRecovers, untypedRecover);
-    }
-
-
-    private NotchCatch parseInlineCatchClause() {
-        Token catchToken = take();
-        QualifiedIdent type = null;
-        String exceptionName = null;
-        boolean tokensFollow = !atEnd() && currentToken().startLine() == catchToken.endLine();
-        if (tokensFollow && take("(")) {
-            type = requireQualifiedIdent("expected an exception type after '(' e.g. 'catch (IOException e)'");
-            exceptionName = requireIdent("expected a binding name after the type e.g. 'catch (IOException err)'").str();
-            require(")", "expected ')' to close 'catch (Type name)'");
-        } else if (tokensFollow && peek("ident")) {
-            type = parseQualifiedIdent();
-        }
-        boolean isMultiLine = atEnd() || currentToken().startLine() != catchToken.endLine();
-        List<NotchStatement> body = new ArrayList<>();
-        catchDepth++;
-        try {
-            if (isMultiLine) {
-                while (!atEnd() && !peekKeyword("end")) {
-                    body.add(parseStatement());
-                }
-                requireKeyword("end", "unterminated multiline 'catch', expected 'end'");
-            } else {
-                body.add(requireSameLineStatement());
-                if (takeKeyword("then")) {
-                    body.add(requireSameLineStatement());
-                }
-            }
-        } finally {
-            catchDepth--;
-        }
-        return new NotchCatch(type, exceptionName, body);
+        return new NotchRecoverExpression(tryExpr.span.through(lastToken()), tryExpr, typedRecovers, untypedRecover);
     }
 
     private NotchStatement requireSameLineStatement() {
@@ -211,18 +181,7 @@ public class NotchParser extends BasicParser {
     }
 
     public NotchExpression requireExpression(String errorMessage) {
-        final var start = this.tokens.index;
-        NotchExpression expr;
-        try {
-            expr = parseExpression();
-        } catch (ParseException e) {
-            this.tokens.index = start;
-            final var diag = new Diagnostic();
-            diag.note(errorMessage);
-            diag.highlight(tokens.peek());
-            throw new ParseException(e, diag);
-        }
-
+        NotchExpression expr = parseExpression();
         if (expr == null) {
             final var diag = new Diagnostic()
                     .note(errorMessage)
@@ -817,7 +776,7 @@ public class NotchParser extends BasicParser {
         int mark = tokens.index;
         try {
             NotchExpression expr = parseExpression();
-            if (expr instanceof NotchMethodInvocation || expr instanceof NotchInlineCatch) {
+            if (expr instanceof NotchMethodInvocation || expr instanceof NotchRecoverExpression) {
                 return new NotchExpressionStatement(expr);
             }
         } catch (ParseException e) {
@@ -875,16 +834,14 @@ public class NotchParser extends BasicParser {
             int nextTokenLine = currentToken().startLine();
             int catchTokenLine = catchToken.endLine();
             boolean tokensFollow = !atEnd() && nextTokenLine == catchTokenLine;
-            if (tokensFollow && take("(")) {
-                type = requireQualifiedIdent("expected an exception type after '(' e.g. 'catch (IOException e)'");
-                exceptionName = requireIdent("expected a binding name after the type e.g. 'catch (IOException err)'");
-                require(")", "expected ')' to close 'catch (Type name)'");
-            } else if (tokensFollow && peek("ident")) {
-                type = requireQualifiedIdent("expected exception type after 'catch' e.g. 'catch IOException' or 'catch (IOException e)'");
-                if (!atEnd() && currentToken().startLine() == catchTokenLine) {
+            if (tokensFollow && peek("ident")) {
+                type = requireQualifiedIdent("expected exception type after 'catch' e.g. 'catch IOException'");
+                if (takeKeyword("as")) {
+                    exceptionName = requireIdent("expected a binding name after 'as' e.g. 'catch IOException as e'");
+                } else if (!atEnd() && currentToken().startLine() == catchTokenLine) {
                     var diag = new Diagnostic();
                     diag.note("catch body must start on a new line");
-                    diag.note("to bind the exception use 'catch (IOException e)'");
+                    diag.note("to bind the exception use 'catch IOException as e'");
                     diag.highlight(currentToken());
                     throw new ParseException(diag);
                 }

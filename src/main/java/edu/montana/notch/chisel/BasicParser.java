@@ -73,6 +73,17 @@ public class BasicParser {
         return currentToken();
     }
 
+    //No consecutive _ws tokens. WhitespaceTokenType consumes all whitespace.
+    public Token peek(int n) {
+        int i = tokens.index + n;
+        while (i < tokens.tokens.size()) { //At most off by 1 thus O(1)
+            Token t = tokens.tokens.get(i);
+            if (!ignoredTokenTypes.contains(t.type)) return t;
+            i++;
+        }
+        return tokens.getSource().eoi;
+    }
+
     public boolean peek(String... tokenTypes) {
         consumeIgnoredTokens();
         return tokens.peek(tokenTypes);
