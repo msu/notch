@@ -76,17 +76,6 @@ public class NotchParser extends BasicParser {
         return true;
     }
 
-    public Token requireKeyword(String errMessage) {
-        if (!peek("keyword")) {
-            final var diag = new Diagnostic()
-                    .note(errMessage)
-                    .note("expected a keyword here")
-                    .highlight(tokens.peek());
-            throw new ParseException(diag);
-        }
-        return tokens.take();
-    }
-
     public void requireKeyword(String word, String contextMessage) {
         if (!takeKeyword(word)) {
             final var diag = new Diagnostic()
@@ -488,6 +477,12 @@ public class NotchParser extends BasicParser {
 
     private NotchExpression parsePropertyAccessExpression(NotchExpression root) {
         if (take(".")) {
+            if (peek("keyword")) {
+                var diag = new Diagnostic()
+                        .note("'" + currentToken().str() + "' is a keyword and cannot be used as a property name")
+                        .highlight(currentToken());
+                throw new ParseException(diag);
+            }
             Token propName = requireIdent("Expected a property name");
             NotchPropertyAccess propAccess = new NotchPropertyAccess(root, propName);
             return propAccess;
@@ -1104,7 +1099,12 @@ public class NotchParser extends BasicParser {
     private NotchForLoop parseForStatement() {
         var start = tokens.location();
         if (takeKeyword("for")) {
-
+            if (peek("keyword")) {
+                var diag = new Diagnostic()
+                        .note("'" + currentToken().str() + "' is a keyword and cannot be used as a loop variable name")
+                        .highlight(currentToken());
+                throw new ParseException(diag);
+            }
             Token loopIdentifier = requireIdent("expected a variable name for the loop item");
             requireKeyword("in", "expected 'in'");
 
@@ -1112,7 +1112,7 @@ public class NotchParser extends BasicParser {
 
             Token indexIdentifier = null;
             if (takeIdent("index")) {
-                indexIdentifier = requireIdent("expected a variable name for the ");
+                indexIdentifier = requireIdent("expected a variable name for the loop index");
             }
 
             List<NotchStatement> loopBodyStatements = parseLoopBody();

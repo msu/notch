@@ -36,7 +36,7 @@ class NotchTryCatchTest {
         assertEquals("x\n", exec("""
                 try
                     throw "x"
-                catch (RuntimeException e)
+                catch RuntimeException as e
                     print(e)
                 end
                 """));
@@ -114,12 +114,23 @@ class NotchTryCatchTest {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 try
                     throw "boom"
-                catch RuntimeException e
+                catch RuntimeException called e
                     print(e)
                 end
                 """));
-        assertTrue(ex.getMessage().contains("to bind the exception use 'catch (IOException e)'"),
+        assertTrue(ex.getMessage().contains("to bind the exception use 'catch IOException as e'"),
                 "expected guidance for exception name binding but got: " + ex.getMessage());
+    }
+
+    @Test
+    void catchBindsWithAsKeyword() {
+        assertEquals("boom\n", exec("""
+                try
+                    throw "boom"
+                catch RuntimeException as e
+                    print(e)
+                end
+                """));
     }
 
 }
