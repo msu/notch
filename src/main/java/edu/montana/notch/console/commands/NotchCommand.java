@@ -61,7 +61,6 @@ public final class NotchCommand {
         }
     }
 
-    //TODO: Better way? (NotchCommand.java or Diagnostic.java)
     private static String userFacingMessage(Throwable e) {
         Diagnostic diagnostic = null;
         if (e instanceof NotchRuntimeException nre) {
@@ -85,14 +84,6 @@ public final class NotchCommand {
         } catch (IOException e) {
             System.out.println("write: append failed: " + e.getMessage());
         }
-    }
-
-    private static void printCaret(String line, Location loc) {
-        if (loc.isSentinel()) return;
-        String[] lines = line.split("\n", -1);
-        int idx = Math.max(0, Math.min(loc.line - 1, lines.length - 1));
-        System.out.println("  " + lines[idx]);
-        System.out.println("  " + " ".repeat(Math.max(0, loc.column - 1)) + "^");
     }
 
     private static NotchRuntime lookupOrCreateRuntime(LineReader reader) {

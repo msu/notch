@@ -157,17 +157,6 @@ public class NotchParser extends BasicParser {
         return new NotchRecoverExpression(tryExpr.span.through(lastToken()), tryExpr, typedRecovers, untypedRecover);
     }
 
-    private NotchStatement requireSameLineStatement() {
-        int startLine = currentToken().startLine();
-        NotchStatement stmt = parseStatement();
-        if (lastToken().endLine() != startLine) {
-            final var diag = new Diagnostic()
-                    .note("inline catch statement fell onto the next line; use a multiline 'catch ... end' block")
-                    .highlight(stmt.span());
-            throw new ParseException(diag);
-        }
-        return stmt;
-    }
 
     public NotchExpression requireExpression(String errorMessage) {
         NotchExpression expr = parseExpression();
