@@ -47,6 +47,16 @@ public final class NotchCommand {
             TokenStream tokenStream = Notch.TOKENIZER.create(source).tokenize();
             NotchParser parser = new NotchParser(tokenStream);
             NotchElement element = parser.parse();
+            if (parser.hasErrors()) {
+                StringBuilder shellErrorMessage = new StringBuilder();
+                for (Diagnostic diagnostic : parser.getDiagnostics()) {
+                    if (!shellErrorMessage.isEmpty()) shellErrorMessage.append("\n");
+                    String renderedDiagnostic = diagnostic.render(false);
+                    shellErrorMessage.append(renderedDiagnostic);
+                }
+                System.out.println(shellErrorMessage);
+                return;
+            }
             if (element instanceof NotchExpression expr) {
                 Object result = runtime.evaluate(expr);
                 if (!runtime.isUndefined(result)) {
@@ -62,15 +72,16 @@ public final class NotchCommand {
     }
 
     private static String userFacingMessage(Throwable e) {
-        Diagnostic diagnostic = null;
         if (e instanceof NotchRuntimeException nre) {
-            diagnostic = nre.diagnostic;
-        } else if (e instanceof ParseException pe) {
-            diagnostic = pe.diagnostic;
-        } else if (e instanceof TokenizeException te) {
-            diagnostic = te.diagnostic;
+            return nre.diagnostic.render(false);
         }
-        return diagnostic != null ? diagnostic.render(false) : e.getMessage();
+        if (e instanceof ParseException pe) {
+            return pe.diagnostic.render(false);
+        }
+        if (e instanceof TokenizeException te) {
+            return te.diagnostic.render(false);
+        }
+        return e.getMessage();
     }
 
     private static void appendIfRecording(LineReader reader, Source source) {

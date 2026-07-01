@@ -15,6 +15,22 @@ public class NotchParser extends BasicParser {
     private int loopDepth = 0;
     private int functionDepth = 0;
     private int catchDepth = 0;
+    private final List<Diagnostic> parseErrors = new ArrayList<>();
+
+    public List<Diagnostic> getDiagnostics() {
+        return java.util.Collections.unmodifiableList(parseErrors);
+    }
+
+    public boolean hasErrors() {
+        return !parseErrors.isEmpty();
+    }
+
+    private static final Set<String> SYNC_KEYWORDS = Set.of(
+            "if", "for", "repeat", "function", "print",
+            "try", "throw", "return", "rethrow", "class",
+            "break", "continue",
+            "end", "catch", "else"
+    );
 
     public NotchParser(TokenStream tokens) {
         super(tokens);
@@ -159,14 +175,20 @@ public class NotchParser extends BasicParser {
 
 
     public NotchExpression requireExpression(String errorMessage) {
-        NotchExpression expr = parseExpression();
-        if (expr == null) {
-            final var diag = new Diagnostic()
-                    .note(errorMessage)
-                    .highlight(tokens.peek());
-            throw new ParseException(diag);
+        try {
+            NotchExpression expr = parseExpression();
+            if (expr == null) {
+                final var diag = new Diagnostic()
+                        .note(errorMessage)
+                        .highlight(tokens.peek());
+                parseErrors.add(diag);
+                return new NotchErrorExpression(tokens.peek().span(), diag);
+            }
+            return expr;
+        } catch (ParseException e) {
+            parseErrors.add(e.diagnostic);
+            return new NotchErrorExpression(tokens.peek().span(), e.diagnostic);
         }
-        return expr;
     }
 
     private NotchExpression parseConditionalExpr() {
@@ -678,6 +700,21 @@ public class NotchParser extends BasicParser {
         }
     }
 
+    private boolean advancedFrom(int mark) {
+        return tokens.index > mark;
+    }
+
+    private boolean isSyncToken() {
+        return peek("keyword") && SYNC_KEYWORDS.contains(currentToken().str());
+    }
+
+    private void synchronize() {
+        while (!atEnd()) {
+            if (isSyncToken()) break;
+            take();
+        }
+    }
+
     public NotchStatement parseAsStatement() {
         var stmts = new ArrayList<NotchStatement>();
         var start = currentToken();
@@ -685,75 +722,83 @@ public class NotchParser extends BasicParser {
             stmts.add(parseStatement());
         }
         if (stmts.size() == 1) {
-            return stmts.get(0);
+            return stmts.getFirst();
         } else {
-            NotchStatements notchStatements = new NotchStatements(start.span.through(currentToken()), stmts);
-            return notchStatements;
+            return new NotchStatements(start.span.through(currentToken()), stmts);
         }
     }
 
     private NotchStatement parseStatement() {
-        var print = parsePrintStatement();
-        if (print != null) {
-            return print;
-        }
-        var ifStmt = parseIfStatement();
-        if (ifStmt != null) {
-            return ifStmt;
-        }
-        var forStmt = parseForStatement();
-        if (forStmt != null) {
-            return forStmt;
-        }
-        var breakStmt = parseBreakStatement();
-        if (breakStmt != null) {
-            return breakStmt;
-        }
-        var continueStmt = parseContinueStatement();
-        if (continueStmt != null) {
-            return continueStmt;
-        }
-        var repeatStmt = parseRepeatStatement();
-        if (repeatStmt != null) {
-            return repeatStmt;
-        }
-        var functionStmt = parseFunctionDeclaration();
-        if (functionStmt != null) {
-            return functionStmt;
-        }
-        var returnStmt = parseReturnStatement();
-        if (returnStmt != null) {
-            return returnStmt;
-        }
-        var throwStmt = parseThrowStatement();
-        if (throwStmt != null) {
-            return throwStmt;
-        }
-        var tryStmt = parseTryStatement();
-        if (tryStmt != null) {
-            return tryStmt;
-        }
-        var rethrowStmt = parseRethrowStatement();
-        if (rethrowStmt != null) {
-            return rethrowStmt;
-        }
-        var classStmt = parseClassDeclaration();
-        if (classStmt != null) {
-            return classStmt;
-        }
-        var assignmentStmt = parseAssignmentStatement();
-        if (assignmentStmt != null) {
-            return assignmentStmt;
-        }
-        var callStmt = parseCallStatement();
-        if (callStmt != null) {
-            return callStmt;
-        }
+        Span errorSpan = currentToken().span();
+        int mark = tokens.index;
+        try {
+            var print = parsePrintStatement();
+            if (print != null) {
+                return print;
+            }
+            var ifStmt = parseIfStatement();
+            if (ifStmt != null) {
+                return ifStmt;
+            }
+            var forStmt = parseForStatement();
+            if (forStmt != null) {
+                return forStmt;
+            }
+            var breakStmt = parseBreakStatement();
+            if (breakStmt != null) {
+                return breakStmt;
+            }
+            var continueStmt = parseContinueStatement();
+            if (continueStmt != null) {
+                return continueStmt;
+            }
+            var repeatStmt = parseRepeatStatement();
+            if (repeatStmt != null) {
+                return repeatStmt;
+            }
+            var functionStmt = parseFunctionDeclaration();
+            if (functionStmt != null) {
+                return functionStmt;
+            }
+            var returnStmt = parseReturnStatement();
+            if (returnStmt != null) {
+                return returnStmt;
+            }
+            var throwStmt = parseThrowStatement();
+            if (throwStmt != null) {
+                return throwStmt;
+            }
+            var tryStmt = parseTryStatement();
+            if (tryStmt != null) {
+                return tryStmt;
+            }
+            var rethrowStmt = parseRethrowStatement();
+            if (rethrowStmt != null) {
+                return rethrowStmt;
+            }
+            var classStmt = parseClassDeclaration();
+            if (classStmt != null) {
+                return classStmt;
+            }
+            var assignmentStmt = parseAssignmentStatement();
+            if (assignmentStmt != null) {
+                return assignmentStmt;
+            }
+            var callStmt = parseCallStatement();
+            if (callStmt != null) {
+                return callStmt;
+            }
 
-        final var diag = new Diagnostic()
-                .note("expected a statement")
-                .highlight(currentToken());
-        throw new ParseException(diag);
+            final var diag = new Diagnostic()
+                    .note("expected a statement")
+                    .highlight(currentToken());
+            throw new ParseException(diag);
+        } catch (ParseException e) {
+            parseErrors.add(e.diagnostic);
+            if (!advancedFrom(mark)) take();
+            synchronize();
+            return new NotchErrorStatement(errorSpan, e.diagnostic);
+        }
     }
 
     private NotchStatement parseCallStatement() {
@@ -764,8 +809,8 @@ public class NotchParser extends BasicParser {
                 return new NotchExpressionStatement(expr);
             }
         } catch (ParseException e) {
-            // TODO: replace with synchronization
-            if (tokens.index > mark) {
+            //TODO: Need to recheck this with synchronization
+            if (advancedFrom(mark)) {
                 throw e;
             }
         }
@@ -980,8 +1025,8 @@ public class NotchParser extends BasicParser {
         } finally {
             functionDepth--;
             loopDepth = savedLoopDepth;
+            requireKeyword("end", "unterminated function, expected 'end'");
         }
-        requireKeyword("end", "unterminated function, expected 'end'");
         final var span = new Span(source(), start, lastToken().end());
         return new NotchFunctionDeclaration(span, name, params, returnType, body);
     }
@@ -1019,15 +1064,23 @@ public class NotchParser extends BasicParser {
         List<NotchField> bodyFields = new ArrayList<>();
         List<NotchFunctionDeclaration> methods = new ArrayList<>();
         while (!atEnd() && !peekKeyword("end")) {
-            if (peekKeyword("field")) {
-                bodyFields.add(parseFieldDeclaration());
-            } else if (peekKeyword("function")) {
-                methods.add((NotchFunctionDeclaration) parseFunctionDeclaration());
-            } else {
-                final var diag = new Diagnostic()
-                        .note("expected a 'field' or 'function' declaration in the class body")
-                        .highlight(currentToken());
-                throw new ParseException(diag);
+            try {
+                if (peekKeyword("field")) {
+                    bodyFields.add(parseFieldDeclaration());
+                } else if (peekKeyword("function")) {
+                    methods.add((NotchFunctionDeclaration) parseFunctionDeclaration());
+                } else {
+                    final var diag = new Diagnostic()
+                            .note("expected a 'field' or 'function' declaration in the class body")
+                            .highlight(currentToken());
+                    throw new ParseException(diag);
+                }
+            } catch (ParseException e) {
+                parseErrors.add(e.diagnostic);
+                //tighter context error synchronization for class
+                while (!atEnd() && !peekKeyword("field", "function", "end")) {
+                    take();
+                }
             }
         }
         requireKeyword("end", "unterminated class, expected 'end'");
