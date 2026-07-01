@@ -1,0 +1,44 @@
+name: Publish to Maven Central
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: maven-central-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+          server-id: central
+          server-username: MAVEN_CENTRAL_USERNAME
+          server-password: MAVEN_CENTRAL_PASSWORD
+
+      - name: Check out signing key
+        uses: actions/checkout@v4
+        with:
+          repository: msu/notch-secrets
+          ssh-key: ${{ secrets.SECRETS_REPO_DEPLOY_KEY }}
+          path: secrets
+
+      - name: Import GPG key
+        run: gpg --batch --import secrets/release-key.asc
+
+      - name: Deploy to Maven Central
+        run: mvn -B -ntp -Pcentral clean deploy
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
