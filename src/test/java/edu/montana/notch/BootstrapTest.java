@@ -134,21 +134,21 @@ public class BootstrapTest {
 
     @Test
     public void bootstrapMapLiteral() {
-        Map result = (Map) eval("{foo=1, bar=2}");
+        Map result = (Map) eval("{'foo' -> 1, 'bar' -> 2}");
         assertEquals(Map.of("foo", 1, "bar", 2), result);
         assertTrue(result instanceof BetterMap<?, ?>);
     }
 
     @Test
     public void bootstrapMapLiteralWithStringKeys() {
-        Map result = (Map) eval("{'foo foo'=1, bar=2}");
+        Map result = (Map) eval("{'foo foo' -> 1, 'bar' -> 2}");
         assertEquals(Map.of("foo foo", 1, "bar", 2), result);
         assertTrue(result instanceof BetterMap<?, ?>);
     }
 
     @Test
     public void bootstrapMapLiteralWithTerseStringKeys() {
-        Map result = (Map) eval("{:foo123 = 1, bar=2}");
+        Map result = (Map) eval("{:foo123 -> 1, 'bar' -> 2}");
         assertEquals(Map.of("foo123", 1, "bar", 2), result);
         assertTrue(result instanceof BetterMap<?, ?>);
     }
@@ -164,7 +164,7 @@ public class BootstrapTest {
 
         // maps
         result = exec("""
-                x = {foo=1, bar=2}
+                x = {'foo' -> 1, 'bar' -> 2}
                 print(x[:foo])
                 """);
         assertEquals("1\n", result);
@@ -192,13 +192,13 @@ public class BootstrapTest {
     @Test
     public void bootstrapStupidMapTricks() {
         String result = exec("""
-                x = { foo = \\-> "bar" }
+                x = { 'foo' -> \\-> "bar" }
                 print(x.foo())
                 """);
         assertEquals("bar\n", result);
 
         result = exec("""
-                x = { foo = \\-> "bar" }
+                x = { 'foo' -> \\-> "bar" }
                 print(x[:foo]())
                 """);
         assertEquals("bar\n", result);

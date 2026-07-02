@@ -3,6 +3,12 @@ target/
 /.idea/
 notch.sh
 
+# Eclipse / m2e / JDT language server
+.classpath
+.project
+.settings/
+bin/
+
 # Jekyll docs site (notch/docs/)
 docs/_site/
 docs/.jekyll-cache/

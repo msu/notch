@@ -18,7 +18,7 @@ public class NotchParser extends BasicParser {
     private final List<Diagnostic> parseErrors = new ArrayList<>();
 
     public List<Diagnostic> getDiagnostics() {
-        return java.util.Collections.unmodifiableList(parseErrors);
+        return Collections.unmodifiableList(parseErrors);
     }
 
     public boolean hasErrors() {

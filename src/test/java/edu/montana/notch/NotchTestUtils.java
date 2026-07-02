@@ -1,5 +1,6 @@
 package edu.montana.notch;
 
+import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.TokenStream;
@@ -19,16 +20,23 @@ public class NotchTestUtils {
             TokenStream tokens = Notch.TOKENIZER.tokenize(source);
             NotchParser notchParser = new NotchParser(tokens);
             NotchExpression expr = notchParser.parseExpression();
+            if (notchParser.hasErrors()) {
+                StringBuilder parseErrorMessage = new StringBuilder("Parse errors evaluating: " + src);
+                for (Diagnostic diagnostic : notchParser.getDiagnostics()) {
+                    parseErrorMessage.append("\n").append(diagnostic.render());
+                }
+                throw new RuntimeException(parseErrorMessage.toString());
+            }
             Object result = expr.evaluate(map(vars));
             return result;
         } catch (NotchRuntimeException ex) {
-            var result = ex.diagnostic.render();
+            var result = ex.getMessage();
             throw new RuntimeException(result);
         } catch (ParseException ex) {
-            var result = ex.diagnostic.render();
+            var result = ex.getMessage();
             throw new RuntimeException(result);
         } catch (TokenizeException ex) {
-            var result = ex.diagnostic.render();
+            var result = ex.getMessage();
             throw new RuntimeException(result);
         }
     }
@@ -38,26 +46,28 @@ public class NotchTestUtils {
         TokenStream tokens = Notch.TOKENIZER.tokenize(source);
         NotchParser notchParser = new NotchParser(tokens);
         NotchExpression expr = notchParser.parseExpression();
-        Object result = expr.evaluate(map(vars));
-        return result;
+        return expr.evaluate(map(vars));
     }
 
     public static String exec(String src, Object... vars) {
         final Source source = new Source("<exec>", src);
-        TokenStream tokens;
         try {
-            tokens = Notch.TOKENIZER.tokenize(source);
+            TokenStream tokens = Notch.TOKENIZER.tokenize(source);
             NotchParser notchParser = new NotchParser(tokens);
-            NotchStatement expr = notchParser.parseAsStatement();
-            StringBuilder sb = new StringBuilder();
+            NotchStatement stmt = notchParser.parseAsStatement();
+            if (notchParser.hasErrors()) {
+                StringBuilder parseErrorMessage = new StringBuilder("Parse errors executing: " + src);
+                for (Diagnostic diagnostic : notchParser.getDiagnostics()) {
+                    parseErrorMessage.append("\n").append(diagnostic.render());
+                }
+                throw new RuntimeException(parseErrorMessage.toString());
+            }
+            StringBuilder out = new StringBuilder();
             NotchRuntime runtime = new NotchRuntime(source, map(vars));
-            runtime.setOut(obj -> sb.append(obj).append("\n"));
-            runtime.execute(expr);
-            String result = sb.toString();
-            return result;
+            runtime.setOut(obj -> out.append(obj).append("\n"));
+            runtime.execute(stmt);
+            return out.toString();
         } catch (TokenizeException e) {
-            throw new RuntimeException(e.diagnostic.render());
-        } catch (ParseException e) {
             throw new RuntimeException(e.diagnostic.render());
         } catch (NotchRuntimeException e) {
             throw new RuntimeException(e.diagnostic.render());

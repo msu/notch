@@ -18,7 +18,7 @@ public class TokenizeException extends RuntimeException {
     }
 
     @Override
-    public String toString() {
+    public String getMessage() {
         return diagnostic.render();
     }
 }
