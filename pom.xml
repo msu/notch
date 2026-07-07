@@ -13,7 +13,7 @@
 
     <groupId>edu.montana.cs.notch</groupId>
     <artifactId>notch</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <packaging>jar</packaging>
 
     <name>Notch</name>
