@@ -166,6 +166,7 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <passphraseServerId>gpg.passphrase</passphraseServerId>
                             <gpgArguments>
                                 <arg>--pinentry-mode</arg>
                                 <arg>loopback</arg>
@@ -173,9 +174,31 @@
                         </configuration>
                     </plugin>
                     <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <executions>
+                            <execution>
+                                <id>import-signing-key</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>gpg</executable>
+                                    <arguments>
+                                        <argument>--batch</argument>
+                                        <argument>--import</argument>
+                                        <argument>${project.basedir}/publishing/maven_keys/release-key.asc</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.7.0</version>
+                        <version>0.11.0</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
