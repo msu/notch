@@ -30,7 +30,7 @@ Artifact should be at `https://central.sonatype.com/artifact/edu.montana.cs.notc
 ### 1. Account and namespace
 
 - Authorization belongs to Sonatype account `OpenSource@montana.edu` (login in `maven_keys/sonatype-login.txt`)
-- `edu.montana.cs.notch` namespace claimed on `central.sonatype.com` and verified by placing a Portal issued key in a DNS TXT record on `notch.cs.montana.edu`.
+- The `edu.montana` namespace is verified on `central.sonatype.com` (via a Portal issued key in a DNS TXT record). A verified namespace covers all sub-namespaces, so any `edu.montana.*` groupId (notch, pika-orm, etc.) publishes without additional setup.
   - More info at: [namespace registration](https://central.sonatype.org/register/namespace/), [setting the TXT record](https://central.sonatype.org/faq/how-to-set-txt-record/), and [publishing requirements](https://central.sonatype.org/publish/requirements/)
 
 
