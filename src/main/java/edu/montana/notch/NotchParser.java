@@ -428,12 +428,12 @@ public class NotchParser extends BasicParser {
         var isInverted = takeKeyword("not");
         var isToken = lastToken();
         if (peekIdent("empty")) {
-            int beforeEmpty = tokens.index;
+            var beforeEmpty = checkpoint();
             tokens.take();
             if (!peek("(") && !peek(".")) {
                 return new IsEmptyExpression(lhs, isInverted, tokens.prev());
             }
-            tokens.index = beforeEmpty;
+            rollbackTo(beforeEmpty);
         }
         NotchExpression rhs = parseComparisonExpression();
         if (rhs == null) {
@@ -668,6 +668,7 @@ public class NotchParser extends BasicParser {
         NotchExpression notchExpression;
         boolean tokensAfterExpr;
         Exception expressionException = null;
+        var mark = checkpoint();
         try {
             notchExpression = parseExpression();
             tokensAfterExpr = !tokens.atEnd();
@@ -677,20 +678,11 @@ public class NotchParser extends BasicParser {
         } catch (Exception e) {
             expressionException = e;
         }
-        tokens.reset();
+        rollbackTo(mark);
         NotchStatement notchStatement;
         try {
             notchStatement = parseAsStatement();
-            if (notchStatement != null) {
-                return notchStatement;
-            } else {
-                if (expressionException != null) {
-                    throw expressionException;
-                } else {
-                    // TODO better errors
-                    throw new RuntimeException("Cannot parse this input");
-                }
-            }
+            return notchStatement;
         } catch (Exception e) {
             if (expressionException != null) {
                 throw rethrow(expressionException);
@@ -700,8 +692,19 @@ public class NotchParser extends BasicParser {
         }
     }
 
-    private boolean advancedFrom(int mark) {
-        return tokens.index > mark;
+    private record Checkpoint(int tokenIndex, int errorCount) {}
+
+    private Checkpoint checkpoint() {
+        return new Checkpoint(tokens.index, parseErrors.size());
+    }
+
+    private void rollbackTo(Checkpoint checkpoint) {
+        tokens.index = checkpoint.tokenIndex();
+        parseErrors.subList(checkpoint.errorCount(), parseErrors.size()).clear();
+    }
+
+    private boolean advancedFrom(Checkpoint checkpoint) {
+        return tokens.index > checkpoint.tokenIndex();
     }
 
     private boolean isSyncToken() {
@@ -730,7 +733,7 @@ public class NotchParser extends BasicParser {
 
     private NotchStatement parseStatement() {
         Span errorSpan = currentToken().span();
-        int mark = tokens.index;
+        var mark = checkpoint();
         try {
             var print = parsePrintStatement();
             if (print != null) {
@@ -802,20 +805,36 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchStatement parseCallStatement() {
-        int mark = tokens.index;
+        var mark = checkpoint();
+        NotchExpression expr;
         try {
-            NotchExpression expr = parseExpression();
-            if (expr instanceof NotchMethodInvocation || expr instanceof NotchRecoverExpression) {
-                return new NotchExpressionStatement(expr);
-            }
+            expr = parseExpression();
         } catch (ParseException e) {
-            //TODO: Need to recheck this with synchronization
-            if (advancedFrom(mark)) {
-                throw e;
-            }
+            if (advancedFrom(mark)) throw e;
+            expr = null;
         }
-        tokens.index = mark;
-        return null;
+        if (expr == null) {
+            rollbackTo(mark);
+            return null;
+        }
+        if (peek("=")) {
+            final var diag = new Diagnostic()
+                    .note("cannot assign to this expression")
+                    .note("the target of an assignment must be a variable, a property, or an indexed element")
+                    .highlight(expr);
+            throw new ParseException(diag);
+        }
+        if (expr instanceof NotchMethodInvocation || expr instanceof NotchRecoverExpression) {
+            return new NotchExpressionStatement(expr);
+        }
+        final var diag = new Diagnostic()
+                .note("this expression cannot be used as a statement")
+                .note("only function and method calls can be used as statements")
+                .highlight(expr);
+        if (!atEnd() && currentToken().startLine() == expr.endLine()) {
+            diag.note("unexpected input after this expression");
+        }
+        throw new ParseException(diag);
     }
 
     private NotchStatement parseThrowStatement() {
@@ -1104,38 +1123,51 @@ public class NotchParser extends BasicParser {
 
     private NotchStatement parseAssignmentStatement() {
         if (!peek("ident") && !peekKeyword("this")) return null;
-        int assignmentStart = tokens.index;
+        var mark = checkpoint();
         var start = tokens.location();
 
-        NotchExpression base = new NotchIdentifier(take());
-        Token lastProp = null;
-        while (peek(".")) {
-            take(".");
-            if (lastProp != null) {
-                base = new NotchPropertyAccess(base, lastProp);
-            }
-            lastProp = requireIdent("expected a property name");
-        }
+        NotchExpression target = parseAssignmentTarget();
 
-        if (!peek("=")) {
-            tokens.index = assignmentStart;
+        if (!take("=")) { //a.b[0].run()
+            rollbackTo(mark);
             return null;
         }
-        require("=", "expected '='");
         NotchExpression value = requireExpression("expected an expression after '='");
         final var span = new Span(source(), start, lastToken().end());
+        return buildAssignmentStatement(span, target, value);
+    }
 
-        if (lastProp == null && base instanceof NotchIdentifier id) {
-            Token varName = id.token;
-            if (varName.str().equals("this")) {
-                final var diag = new Diagnostic()
-                        .note("cannot assign to 'this' it always refers to the current object and can't be reassigned")
-                        .highlight(varName.span());
-                throw new ParseException(diag);
+    private NotchExpression parseAssignmentTarget() {
+        NotchExpression target = new NotchIdentifier(take());
+        while (peek(".") || peek("[")) {
+            if (take(".")) {
+                Token property = requireIdent("expected a property name");
+                target = new NotchPropertyAccess(target, property);
+            } else {
+                take("[");
+                NotchExpression index = requireExpression("expected an index expression");
+                require("]", "Index expressions must be closed with a ']'");
+                target = new NotchIndexExpression(target, index, lastToken().end());
             }
-            return new NotchAssignment(varName, value);
         }
-        return new NotchPropertyAssignment(span, base, lastProp, value);
+        return target;
+    }
+
+    private NotchStatement buildAssignmentStatement(Span span, NotchExpression target, NotchExpression value) {
+        if (target instanceof NotchIndexExpression index) {
+            return new NotchIndexAssignment(span, index.root, index.index, value);
+        }
+        if (target instanceof NotchPropertyAccess propertyAccess) {
+            return new NotchPropertyAssignment(span, propertyAccess.getRoot(), propertyAccess.getPropertyToken(), value);
+        }
+        Token varName = ((NotchIdentifier) target).token;
+        if (varName.str().equals("this")) {
+            final var diag = new Diagnostic()
+                    .note("cannot assign to 'this' it always refers to the current object and can't be reassigned")
+                    .highlight(varName.span());
+            throw new ParseException(diag);
+        }
+        return new NotchAssignment(varName, value);
     }
 
     private NotchForLoop parseForStatement() {

@@ -198,6 +198,10 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
         return property.str();
     }
 
+    public Token getPropertyToken() {
+        return property;
+    }
+
     public String getParentDotPath() {
         var dp = getDotPath();
         return dp.substring(0, dp.lastIndexOf(DotPathMember.DOT));
