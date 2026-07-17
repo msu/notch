@@ -14,6 +14,7 @@ public class NotchJLineParser extends DefaultParser {
         setEofOnUnclosedQuote(true);
         setEofOnUnclosedBracket(Bracket.ROUND, Bracket.SQUARE, Bracket.CURLY);
         setEofOnEscapedNewLine(true);
+        setEscapeChars(null);
     }
 
     @Override

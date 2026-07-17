@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class BasicParser {
+public class BasicParser implements ReadOnlyParser {
     protected TokenStream tokens;
     protected Set<String> ignoredTokenTypes = new HashSet<>();
     protected Set<String> temporaryEndTokens = new HashSet<>();
@@ -73,12 +73,12 @@ public class BasicParser {
         return currentToken();
     }
 
-    //No consecutive _ws tokens. WhitespaceTokenType consumes all whitespace.
-    public Token peek(int n) {
-        int i = tokens.index + n;
-        while (i < tokens.tokens.size()) { //At most off by 1 thus O(1)
-            Token t = tokens.tokens.get(i);
-            if (!ignoredTokenTypes.contains(t.type)) return t;
+    public Token peekNext() {
+        consumeIgnoredTokens();
+        int i = tokens.index + 1;
+        while (i < tokens.tokens.size()) {
+            Token candidate = tokens.tokens.get(i);
+            if (!ignoredTokenTypes.contains(candidate.type)) return candidate;
             i++;
         }
         return tokens.getSource().eoi;
