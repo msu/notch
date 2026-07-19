@@ -46,7 +46,7 @@
   --callout-border: var(--accent);
   --callout-bg: var(--accent-bg-soft);
   --content-max-width: 72ch;
-  --toolbar-height: 52px;
+  --toolbar-height: 48px;
   --transition: 0.15s ease;
   --transition-state: 0.3s ease;
   /* Sidebar resize handle accents (values from rustdoc's light theme). */
@@ -434,7 +434,7 @@ input:focus:not(:focus-visible) {
 }
 
 .docs-nav-section + .docs-nav-section {
-  margin-top: 1.25rem;
+  margin-top: 0.75rem;
 }
 
 /* Section title row: label link on the left, fold chevron on the right. */
@@ -898,6 +898,9 @@ input:focus:not(:focus-visible) {
 
 #main-nav .docs-nav-chapter {
   padding: 0;
+  /* Cancel the global prose li margin -- it opened the row pitch 4px */
+  /* wider than pika's sidebar. */
+  margin: 0;
 
   > a {
     display: block;
@@ -1086,8 +1089,10 @@ input:focus:not(:focus-visible) {
   z-index: 50;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem var(--body-px);
+  gap: 0.125rem;
+  /* 6px vertical + 36px buttons = 48px bar (--toolbar-height), matching
+     pika's topbar density. */
+  padding: 0.375rem var(--body-px);
   margin-left: calc(-1 * var(--body-px));
   margin-right: calc(-1 * var(--body-px));
   background: var(--toolbar-bg);
@@ -1192,7 +1197,7 @@ input:focus:not(:focus-visible) {
   align-items: center;
   gap: 0.45rem;
   /* DO NOT add `height: var(--toolbar-height)`: it inflates toolbar render */
-  /* height past 52px, leaving sidebar (#main-nav top:52) overlapped by toolbar. */
+  /* height past --toolbar-height, leaving the sidebar overlapped by the toolbar. */
   padding: 0 0.4rem;
   font-weight: 600;
   font-size: var(--font-size-base);
