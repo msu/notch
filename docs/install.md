@@ -1,22 +1,22 @@
 ---
-layout: default
+layout: docs
 title: Install
 permalink: /install/
+docs_nav: true
+order: 1
 ---
-
-# Install
 
 Prerequisites: Should be None
 
 You can always manually install also. For those who wish to, just download from the latest release and extract from there.
 
-### macOS
+## macOS
 
 ```bash
 curl -fsSL https://notch.cs.montana.edu/install.sh | bash
 ```
 
-### Linux
+## Linux
 
 ```bash
 curl -fsSL https://notch.cs.montana.edu/install.sh | bash
@@ -24,11 +24,11 @@ curl -fsSL https://notch.cs.montana.edu/install.sh | bash
 
 For `x86_64` and `arm64`.
 
-### Shells other than bash for linux
+## Shells other than bash for linux
 
 The install script writes only to `~/.bashrc`. If the interactive shell is something else, add the PATH entry manually after install:
 
-### Windows
+## Windows
 
 In PowerShell
 

@@ -15,38 +15,22 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
 {% for coll in docs_collections %}
   {% if page.collection == coll %}{% assign is_docs_page = true %}{% endif %}
 {% endfor %}
+{%- comment -%}
+Standalone pages (install, cheat sheet) opt into the docs chrome with a
+`docs_nav: true` front-matter flag; they render as flat links below.
+{%- endcomment -%}
+{% if page.docs_nav %}{% assign is_docs_page = true %}{% endif %}
 
 <nav id="main-nav" class="docs-nav{% unless is_docs_page %} site-only{% endunless %}" aria-label="Documentation navigation" role="navigation">
-    <button class="sidebar-toggle" type="button" aria-label="Toggle sidebar" aria-expanded="true"
-        _="init
-             if first <html/> matches .sidebar-collapsed
-               set @aria-expanded to 'false'
-               set @aria-label to 'Show sidebar'
-             else
-               set @aria-expanded to 'true'
-               set @aria-label to 'Hide sidebar'
-             end
-           on click
-             toggle .sidebar-collapsed on <html/>
-             if first <html/> matches .sidebar-collapsed
-               set @aria-expanded to 'false'
-               set @aria-label to 'Show sidebar'
-               call localStorage.setItem('sidebar-collapsed', 'true')
-             else
-               set @aria-expanded to 'true'
-               set @aria-label to 'Hide sidebar'
-               call localStorage.setItem('sidebar-collapsed', 'false')
-             end
-           on resize from window
-             if window.innerWidth <= 768
-               remove .sidebar-collapsed from <html/>
-             else if localStorage.getItem('sidebar-collapsed') is 'true'
-               add .sidebar-collapsed to <html/>
-             end">
-        <svg class="sidebar-toggle-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-            <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-    </button>
+    {% if is_docs_page %}
+    {%- comment -%}
+    The canonical side-panel toggle lives in the docs toolbar
+    (#navs-toggle); this header only labels the sidebar.
+    {%- endcomment -%}
+    <div class="sidebar-contents-header">
+        <span class="sidebar-contents-label">Contents</span>
+    </div>
+    {% endif %}
     <ul class="nav-site-links" role="menubar">
         <li><a href="{{ '/' | relative_url }}">Home</a></li>
         <li><a href="{{ '/syntax/overview/' | relative_url }}">Docs</a></li>
@@ -55,6 +39,16 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
         <li><a href="https://opensource.cs.montana.edu" rel="noopener">OS@MSU</a></li>
     </ul>
     <div class="nav-content">
+        {% if is_docs_page %}
+        <ul class="docs-nav-list docs-nav-top" role="menubar">
+            <li class="docs-nav-chapter{% if page.url == '/install/' %} active{% endif %}" role="none">
+                <a href="{{ '/install/' | relative_url }}" role="menuitem">Install</a>
+            </li>
+            <li class="docs-nav-chapter{% if page.url == '/reference-sheet/' %} active{% endif %}" role="none">
+                <a href="{{ '/reference-sheet/' | relative_url }}" role="menuitem">Reference Sheet</a>
+            </li>
+        </ul>
+        {% endif %}
         {% if is_docs_page %}{% for coll in docs_collections %}
             {% assign idx = forloop.index0 %}
             {% assign label = collection_labels[idx] %}
@@ -62,11 +56,30 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
             {% assign is_current_section = false %}
             {% if page.collection == coll %}{% assign is_current_section = true %}{% endif %}
             {% assign chapters = site[coll] | sort: "order" %}
-            <section class="docs-nav-section{% if is_current_section %} current{% endif %}">
-                <h2 class="name">
-                    <a href="{{ first_url | relative_url }}">{{ label }}</a>
-                </h2>
-                <ul class="docs-nav-list" role="menubar">
+            {%- comment -%}
+            Non-current sections render collapsed so the reader lands with
+            their section open and the rest folded (no flash, no storage).
+            {%- endcomment -%}
+            <section class="docs-nav-section{% if is_current_section %} current{% else %} collapsed{% endif %}">
+                <div class="nav-section-header">
+                    <h2 class="name">
+                        <a href="{{ first_url | relative_url }}">{{ label }}</a>
+                    </h2>
+                    <button class="nav-section-toggle" type="button" aria-expanded="{% if is_current_section %}true{% else %}false{% endif %}" aria-controls="nav-section-{{ coll }}" aria-label="Toggle {{ label }} section"
+                        _="on click
+                             set sec to closest <section.docs-nav-section/>
+                             toggle .collapsed on sec
+                             if sec matches .collapsed
+                               set @aria-expanded to 'false'
+                             else
+                               set @aria-expanded to 'true'
+                             end">
+                        <svg class="nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <ul class="docs-nav-list" id="nav-section-{{ coll }}" role="menubar">
                     {% for post in chapters %}
                     <li class="docs-nav-chapter{% if page.url == post.url %} active{% endif %}" role="none">
                         <a href="{{ post.url | relative_url }}" role="menuitem">{{ post.title }}</a>
@@ -76,13 +89,13 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
             </section>
         {% endfor %}{% endif %}
     </div>
-    <div class="sidebar-resize-indicator" aria-hidden="true"
-        _="init
-             set savedWidth to parseInt(localStorage.getItem('nav-width'))
-             if savedWidth >= 160 and savedWidth <= 400
-               call document.documentElement.style.setProperty('--nav-width', savedWidth + 'px')
-             end
-           on mousedown
+    {%- comment -%}
+    The saved nav-width is restored pre-paint by the inline script in
+    head.html; restoring it here (post-paint) would animate a layout shift
+    on every navigation.
+    {%- endcomment -%}
+    <div class="sidebar-resize-indicator" title="Drag to resize sidebar" aria-hidden="true"
+        _="on mousedown
              halt the event's default
              if window.innerWidth <= 768 exit end
              add .dragging to me
@@ -99,3 +112,4 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
                end
              end"></div>
 </nav>
+

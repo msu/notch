@@ -19,6 +19,9 @@
 <script>
 (function(){
   var d=document.documentElement;
-  if(localStorage.getItem('sidebar-collapsed')==='true')d.classList.add('sidebar-collapsed');
+  if(localStorage.getItem('navs-collapsed')==='true')d.classList.add('navs-collapsed');
+  var w=parseInt(localStorage.getItem('nav-width'));
+  if(w>=160&&w<=400)d.style.setProperty('--nav-width',w+'px');
+  if(/Mac|iPhone|iPad|iPod/.test(navigator.platform||navigator.userAgent))d.classList.add('mac');
 })();
 </script>

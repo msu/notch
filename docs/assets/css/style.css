@@ -2,19 +2,22 @@
 /* Strict-nesting compatible: Safari 16.5+, Chrome 112+, Firefox 117+. Bare-type */
 /* nested selectors MUST be prefixed with & or they silently fail on Safari 16.5. */
 
+/* Neutrals are warm (hue ~22deg, matching the logo #BC5215, at low */
+/* saturation) so the logo-derived nav panel reads as designed; text stays */
+/* slate and the accent stays blue as the deliberate cool counterpoint. */
 :root {
   --nav-width: clamp(200px, 20vw, 250px);
-  --bg: #f5f5f5;
+  --bg: #f7f5f2;
   --text: #2d3748;
   --text-muted: #718096;
-  --border-muted: #e2e8f0;
-  --primary: #e2e8f0;
-  --primary-hover: #cbd5e0;
+  --border-muted: #e3dbd4;
+  --primary: #e6ded7;
+  --primary-hover: #d9cfc7;
   --primary-inverse: #2d3748;
   --primary-underline: rgba(45, 55, 72, 0.3);
   --card-bg: #ffffff;
   --input-bg: #ffffff;
-  --input-border: #e2e8f0;
+  --input-border: #e3dbd4;
   --input-text: #2d3748;
   --input-placeholder: #a0aec0;
   --input-focus: #4a5568;
@@ -28,14 +31,14 @@
   --spacing: 1rem;
   --radius: 0.25rem;
   --border-width: 1px;
-  --code-bg: #edf2f7;
+  --code-bg: #f0eae4;
   --code-text: #BC5215;
   --mark-bg: #faf089;
   --mark-text: #2d3748;
-  --toolbar-bg: #edf2f7;
-  --toolbar-border: #e2e8f0;
+  --toolbar-bg: #f1ece7;
+  --toolbar-border: #e3dbd4;
   --table-border: var(--border-muted);
-  --kbd-bg: #e2e8f0;
+  --kbd-bg: #e3dbd4;
   --kbd-text: #2d3748;
   --accent: #2c5282;
   --accent-hover: #1a365d;
@@ -46,6 +49,13 @@
   --toolbar-height: 52px;
   --transition: 0.15s ease;
   --transition-state: 0.3s ease;
+  /* Sidebar resize handle accents (values from rustdoc's light theme). */
+  --sidebar-resizer-hover: hsl(207, 90%, 66%);
+  --sidebar-resizer-active: hsl(207, 90%, 54%);
+  /* Docs sidebar panel: darker than the page bg so it reads as a distinct */
+  /* rail (Pika-style), tinted from the logo hue, with a matching border. */
+  --nav-bg: #e9e2dc;
+  --nav-border: #dcd4cd;
 }
 
 *,
@@ -415,50 +425,58 @@ input:focus:not(:focus-visible) {
   flex-direction: column;
   text-align: center;
   z-index: 100;
-  transition: width var(--transition-state);
 }
 
-#main-nav .sidebar-toggle {
-  align-self: flex-end;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  margin-bottom: 0.75rem;
-  background: transparent;
-  border: 1px solid var(--border-muted);
-  border-radius: var(--radius);
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-
-  &:hover {
-    background: var(--primary-hover);
-    color: var(--text);
-    border-color: var(--text-muted);
-  }
-
-  .sidebar-toggle-icon {
-    transition: transform var(--transition-state);
-  }
-
-  @media (max-width: 768px) {
-    display: none;
-  }
-}
-
-html.sidebar-collapsed #main-nav .sidebar-toggle {
-  align-self: center;
-
-  .sidebar-toggle-icon {
-    transform: rotate(180deg);
-  }
+.docs-nav-section {
+  /* Cancel the global prose `section` margin; section rhythm in the nav */
+  /* comes from the sibling rule below. */
+  margin-bottom: 0;
 }
 
 .docs-nav-section + .docs-nav-section {
   margin-top: 1.25rem;
+}
+
+/* Section title row: label link on the left, fold chevron on the right. */
+.nav-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.nav-section-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius);
+
+  &:hover {
+    color: var(--text);
+    background: var(--primary-hover);
+  }
+
+  .nav-chevron {
+    transition: transform var(--transition);
+  }
+}
+
+.docs-nav-section.collapsed {
+  .nav-section-toggle .nav-chevron {
+    transform: rotate(-90deg);
+  }
+
+  .docs-nav-list {
+    display: none;
+  }
 }
 
 #main-nav .name {
@@ -470,6 +488,8 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   letter-spacing: 0.05em;
   color: var(--text-muted);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .docs-nav-section.current .name a {
@@ -537,9 +557,8 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   }
 }
 
-/* On site-only nav (non-docs pages), hide the sidebar-toggle/resize bits */
-/* -- they only matter on docs pages where there's a collection sidebar. */
-#main-nav.site-only .sidebar-toggle,
+/* On site-only nav (non-docs pages), hide the resize handle -- it only */
+/* matters on docs pages where there's a collection sidebar. */
 #main-nav.site-only .sidebar-resize-indicator {
   display: none;
 }
@@ -579,31 +598,176 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
 
 .nav-content {
   display: contents;
+
+  /* Desktop: a fixed width (nav width minus its horizontal padding) so */
+  /* the collapse animation clips the content instead of re-laying it out */
+  /* -- per-frame ellipsis/wrap recalcs read as text jitter. Tracks */
+  /* --nav-width, so drag-resizing still re-truncates titles live. */
+  @media (min-width: 769px) {
+    display: block;
+    width: calc(var(--nav-width) - 2rem);
+  }
 }
 
 .nav-overlay {
   display: none;
 }
 
+/* Rustdoc-style sidebar resize handle: two staggered dot columns drawn */
+/* with dotted borders. Fixed to the viewport (not absolute in the nav): */
+/* the nav is its own scroll container, so an absolute handle would */
+/* scroll away with the content. Tracking --nav-width keeps it glued to */
+/* the sidebar edge, including live during a drag. */
 .sidebar-resize-indicator {
-  position: absolute;
-  top: 0;
-  right: -4px;
-  width: 8px;
-  height: 100%;
-  cursor: col-resize;
+  touch-action: none;
+  position: fixed;
+  top: var(--toolbar-height);
+  bottom: 0;
+  left: var(--nav-width);
+  /* 5px of breathing room between the nav's edge border and the grip */
+  /* dots; the extra width keeps the hit area generous. */
+  width: 14px;
+  padding-left: 5px;
+  cursor: ew-resize;
   z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--text-muted);
 
-  &:hover::after, &.dragging::after {
+  /* The grip: two interleaved columns of round dots (4 + 5), one 2px dot */
+  /* per 2x4px gradient tile. The 2px margin keeps the column gap the old */
+  /* dotted borders had, and centering staggers the columns by 2px, */
+  /* reproducing the zipper texture with even spacing and round dots. */
+  &::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
     width: 2px;
-    height: 100%;
-    background: var(--primary-inverse);
-    opacity: 0.4;
+    height: 16px;
+    margin-right: 2px;
+    background-image: radial-gradient(circle, currentColor 0.9px, transparent 1.1px);
+    background-size: 2px 4px;
+    /* the global reset disables tiling; the grip needs it */
+    background-repeat: repeat;
+  }
+
+  &::after {
+    content: '';
+    width: 2px;
+    height: 20px;
+    background-image: radial-gradient(circle, currentColor 0.9px, transparent 1.1px);
+    background-size: 2px 4px;
+    background-repeat: repeat;
+  }
+
+  &:hover,
+  &:active {
+    /* 1px wider and 1px left so the guide border doesn't shift the dots. */
+    width: 15px;
+    left: calc(var(--nav-width) - 1px);
+    border-left: solid 1px var(--sidebar-resizer-hover);
+    color: var(--sidebar-resizer-hover);
+  }
+
+  /* While dragging, pad out a wide invisible hit area so fast pointer */
+  /* movement can't escape the handle (rustdoc's trick). */
+  &.dragging {
+    padding: 0 140px;
+    width: 291px;
+    margin-left: -140px;
+    border-left: none;
+    color: var(--sidebar-resizer-active);
+  }
+
+  /* No resizing in the mobile drawer or on touch devices. */
+  @media (max-width: 768px), (pointer: coarse) {
+    display: none;
+  }
+}
+
+/* Solid guide line on the sidebar edge while a drag is in progress
+   (widens/recolors the ::after separation line). */
+#main-nav:has(.sidebar-resize-indicator.dragging)::after {
+  width: 2px;
+  background: var(--sidebar-resizer-active);
+}
+
+
+/* Collapsed: both panels slide shut (width -> 0, Pika-style) and the */
+/* content column, already centered via auto margins, re-centers across */
+/* the full viewport. */
+@media (min-width: 769px) {
+  /* Docs sidebar stretches to the viewport top; its Contents header
+     blends into the toolbar row, which starts at the nav's right edge
+     (below, .docs-toolbar margin-left) so the header appears to push
+     the toolbar content rightward. */
+  #main-nav.docs-nav:not(.site-only) {
+    top: 0;
+    /* The Contents header supplies the top spacing; zero padding lets
+       its sticky position pin flush at y=0. */
+    padding-top: 0;
+  }
+
+  /* Panels and the content margin animate on toggle... The nav slides
+     via transform (compositor-only) instead of animating width/padding,
+     which relaid out the whole sidebar every frame and stuttered. */
+  #main-nav.docs-nav {
+    transition: transform 0.3s ease;
+  }
+
+  .docs-page main {
+    transition: margin-left 0.3s ease;
+  }
+
+  body.docs-page .site-footer {
+    transition: margin-left 0.3s ease;
+  }
+
+  .docs-toc {
+    transition: flex-basis 0.3s ease;
+  }
+
+  body.docs-page .footer-attribution {
+    transition: left 0.3s ease;
+  }
+
+  /* ...but never while drag-resizing, so the sidebar tracks the cursor 1:1. */
+  html:has(.sidebar-resize-indicator.dragging) #main-nav.docs-nav,
+  html:has(.sidebar-resize-indicator.dragging) .docs-page main,
+  html:has(.sidebar-resize-indicator.dragging) body.docs-page .docs-toolbar,
+  html:has(.sidebar-resize-indicator.dragging) body.docs-page .site-footer,
+  html:has(.sidebar-resize-indicator.dragging) body.docs-page .footer-attribution {
+    transition: none;
+  }
+
+  html.navs-collapsed #main-nav.docs-nav {
+    transform: translateX(-100%);
+  }
+
+  /* With the panels gone, let the article breathe wider (+~22%, the
+     same proportional growth the CatScript docs get). Deliberately not
+     transitioned: the width lock in docs.js re-wraps the text once at
+     the start of the slide. */
+  html.navs-collapsed {
+    --content-max-width: 88ch;
+  }
+
+  html.navs-collapsed .docs-toc {
+    flex-basis: 0;
+    min-width: 0;
+    overflow: clip;
+  }
+
+  html.navs-collapsed .sidebar-resize-indicator {
+    display: none;
+  }
+
+  html.navs-collapsed .docs-page main,
+  html.navs-collapsed body.docs-page .site-footer {
+    margin-left: 0;
+  }
+
+  html.navs-collapsed body.docs-page .footer-attribution {
+    left: 50vw;
   }
 }
 
@@ -652,65 +816,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   }
 }
 
-/* Sidebar collapse (desktop): sidebar narrows to a rail showing only vertical */
-/* section names (writing-mode: vertical-rl). The chapter list hides. */
-:root {
-  --nav-rail-width: 44px;
-}
-
-@media (min-width: 769px) {
-  .docs-page main {
-    transition: margin-left var(--transition-state);
-  }
-
-  html.sidebar-collapsed #main-nav {
-    width: var(--nav-rail-width);
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  html.sidebar-collapsed .docs-page main {
-    margin-left: var(--nav-rail-width);
-  }
-
-  html.sidebar-collapsed #main-nav .docs-nav-list {
-    display: none;
-  }
-
-  html.sidebar-collapsed #main-nav .docs-nav-section {
-    margin: 0;
-    display: flex;
-    justify-content: center;
-  }
-
-  html.sidebar-collapsed #main-nav .docs-nav-section + .docs-nav-section {
-    margin-top: 1rem;
-  }
-
-  html.sidebar-collapsed #main-nav .name {
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    padding: 0.5rem 0;
-    letter-spacing: 0.08em;
-
-    & a {
-      color: var(--text-muted);
-
-      &:hover {
-        color: var(--text);
-      }
-    }
-  }
-
-  html.sidebar-collapsed #main-nav .docs-nav-section.current .name a {
-    color: var(--text) !important;
-  }
-
-  html.sidebar-collapsed .sidebar-resize-indicator {
-    display: none;
-  }
-}
-
 @media (max-width: 768px) {
   body {
     --body-px: 1rem;
@@ -741,6 +846,24 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   overflow-y: auto;
   scrollbar-width: none;
 
+  @media (min-width: 769px) {
+    background: var(--nav-bg);
+    /* The sidebar/content separation is a pseudo-element starting BELOW
+       the blended top bar, so no vertical seam cuts the bar; only the
+       horizontal border line crosses the corner. */
+    border-right: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: calc(var(--toolbar-height) + 1px);
+      bottom: 0;
+      right: 0;
+      width: 1px;
+      background: var(--nav-border);
+    }
+  }
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -768,6 +891,11 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   text-align: left;
 }
 
+/* Flat top-level pages (Install, Cheat Sheet) above the sections. */
+.docs-nav-top {
+  margin-bottom: 1.25rem;
+}
+
 #main-nav .docs-nav-chapter {
   padding: 0;
 
@@ -778,17 +906,23 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
     text-decoration: none;
     font-size: var(--font-size-sm);
     border-left: 3px solid transparent;
+    /* One line per title; the ellipsis tracks the sidebar as it resizes. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 
+    /* Hover/active swap to stronger fills so they read against the */
+    /* darker --nav-bg panel. */
     &:hover {
-      background: var(--primary);
+      background: var(--primary-hover);
       color: var(--text);
     }
   }
 
   &.active > a {
     border-left-color: var(--text);
-    background: var(--primary);
+    background: var(--card-bg);
     color: var(--text);
     font-weight: 500;
   }
@@ -806,11 +940,13 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   flex: 1 1 0;
   min-width: 0;
   padding: 2rem clamp(1rem, 3vw, 2rem);
-  transition: max-width var(--transition-state), margin var(--transition-state);
 }
 
+/* Header and body share the content column width and center together */
+/* in the space between the sidebar and the on-this-page TOC. */
 .docs-header {
-  margin-bottom: 2rem;
+  max-width: var(--content-max-width);
+  margin: 0 auto 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-muted);
 
@@ -829,6 +965,7 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
 .docs-body {
   line-height: 1.8;
   max-width: var(--content-max-width);
+  margin-inline: auto;
 
   & h2 {
     margin-top: 2rem;
@@ -870,15 +1007,27 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
 .docs-toc {
   display: none;
   flex: 0 0 220px;
+  /* min-width:auto would floor the rendered width at the content's size
+     while flex-basis animates open — keep these on the base rule so the
+     expand direction animates too, not just collapse.
+     overflow: clip (NOT hidden) — hidden would make this a scroll
+     container and silently break the inner position: sticky. */
+  min-width: 0;
+  overflow: clip;
 }
 
 .docs-toc-inner {
+  /* Fixed width so the TOC clips during the slide instead of re-wrapping. */
+  width: 220px;
   position: sticky;
   top: var(--toolbar-height);
   max-height: calc(100vh - var(--toolbar-height));
   overflow-y: auto;
   padding: 1.5rem 1rem 2rem;
   border-left: 1px solid var(--border-muted);
+  /* Fixed to the column's expanded width so the collapse animation clips */
+  /* the TOC instead of rewrapping its text every frame. */
+  width: 220px;
 }
 
 .docs-toc-heading {
@@ -992,6 +1141,12 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
   padding: 0;
   gap: 0;
 
+  /* Cancel the global prose li margin-bottom; a leftover margin here makes */
+  /* flex centering push the links above the toolbar's vertical center. */
+  & li {
+    margin: 0;
+  }
+
   & a {
     display: inline-block;
     padding: 0.4rem 0.65rem;
@@ -1096,6 +1251,16 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
     color: var(--kbd-text);
     border-radius: var(--radius);
     font-family: var(--font-sans);
+  }
+
+  /* Platform modifier key, driven by the html.mac class the inline head */
+  /* script sets pre-paint so the hint never flashes Ctrl on Apple devices. */
+  .kbd-mod::before {
+    content: "Ctrl";
+  }
+
+  html.mac & .kbd-mod::before {
+    content: "⌘";
   }
 
   @media (max-width: 768px) {
@@ -1241,10 +1406,21 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
 
 /* Hoisted: strict CSS nesting rejects `body.docs-page &` inside .docs-toolbar */
 /* because the compound's first token is a bare type. */
+/* The toolbar starts at the sidebar's right edge while the panels are */
+/* open (the nav's Contents header occupies the bar's left segment) and */
+/* slides back to the viewport edge when they collapse. */
 @media (min-width: 769px) {
   body.docs-page .docs-toolbar {
-    margin-left: 0;
+    margin-left: var(--nav-width);
     margin-right: 0;
+    /* 1rem first-slot inset so the collapsed reopen button lands at the
+       same x as the Contents header's close button. */
+    padding-left: 1rem;
+    transition: margin-left 0.3s ease;
+  }
+
+  html.navs-collapsed body.docs-page .docs-toolbar {
+    margin-left: 0;
   }
 }
 
@@ -1272,11 +1448,6 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
     margin-left: var(--nav-width);
     /* Cancel the negative right margin: body padding is zeroed on docs-page desktop. */
     margin-right: 0;
-    transition: margin-left var(--transition-state);
-  }
-
-  html.sidebar-collapsed .site-footer {
-    margin-left: var(--nav-rail-width);
   }
 }
 
@@ -1298,16 +1469,16 @@ html.sidebar-collapsed #main-nav .sidebar-toggle {
     transform: translate(-50%, -50%);
     white-space: nowrap;
   }
-
-  html.sidebar-collapsed .footer-attribution {
-    left: calc(50vw - var(--nav-rail-width));
-  }
 }
 
 
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 90px;
+  /* No rubber-band overscroll: the sticky toolbar rides the macOS bounce */
+  /* while the fixed side navs / resize grip / collapse tab stay viewport- */
+  /* anchored, so they'd visibly slide over the toolbar during the bounce. */
+  overscroll-behavior-y: none;
 
   @media (max-width: 768px) {
     scroll-padding-top: 80px;
@@ -1446,34 +1617,32 @@ section {
 
   .docs-cards {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
+
+    @media (max-width: 900px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
 
     @media (max-width: 600px) {
       grid-template-columns: 1fr;
     }
   }
 
+  /* Flat grey cards (Pika-style): panel background, accent title, no icon. */
   .docs-card {
     display: block;
     padding: 1.25rem 1.5rem;
-    background: var(--card-bg);
-    border: 1px solid var(--border-muted);
+    background: var(--nav-bg);
+    border: 1px solid var(--nav-border);
     border-radius: var(--radius);
     color: inherit;
     text-decoration: none;
-    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    transition: border-color var(--transition), background var(--transition);
 
     &:hover {
       border-color: var(--accent);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      transform: translateY(-1px);
-    }
-
-    .docs-card-icon {
-      font-size: 1.75rem;
-      line-height: 1;
-      margin-bottom: 0.5rem;
+      background: var(--primary);
     }
 
     & h3 {
@@ -1487,6 +1656,58 @@ section {
       color: var(--text-muted);
       font-size: 0.95rem;
       line-height: 1.4;
+    }
+  }
+}
+
+/* Copy button injected into code blocks by modules/code-copy.js. The host */
+/* is the block wrapper (div/figure.highlight), so the button stays pinned */
+/* while the <pre> scrolls horizontally. Code blocks are dark panels, so */
+/* the button uses translucent-light styling rather than the page buttons. */
+.code-copy-host {
+  position: relative;
+}
+
+.code-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: opacity var(--transition), background var(--transition), color var(--transition);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sidebar-resizer-active);
+    outline-offset: 1px;
+  }
+
+  &.copied {
+    color: #7ce38b;
+  }
+
+  /* Pointer devices: revealed on block hover (or keyboard focus). Touch */
+  /* devices have no hover, so the button stays visible there. */
+  @media (hover: hover) {
+    opacity: 0;
+
+    .code-copy-host:hover &,
+    &:focus-visible,
+    &.copied {
+      opacity: 1;
     }
   }
 }
@@ -1555,4 +1776,81 @@ section {
 
 [hidden] {
   display: none !important;
+}
+
+/* Canonical side-panels toggle (#navs-toggle), always visible in the
+   toolbar's left slot; the icon swaps with the collapse state. Desktop
+   only — the drawer hamburger owns mobile. */
+.toolbar-panels-toggle {
+  width: 36px;
+}
+
+.toolbar-panels-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.toolbar-panels-toggle .icon-panel-open {
+  display: none;
+}
+
+html.navs-collapsed .toolbar-panels-toggle .icon-panel-close {
+  display: none;
+}
+
+html.navs-collapsed .toolbar-panels-toggle .icon-panel-open {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .toolbar-panels-toggle {
+    display: none;
+  }
+}
+
+/* "Contents" header pinned at the top of the docs sidebar, holding the
+   canonical side-panel close button. */
+.sidebar-contents-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  /* Label centered over the sidebar. */
+  justify-content: center;
+  gap: 0.5rem;
+  /* +1px so the bottom border lands at the same y as the toolbar's
+     (toolbar = 52px content + 1px border; this is border-box). */
+  height: calc(var(--toolbar-height) + 1px);
+  flex-shrink: 0;
+  margin: 0 -1rem 0.75rem;
+  padding: 0 0.6rem;
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--toolbar-border);
+}
+
+.sidebar-contents-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  /* Emerges from behind the toggle button: fades + slides out to the
+     right slightly after the panel starts opening. */
+  transition: opacity 0.16s ease 0.1s, transform 0.2s ease 0.06s;
+}
+
+html.navs-collapsed .sidebar-contents-label {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition-delay: 0s, 0s;
+}
+
+
+/* Momentarily disables all transitions while docs.js measures the
+   collapse destination layout between two invisible class flips. */
+html.navs-anim-off *,
+html.navs-anim-off *::before,
+html.navs-anim-off *::after {
+  transition: none !important;
 }

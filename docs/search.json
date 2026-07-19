@@ -8,7 +8,8 @@ layout: null
 {% assign sorted_chisel = site.chisel | sort: "order" %}
 {% assign sorted_templates = site.templates | sort: "order" %}
 {% assign sorted_json5 = site.json5 | sort: "order" %}
-{% assign all_docs = sorted_syntax | concat: sorted_jvm | concat: sorted_repl | concat: sorted_chisel | concat: sorted_templates | concat: sorted_json5 %}
+{% assign standalone = site.pages | where_exp: "p", "p.docs_nav" %}
+{% assign all_docs = standalone | concat: sorted_syntax | concat: sorted_jvm | concat: sorted_repl | concat: sorted_chisel | concat: sorted_templates | concat: sorted_json5 %}
 {% for doc in all_docs %}
   {
     "title": {{ doc.title | jsonify }},
