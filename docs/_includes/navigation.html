@@ -57,15 +57,15 @@ Standalone pages (install, cheat sheet) opt into the docs chrome with a
             {% if page.collection == coll %}{% assign is_current_section = true %}{% endif %}
             {% assign chapters = site[coll] | sort: "order" %}
             {%- comment -%}
-            Non-current sections render collapsed so the reader lands with
-            their section open and the rest folded (no flash, no storage).
+            All sections render expanded by default so the whole map is
+            visible on landing; the toggle still collapses them per-section.
             {%- endcomment -%}
-            <section class="docs-nav-section{% if is_current_section %} current{% else %} collapsed{% endif %}">
+            <section class="docs-nav-section{% if is_current_section %} current{% endif %}">
                 <div class="nav-section-header">
                     <h2 class="name">
                         <a href="{{ first_url | relative_url }}">{{ label }}</a>
                     </h2>
-                    <button class="nav-section-toggle" type="button" aria-expanded="{% if is_current_section %}true{% else %}false{% endif %}" aria-controls="nav-section-{{ coll }}" aria-label="Toggle {{ label }} section"
+                    <button class="nav-section-toggle" type="button" aria-expanded="true" aria-controls="nav-section-{{ coll }}" aria-label="Toggle {{ label }} section"
                         _="on click
                              set sec to closest <section.docs-nav-section/>
                              toggle .collapsed on sec

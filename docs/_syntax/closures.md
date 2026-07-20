@@ -32,11 +32,11 @@ The arrow can also be followed by a brace-delimited statement block instead of a
 \ x -> {
   y = x + 1
   print(y)
-  y
+  return y
 }
 ```
 
-The block body runs its statements top-to-bottom. The value of the closure is the value of the last expression statement.
+The block body runs its statements top-to-bottom. Use `return` to produce a value; without one the block runs purely for side effects and the closure yields `<undefined>`. (A bare trailing expression is not a statement — use `return` or an expression body `\ x -> x + 1`.)
 
 ## Closures as arguments
 

@@ -9,75 +9,241 @@ order: 1
 
 ##  [Literals]({{ '/syntax/overview/' | relative_url }})
 
-```notch
-42                        // integer
-0xff                      // 255 (hex)
-0b101                     // 5 (binary)
-0o77                      // 63 (octal)
-true                      // boolean
+<div class="code-file"><div class="code-file-title">integerLiteral.notch</div>
+{% highlight notch %}
+42
+0xff   // 255
+0b101  // 5
+0o77   // 63
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">booleanLiteral.notch</div>
+{% highlight notch %}
+true
 false
-null                      // null literal
-'hello'                   // string, single or
-"hello"                   // double quoted
-:hello                    // terse string
-[1, 2, 3]                 // list
-{'foo' -> 1, :bar -> 2}   // map; keys are expressions
-{}                        // empty map
-{1, 2, 3}                 // set
-{,}                       // empty set
-(1 + 2) * 3               // parens group
-```
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">nullLiteral.notch</div>
+{% highlight notch %}
+null
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">stringLiteral.notch</div>
+{% highlight notch %}
+'hello'
+"hello"
+:hello   // terse string
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">listLiteral.notch</div>
+{% highlight notch %}
+[1, 2, 3]
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">mapLiteral.notch</div>
+{% highlight notch %}
+{'foo' -> 1, :bar -> 2}  // keys are expressions
+{}  // empty map
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">setLiteral.notch</div>
+{% highlight notch %}
+{1, 2, 3}
+{,}  // empty set
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">grouping.notch</div>
+{% highlight notch %}
+(1 + 2) * 3
+{% endhighlight %}
+</div>
 
 ## [Operators]({{ '/syntax/operators/' | relative_url }})
 
-```notch
-items[0].trim()           // a call, a index, or property access
--n                        // negate
-!ok                       // inverse 'not ok' also works
-2 * 3 % 4              
-1 + 2 - 4                 
-2 <= 3                  
-'notch' starts with 'no' 
-'notch' ends with 'ch' 
-'notch' contains 'otc'   
-1 == 1                    // equality: == != is, is not
-'' is empty               // empty string/list/map or null
+<div class="code-file"><div class="code-file-title">access.notch</div>
+{% highlight notch %}
+items[0].trim()
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">unary.notch</div>
+{% highlight notch %}
+-n       // negate
+!ok      // inverse
+not ok
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">arithmetic.notch</div>
+{% highlight notch %}
+2 * 3 / 4 % 5
+1 + 2 - 4
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">comparison.notch</div>
+{% highlight notch %}
+2 < 3
+2 <= 3
+2 > 3
+2 >= 3
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">stringTests.notch</div>
+{% highlight notch %}
+'notch' starts with 'no'
+'notch' ends with 'ch'
+'notch' contains 'otc'
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">equality.notch</div>
+{% highlight notch %}
+1 == 1
+1 != 2
+1 is 1
+1 is not 2
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">emptiness.notch</div>
+{% highlight notch %}
+'' is empty  // empty string, list, map, or null
 [1] is not empty
-true && true              // logical and; 'and' also works
-done || failed            // logical or; 'or' also works
-x ?: 'default'            // fallback to right side if left is null/undefined
-'yes' if true else 'no'     
-```
+{% endhighlight %}
+</div>
 
+<div class="code-file"><div class="code-file-title">logicalOps.notch</div>
+{% highlight notch %}
+true && true
+true and true
+done || failed
+done or failed
+{% endhighlight %}
+</div>
 
+<div class="code-file"><div class="code-file-title">fallback.notch</div>
+{% highlight notch %}
+x ?: 'default'  // right side if left is null
+{% endhighlight %}
+</div>
 
-
-
-
+<div class="code-file"><div class="code-file-title">conditional.notch</div>
+{% highlight notch %}
+'yes' if true else 'no'
+{% endhighlight %}
+</div>
 
 ## [Statements]({{ '/syntax/statements/' | relative_url }})
 
-```notch
-if true print('foo') else print('bar') end
-if true print('foo') end                    // else optional
+<div class="code-file"><div class="code-file-title">assignment.notch</div>
+{% highlight notch %}
+x = 1
+list[0] = 9
+p.x = 42
+{% endhighlight %}
+</div>
 
-for x in 'foo' print(x) end                 // iterates lists, strings, maps
-for x in 'foo' index i print(i) end         // index clause binds position
-```
+<div class="code-file"><div class="code-file-title">print.notch</div>
+{% highlight notch %}
+print(x)
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">ifStatement.notch</div>
+{% highlight notch %}
+if true print('foo') else print('bar') end
+if true print('foo') end  // else optional
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">forStatement.notch</div>
+{% highlight notch %}
+for x in 'foo' print(x) end  // lists, strings, maps
+for x in 'foo' index i print(i) end  // index binds position
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">repeatStatement.notch</div>
+{% highlight notch %}
+repeat 3 times print(it) end  // 'it' counts 1..3
+repeat while x < 3 x = x + 1 end
+repeat until x >= 3 x = x + 1 end
+break
+continue
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">function.notch</div>
+{% highlight notch %}
+function add(a, b)
+  return a + b
+end
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">class.notch</div>
+{% highlight notch %}
+class Point
+  field x
+  function getX()
+    return this.x
+  end
+end
+p = new Point()
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">import.notch</div>
+{% highlight notch %}
+import java.time.LocalDate
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">exceptions.notch</div>
+{% highlight notch %}
+throw 'boom'
+try
+  throw 'boom'
+catch RuntimeException as e
+  print(e)
+end
+{% endhighlight %}
+</div>
 
 ## [Closures]({{ '/syntax/closures/' | relative_url }})
 
-```notch
-\-> 1                     // zero args
-\ s -> s.length           // one arg
-\ x, y -> x == y          // multiple args
-\ x -> {                  // block body: value is the
-  y = x + 1               // last expression statement
-  y
+<div class="code-file"><div class="code-file-title">closure.notch</div>
+{% highlight notch %}
+\-> 1  // zero args
+\ s -> s.length  // one arg
+\ x, y -> x == y  // multiple args
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">closureBlock.notch</div>
+{% highlight notch %}
+\ x -> {
+  y = x + 1
+  return y  // block value; without a return, yields <undefined>
 }
-['a', 'ab', 'abc'].map(\ s -> s.length)     // [1, 2, 3]
-(\ x, y -> x == y).toBiFunction()           // java.util.function interop
-```
+{% endhighlight %}
+</div>
+
+<div class="code-file"><div class="code-file-title">closureInterop.notch</div>
+{% highlight notch %}
+['a', 'ab', 'abc'].map(\ s -> s.length)  // [1, 2, 3]
+(\ x, y -> x == y).toBiFunction()  // java.util.function interop
+{% endhighlight %}
+</div>
 
 ## [JVM Overview]({{ '/jvm/overview/' | relative_url }})
 

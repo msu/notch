@@ -2,27 +2,33 @@
 /* Strict-nesting compatible: Safari 16.5+, Chrome 112+, Firefox 117+. Bare-type */
 /* nested selectors MUST be prefixed with & or they silently fail on Safari 16.5. */
 
-/* MSU Blue & Gold palette (complementary pair).                          */
-/* Primary: MSU Blue #00205B — links, headings, accent.                   */
-/* Secondary: MSU Gold #B9975B — highlights, marks, active states.        */
-/* 60-30-10: cool neutrals → structural grays → blue/gold accent pops.   */
+/* Three-color palette (code blocks are the deliberate exception):        */
+/*   1. Warm neutral gray — all surfaces, text, borders, sidebar.         */
+/*   2. MSU Blue #00205B — the single accent: links, headings, active     */
+/*      nav, focus, callouts, resize handle.                              */
+/*   3. Code blocks — the dark Flexoki panel (see .highlight below).      */
+/* The logo (#BC5215) is a warm orange brand mark; it echoes the code blocks'
+   number/string orange (#da702c) against the navy accent. */
 :root {
   --nav-width: clamp(200px, 20vw, 250px);
-  --bg: #FAFAFA;
-  --text: #1B2433;
-  --text-muted: #5C6B7A;
-  --border-muted: #DDE1E6;
-  --primary: #E3E7EC;
-  --primary-hover: #D6DBE2;
-  --primary-inverse: #1B2433;
-  --primary-underline: rgba(27, 36, 51, 0.3);
+  /* Warm, softer shell (à la PikaORM): a warm off-white with warm dark-gray
+     text reads with gentler contrast against the dark code panels than a
+     cool near-white + cool navy did. */
+  --bg: #F6F4F1;
+  --text: #33302B;
+  --text-muted: #726C64;
+  --border-muted: #E3DFD8;
+  --primary: #E7E2DB;
+  --primary-hover: #DBD5CC;
+  --primary-inverse: #33302B;
+  --primary-underline: rgba(0, 32, 91, 0.3);
   --card-bg: #ffffff;
   --input-bg: #ffffff;
-  --input-border: #DDE1E6;
-  --input-text: #1B2433;
-  --input-placeholder: #8C95A0;
+  --input-border: #E3DFD8;
+  --input-text: #33302B;
+  --input-placeholder: #A39C92;
   --input-focus: #00205B;
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Atkinson Hyperlegible", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --font-size: 100%;
   --font-weight: 400;
@@ -32,15 +38,15 @@
   --spacing: 1rem;
   --radius: 0.25rem;
   --border-width: 1px;
-  --code-bg: #F0F3F7;
-  --code-text: #1E3A5F;
+  --code-bg: #EFEBE4;
+  --code-text: #33302B;
   --mark-bg: #F5EDD8;
-  --mark-text: #1B2433;
-  --toolbar-bg: #F3F4F6;
-  --toolbar-border: #DDE1E6;
+  --mark-text: #33302B;
+  --toolbar-bg: #F0EDE8;
+  --toolbar-border: #E3DFD8;
   --table-border: var(--border-muted);
-  --kbd-bg: #DDE1E6;
-  --kbd-text: #1B2433;
+  --kbd-bg: #E3DFD8;
+  --kbd-text: #33302B;
   --accent: #00205B;
   --accent-hover: #001840;
   --accent-bg-soft: #E8EEF6;
@@ -50,12 +56,12 @@
   --toolbar-height: 48px;
   --transition: 0.15s ease;
   --transition-state: 0.3s ease;
-  /* Sidebar resize handle accents (MSU Gold tinted). */
-  --sidebar-resizer-hover: #B9975B;
-  --sidebar-resizer-active: #A07D42;
-  /* Docs sidebar panel: cool gray, one step below page bg. */
-  --nav-bg: #EEF0F3;
-  --nav-border: #DDE1E6;
+  /* Sidebar resize handle accents (navy, matching the single accent color). */
+  --sidebar-resizer-hover: #00205B;
+  --sidebar-resizer-active: #001840;
+  /* Docs sidebar panel: warm gray, one step below the warm page bg. */
+  --nav-bg: #EEEBE6;
+  --nav-border: #E3DFD8;
 }
 
 *,
@@ -318,7 +324,9 @@ input {
 /* Classes follow Rouge's standard naming (.c=comment, .k=keyword, .s=string, */
 /* .n*=name, .m*=number, .o=operator, .p=punctuation, .g*=generic, .err=error). */
 .highlight {
-  background-color: #1e2228;
+  /* Softer dark (matches MDN's code blocks) — less contrast against the
+     off-white page than a near-black background. */
+  background-color: #2d3034;
   border-radius: var(--radius);
   margin: var(--spacing) 0;
   overflow-x: auto;
@@ -726,16 +734,11 @@ input:focus:not(:focus-visible) {
     transition: flex-basis 0.3s ease;
   }
 
-  body.docs-page .footer-attribution {
-    transition: left 0.3s ease;
-  }
-
   /* ...but never while drag-resizing, so the sidebar tracks the cursor 1:1. */
   html:has(.sidebar-resize-indicator.dragging) #main-nav.docs-nav,
   html:has(.sidebar-resize-indicator.dragging) .docs-page main,
   html:has(.sidebar-resize-indicator.dragging) body.docs-page .docs-toolbar,
-  html:has(.sidebar-resize-indicator.dragging) body.docs-page .site-footer,
-  html:has(.sidebar-resize-indicator.dragging) body.docs-page .footer-attribution {
+  html:has(.sidebar-resize-indicator.dragging) body.docs-page .site-footer {
     transition: none;
   }
 
@@ -764,10 +767,6 @@ input:focus:not(:focus-visible) {
   html.navs-collapsed .docs-page main,
   html.navs-collapsed body.docs-page .site-footer {
     margin-left: 0;
-  }
-
-  html.navs-collapsed body.docs-page .footer-attribution {
-    left: 50vw;
   }
 }
 
@@ -974,7 +973,7 @@ input:focus:not(:focus-visible) {
 
   & pre {
     margin: 1rem 0;
-    padding: 1rem;
+    padding: 1.25rem;
     border-radius: 0.5rem;
     overflow-x: auto;
     /* Snippet blocks shouldn't stretch when the content is short. */
@@ -1456,23 +1455,19 @@ input:focus:not(:focus-visible) {
 
 .footer-attribution {
   font-size: 0.85rem;
+  text-align: center;
 
   & a {
     color: var(--text-muted);
   }
 }
 
-/* Attribution text anchored to viewport center via calc(50vw - nav-width). */
-/* Aligns with toolbar-home which uses left:50vw + translate(-50%). */
-@media (min-width: 769px) {
-  body.docs-page .footer-attribution {
-    position: absolute;
-    top: 50%;
-    left: calc(50vw - var(--nav-width));
-    transform: translate(-50%, -50%);
-    white-space: nowrap;
-  }
-}
+/* The footer is display:flex / justify-content:center, so the attribution
+   centers within the footer's content area — which is already offset by the
+   sidebar via the footer's margin-left. Letting flex do the centering (rather
+   than absolute-positioning it at viewport center) keeps it correctly centered
+   as the sidebar resizes and lets the text wrap on narrow/tablet widths instead
+   of overflowing left under the sidebar. */
 
 
 html {
@@ -1734,7 +1729,7 @@ section {
   }
 
   .demo-title {
-    background: linear-gradient(to bottom, #f5f5f5, #e2e2e2);
+    background: linear-gradient(to bottom, #F3EFE9, #E4DFD6);
     padding: 6px 12px;
     font-family: var(--font-mono);
     font-size: 0.8rem;
@@ -1852,4 +1847,62 @@ html.navs-anim-off *,
 html.navs-anim-off *::before,
 html.navs-anim-off *::after {
   transition: none !important;
+}
+
+/* Mobile horizontal-scroll fix for code blocks. iOS/WebKit insets a scroll
+   container's overlay scrollbar by its own padding, so a <pre> with
+   bottom padding floats the horizontal bar ~1rem above the box's bottom
+   edge. The <pre> must stay the scroller (the copy button is pinned to the
+   .highlight wrapper and would scroll away if the wrapper scrolled), so
+   instead we zero the <pre>'s bottom padding and move that breathing room
+   onto the block-level <code> inside. The bar then sits flush at the box
+   bottom with 1rem of space above it. Selectors match the specificity of
+   the `.highlight pre` / `.docs-body pre` padding shorthands and come later
+   in source order so the bottom longhand wins. */
+.highlight pre,
+.docs-body pre {
+  padding-bottom: 0;
+}
+
+.highlight pre code,
+.docs-body pre code {
+  display: block;
+  /* Matches the 1.25rem top/side padding on the <pre> (see .docs-body pre). */
+  padding-bottom: 1.25rem;
+}
+
+/* The .highlight wrapper supplies the code block's outer margin, so the
+   inner <pre> should have none. Without this, `.docs-body pre`'s `margin:
+   1rem 0` leaks in (it lands later in source than `.highlight pre`'s
+   `margin: 0`), leaving a 1rem strip of wrapper background below the <pre>
+   that keeps the scrollbar off the visible box's bottom edge. */
+.highlight pre {
+  margin: 0;
+}
+
+/* Titled code blocks (like the home page's example.notch frame, but tuned for
+   the docs body). Wrap a {% highlight %} block in
+   <div class="code-file"><div class="code-file-title">name.notch</div>…</div>.
+   The filename tab replaces most `//` side comments. */
+.docs-body .code-file {
+  margin: 1.5rem 0;
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.docs-body .code-file-title {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  /* Matches the home page's example.notch tab (.demo-title). */
+  background: linear-gradient(to bottom, #F3EFE9, #E4DFD6);
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-muted);
+}
+
+/* The frame owns the outer margin and rounding; the code sits flush inside. */
+.docs-body .code-file .highlight {
+  margin: 0;
+  border-radius: 0;
 }
