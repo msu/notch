@@ -735,6 +735,10 @@ public class NotchParser extends BasicParser {
             if (rethrowStmt != null) {
                 return rethrowStmt;
             }
+            var importStmt = parseImportStatement();
+            if (importStmt != null) {
+                return importStmt;
+            }
             var classStmt = parseClassDeclaration();
             if (classStmt != null) {
                 return classStmt;
@@ -789,6 +793,21 @@ public class NotchParser extends BasicParser {
         NotchExpression operand = requireExpression("expected an expression to throw");
         final var span = new Span(source(), start, lastToken().end());
         return new NotchThrowStatement(span, operand);
+    }
+
+    private NotchStatement parseImportStatement() {
+        var start = tokens.location();
+        if (!takeKeyword("import")) return null;
+
+        QualifiedIdent type = requireQualifiedIdent("expected a type name after 'import'");
+
+        Token alias = null;
+        if (takeKeyword("as")) {
+            alias = requireIdent("expected an alias after 'as'");
+        }
+
+        final var span = new Span(source(), start, lastToken().end());
+        return new NotchImport(span, type, alias);
     }
 
     private NotchStatement parseRethrowStatement() {

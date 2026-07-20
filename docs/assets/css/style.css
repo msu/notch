@@ -2,25 +2,26 @@
 /* Strict-nesting compatible: Safari 16.5+, Chrome 112+, Firefox 117+. Bare-type */
 /* nested selectors MUST be prefixed with & or they silently fail on Safari 16.5. */
 
-/* Neutrals are warm (hue ~22deg, matching the logo #BC5215, at low */
-/* saturation) so the logo-derived nav panel reads as designed; text stays */
-/* slate and the accent stays blue as the deliberate cool counterpoint. */
+/* MSU Blue & Gold palette (complementary pair).                          */
+/* Primary: MSU Blue #00205B — links, headings, accent.                   */
+/* Secondary: MSU Gold #B9975B — highlights, marks, active states.        */
+/* 60-30-10: cool neutrals → structural grays → blue/gold accent pops.   */
 :root {
   --nav-width: clamp(200px, 20vw, 250px);
-  --bg: #f7f5f2;
-  --text: #2d3748;
-  --text-muted: #718096;
-  --border-muted: #e3dbd4;
-  --primary: #e6ded7;
-  --primary-hover: #d9cfc7;
-  --primary-inverse: #2d3748;
-  --primary-underline: rgba(45, 55, 72, 0.3);
+  --bg: #FAFAFA;
+  --text: #1B2433;
+  --text-muted: #5C6B7A;
+  --border-muted: #DDE1E6;
+  --primary: #E3E7EC;
+  --primary-hover: #D6DBE2;
+  --primary-inverse: #1B2433;
+  --primary-underline: rgba(27, 36, 51, 0.3);
   --card-bg: #ffffff;
   --input-bg: #ffffff;
-  --input-border: #e3dbd4;
-  --input-text: #2d3748;
-  --input-placeholder: #a0aec0;
-  --input-focus: #4a5568;
+  --input-border: #DDE1E6;
+  --input-text: #1B2433;
+  --input-placeholder: #8C95A0;
+  --input-focus: #00205B;
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --font-size: 100%;
@@ -31,31 +32,30 @@
   --spacing: 1rem;
   --radius: 0.25rem;
   --border-width: 1px;
-  --code-bg: #f0eae4;
-  --code-text: #BC5215;
-  --mark-bg: #faf089;
-  --mark-text: #2d3748;
-  --toolbar-bg: #f1ece7;
-  --toolbar-border: #e3dbd4;
+  --code-bg: #F0F3F7;
+  --code-text: #1E3A5F;
+  --mark-bg: #F5EDD8;
+  --mark-text: #1B2433;
+  --toolbar-bg: #F3F4F6;
+  --toolbar-border: #DDE1E6;
   --table-border: var(--border-muted);
-  --kbd-bg: #e3dbd4;
-  --kbd-text: #2d3748;
-  --accent: #2c5282;
-  --accent-hover: #1a365d;
-  --accent-bg-soft: #ebf2fa;
+  --kbd-bg: #DDE1E6;
+  --kbd-text: #1B2433;
+  --accent: #00205B;
+  --accent-hover: #001840;
+  --accent-bg-soft: #E8EEF6;
   --callout-border: var(--accent);
   --callout-bg: var(--accent-bg-soft);
   --content-max-width: 72ch;
   --toolbar-height: 48px;
   --transition: 0.15s ease;
   --transition-state: 0.3s ease;
-  /* Sidebar resize handle accents (values from rustdoc's light theme). */
-  --sidebar-resizer-hover: hsl(207, 90%, 66%);
-  --sidebar-resizer-active: hsl(207, 90%, 54%);
-  /* Docs sidebar panel: darker than the page bg so it reads as a distinct */
-  /* rail (Pika-style), tinted from the logo hue, with a matching border. */
-  --nav-bg: #e9e2dc;
-  --nav-border: #dcd4cd;
+  /* Sidebar resize handle accents (MSU Gold tinted). */
+  --sidebar-resizer-hover: #B9975B;
+  --sidebar-resizer-active: #A07D42;
+  /* Docs sidebar panel: cool gray, one step below page bg. */
+  --nav-bg: #EEF0F3;
+  --nav-border: #DDE1E6;
 }
 
 *,
@@ -814,9 +814,7 @@ input:focus:not(:focus-visible) {
     flex-wrap: nowrap;
     margin: 0;
   }
-}
 
-@media (max-width: 768px) {
   body {
     --body-px: 1rem;
     padding: 0 var(--body-px);
@@ -1584,10 +1582,6 @@ section {
     font-weight: 500;
     font-size: clamp(1.5rem, calc(1.25vw + 1.125rem), 2.375rem);
     line-height: 1.2;
-  }
-
-  .hero-prose {
-    max-width: 42rem;
   }
 
   /* Mobile: stack logo + tagline, both centered. Logo allowed to */
