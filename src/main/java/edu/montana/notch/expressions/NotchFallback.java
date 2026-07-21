@@ -14,7 +14,7 @@ public class NotchFallback extends NotchExpression {
     @Override
     public Object evaluate(NotchRuntime runtime) {
         var value = runtime.evaluate(primary);
-        if (runtime.isUndefined(value)) {
+        if (runtime.isUndefined(value) || value == null) {
             value = runtime.evaluate(fallback);
         }
         return value;

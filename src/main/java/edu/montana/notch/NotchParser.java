@@ -16,8 +16,17 @@ public class NotchParser extends BasicParser {
     private final NotchParseError errorHandler = new NotchParseError(this);
     private int loopDepth = 0;
     private int functionDepth = 0;
+    private int closureBodyDepth = 0;
     private int catchDepth = 0;
     private final List<Diagnostic> parseErrors = new ArrayList<>();
+
+    public boolean inReturnableContext() {
+        return functionDepth > 0;
+    }
+
+    public boolean inClosureBody() {
+        return closureBodyDepth > 0;
+    }
 
     public List<Diagnostic> getDiagnostics() {
         return Collections.unmodifiableList(parseErrors);
@@ -590,34 +599,42 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchExpression parseClosureExpression() {
-        if (take("\\")) {
-            Token startToken = lastToken();
-            List<Token> params = new ArrayList<>();
-            while (!atEnd() && !peek("->")) {
-                Token param = require("ident", "Expected a parameter name");
-                params.add(param);
-                if (!peek("->")) {
-                    require(",", "Expected a comma to separate parameters");
-                }
+        if (!take("\\")) return null;
+        Token startToken = lastToken();
+        List<Token> params = new ArrayList<>();
+        while (!atEnd() && !peek("->")) {
+            Token param = require("ident", "Expected a parameter name");
+            params.add(param);
+            if (!peek("->")) {
+                require(",", "Expected a comma to separate parameters");
             }
-            require("->", "Expected a '->' after the parameters");
-            List<NotchStatement> statements = null;
-            NotchExpression expression = null;
-            if (take("{")) {
-                statements = new LinkedList<>();
+        }
+        require("->", "Expected a '->' after the parameters");
+        List<NotchStatement> statements = null;
+        NotchExpression expression = null;
+        if (take("{")) {
+            statements = new LinkedList<>();
+            int savedLoopDepth = loopDepth;
+            loopDepth = 0;
+            functionDepth++;
+            closureBodyDepth++;
+            try {
                 while (!atEnd() && !peek("}")) {
                     NotchStatement stmt = parseStatement();
                     statements.add(stmt);
                 }
-                require("}", "Require a '}' to close the body of the closure");
-            } else {
-                expression = parseExpression();
+            } finally {
+                functionDepth--;
+                closureBodyDepth--;
+                loopDepth = savedLoopDepth;
             }
-            final var span = startToken.span.through(lastToken());
-            NotchClosureExpression closureExpr = new NotchClosureExpression(span, params, expression, statements);
-            return closureExpr;
+            require("}", "Require a '}' to close the body of the closure");
+        } else {
+            expression = parseExpression();
         }
-        return null;
+        final var span = startToken.span.through(lastToken());
+        NotchClosureExpression closureExpr = new NotchClosureExpression(span, params, expression, statements);
+        return closureExpr;
     }
 
     public NotchElement parse() {
@@ -859,7 +876,7 @@ public class NotchParser extends BasicParser {
             clauses.add(new NotchCatch(type, name, catchBody));
         }
 
-        requireKeyword("end", "unterminated 'try', expected 'end'");
+        requireKeyword("end", "Unterminated 'try', expected 'end'");
         final var span = new Span(source(), start, lastToken().end());
         return new NotchTry(span, body, clauses);
     }
@@ -986,7 +1003,7 @@ public class NotchParser extends BasicParser {
         } finally {
             functionDepth--;
             loopDepth = savedLoopDepth;
-            requireKeyword("end", "unterminated function, expected 'end'");
+            requireKeyword("end", "Unterminated function, expected 'end'");
         }
         final var span = new Span(source(), start, lastToken().end());
         return new NotchFunctionDeclaration(span, name, params, returnType, body);
@@ -1041,7 +1058,7 @@ public class NotchParser extends BasicParser {
                 }
             }
         }
-        requireKeyword("end", "unterminated class, expected 'end'");
+        requireKeyword("end", "Unterminated class, expected 'end'");
         final var span = new Span(source(), start, lastToken().end());
         return new NotchClassDeclaration(span, name, headerFields, bodyFields, methods);
     }

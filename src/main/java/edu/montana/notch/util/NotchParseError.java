@@ -1,8 +1,8 @@
 package edu.montana.notch.util;
 
+import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.ParseException;
-import edu.montana.notch.chisel.ReadOnlyParser;
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchClosureExpression;
@@ -11,9 +11,9 @@ import edu.montana.notch.expressions.NotchIdentifier;
 
 public class NotchParseError {
 
-    private final ReadOnlyParser parser;
+    private final NotchParser parser;
 
-    public NotchParseError(ReadOnlyParser parser) {
+    public NotchParseError(NotchParser parser) {
         this.parser = parser;
     }
 
@@ -147,6 +147,12 @@ public class NotchParseError {
             }
         }
 
+        if (parser.inReturnableContext()) {
+            diag.note("to produce a value here, use 'return' before the expression");
+        }
+        if (parser.inClosureBody()) {
+            diag.note("or drop the braces for an expression body: \\ params -> expression");
+        }
         if (inputFollowsOnSameLine) {
             diag.note("unexpected input after this expression");
             diag.highlight(next);

@@ -17,7 +17,8 @@ public class IsEmptyExpression extends NotchExpression {
     public Object evaluate(NotchRuntime runtime) {
         var lval = runtime.evaluate(lhs);
         if (lval instanceof String s) {
-            return isInverted == s.isEmpty();
+            boolean nonEmpty = !s.isEmpty();
+            return isInverted == nonEmpty;
         } else {
             var iterable = runtime.coerceIterable(lhs.span(), lval);
             var it = iterable.iterator();

@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class BasicParser implements ReadOnlyParser {
+public class BasicParser {
     protected TokenStream tokens;
     protected Set<String> ignoredTokenTypes = new HashSet<>();
     protected Set<String> temporaryEndTokens = new HashSet<>();

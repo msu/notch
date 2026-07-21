@@ -34,7 +34,7 @@ public class NotchJLineParser extends DefaultParser {
         if (!parser.atEnd()) return false;
         for (Diagnostic diag : parser.getDiagnostics()) {
             var notes = diag.getNotes();
-            if (!notes.isEmpty() && notes.getFirst().startsWith("Unterminated")) {
+            if (!notes.isEmpty() && notes.getFirst().toLowerCase().startsWith("unterminated")) {
                 return true;
             }
         }
