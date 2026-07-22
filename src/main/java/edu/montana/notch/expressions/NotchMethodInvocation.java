@@ -7,6 +7,7 @@ import edu.montana.notch.runtime.NotchClosure;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.types.NotchJavaMethod;
+import edu.montana.notch.types.NotchType;
 import edu.montana.notch.types.TypeSystem;
 
 import java.util.ArrayList;
@@ -37,9 +38,7 @@ public class NotchMethodInvocation extends NotchExpression {
                 diag.note("unable to call '%s', value was null".formatted(pa.getDotPath()));
             } else if (root instanceof NotchIdentifier ni) {
                 diag.note("undefined function '%s'".formatted(ni.name()));
-                if (TypeSystem.resolveThrowableType(ni.name()) != null) {
-                    diag.note("did you mean 'new %s(...)'?".formatted(ni.name()));
-                }
+                addJavaTypeHints(diag, ni.name());
             } else {
                 diag.note("unable to call expression, value was null or undefined");
             }
@@ -63,6 +62,15 @@ public class NotchMethodInvocation extends NotchExpression {
             try (var ignoredTrace = runtime.trace(span(), jm.getQualifiedName())) {
                 return jm.invoke(null, argValues);
             }
+        } else if (functionObj instanceof NotchType type) {
+            try (var ignoredTrace = runtime.trace(span(), "<constructor:" + type.getSimpleName() + ">")) {
+                return type.newInstance(argValues.toArray());
+            } catch (IllegalArgumentException e) {
+                var diag = new Diagnostic();
+                diag.setTitle("no constructor for '" + type.getDisplayName() + "' accepts these argument types");
+                diag.highlight(root.span());
+                throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
+            }
         } else if (functionObj instanceof Callable<?> c) {
             try (var ignoreTrace = runtime.trace(span(), "<callable:%s>".formatted(NotchRuntime.className(c)))) {
                 return safelyEval(c);
@@ -76,11 +84,17 @@ public class NotchMethodInvocation extends NotchExpression {
             diag.setTitle("failed to invoke unknown value");
             diag.highlight(root.span());
             diag.note("the value had type " + NotchRuntime.className(functionObj));
-            //TypeSystem cached short name returning NotchJavaType instead of UNDEFINED
-            if (root instanceof NotchIdentifier ni && TypeSystem.resolveThrowableType(ni.name()) != null) {
-                diag.note("did you mean 'new %s(...)'?".formatted(ni.name()));
-            }
             throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
+        }
+    }
+
+    private static void addJavaTypeHints(Diagnostic diag, String name) {
+        Class<?> resolvedType = TypeSystem.resolveThrowableType(name);
+        if (resolvedType == null) return;
+        diag.note("'%s' is a Java type, import it to use it as a value: 'import %s'"
+                .formatted(name, resolvedType.getName()));
+        if (Throwable.class.isAssignableFrom(resolvedType)) {
+            diag.note("or construct it directly: 'new %s(...)'".formatted(name));
         }
     }
 

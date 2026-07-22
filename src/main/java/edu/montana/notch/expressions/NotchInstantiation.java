@@ -26,30 +26,57 @@ public class NotchInstantiation extends NotchExpression {
     @Override
     public Object evaluate(NotchRuntime runtime) {
         Object value = runtime.getSymbol(className.str());
-        if (value instanceof NotchClass clazz) {
-            return clazz.construct(runtime, evaluateArgs(runtime));
+        if (value instanceof NotchClass declaredClass) {
+            return declaredClass.construct(runtime, evaluateArgs(runtime));
+        }
+        if (value instanceof NotchType importedType) {
+            Object[] argValues = evaluateArgs(runtime).toArray();
+            try {
+                return importedType.newInstance(argValues);
+            } catch (IllegalArgumentException noMatchingConstructor) {
+                throw noConstructor(runtime, importedType.getDisplayName());
+            }
         }
         if (value == NotchRuntime.UNDEFINED) {
+            List<Object> argValues = evaluateArgs(runtime);
             try {
-                Object thrown = tryConstructThrowable(className.str(), evaluateArgs(runtime));
+                Object thrown = tryConstructThrowable(className.str(), argValues);
                 if (thrown != null) return thrown;
-            } catch (IllegalArgumentException e) {
-                var diag = new Diagnostic();
-                diag.setTitle("no constructor for '" + className.str() + "' accepts these argument types");
-                diag.highlight(span());
-                throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
+            } catch (IllegalArgumentException noMatchingConstructor) {
+                throw noConstructor(runtime, className.str());
             }
-            var diag = new Diagnostic();
-            diag.setTitle("no class named '" + className.str() + "'");
-            diag.highlight(span());
-            diag.note("'" + className.str() + "' is not defined - make sure the class is declared before this line");
-            throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
+            throw unknownClass(runtime);
         }
-        var diag = new Diagnostic();
-        diag.setTitle("cannot instantiate a non-class value");
-        diag.highlight(span());
-        diag.note("'" + className.str() + "' is a value, not a class, so 'new' cannot be used on it");
-        throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
+        throw cannotInstantiateNonClassValue(runtime);
+    }
+
+    private NotchRuntimeException noConstructor(NotchRuntime runtime, String typeName) {
+        var diag = new Diagnostic()
+                .setTitle("no constructor for '" + typeName + "' accepts these argument types")
+                .highlight(span());
+        return new NotchRuntimeException(runtime.currentStackTrace(), diag);
+    }
+
+    private NotchRuntimeException unknownClass(NotchRuntime runtime) {
+        var diag = new Diagnostic()
+                .setTitle("no class named '" + className.str() + "'")
+                .highlight(span());
+        Class<?> resolvedType = TypeSystem.resolveThrowableType(className.str());
+        if (resolvedType != null && !resolvedType.isPrimitive()) {
+            diag.note("'%s' is a Java type, import it to use it: 'import %s'"
+                    .formatted(className.str(), resolvedType.getName()));
+        } else {
+            diag.note("'" + className.str() + "' is not defined, make sure the class is declared before this line");
+        }
+        return new NotchRuntimeException(runtime.currentStackTrace(), diag);
+    }
+
+    private NotchRuntimeException cannotInstantiateNonClassValue(NotchRuntime runtime) {
+        var diag = new Diagnostic()
+                .setTitle("cannot instantiate a non-class value")
+                .highlight(span())
+                .note("'" + className.str() + "' is a value, not a class, so 'new' cannot be used on it");
+        return new NotchRuntimeException(runtime.currentStackTrace(), diag);
     }
 
     private List<Object> evaluateArgs(NotchRuntime runtime) {

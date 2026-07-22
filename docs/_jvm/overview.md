@@ -22,8 +22,10 @@ Call a constructor by invoking the type value:
 list = java.util.ArrayList()
 list.add("a")
 list.add("b")
-list.size       # 2
+list.size
 ```
+
+After the two `add` calls, `list.size` is `2`.
 
 Constructor overload resolution uses the same `getBestMatch` logic as method invocation.
 
@@ -37,15 +39,18 @@ Property access works on JVM objects via their getter methods. Both bean-style a
 
 ```notch
 list = [1, 2, 3]
-list.size      # 3
-list.size()    # 3, same thing
+list.size
+list.size()
 ```
 
-Snake-case and camelCase access both resolve to the same property:
+Both forms return `3`; `list.size` reads the getter, `list.size()` calls the method.
+
+Snake-case and camelCase access both resolve to the same getter:
 
 ```notch
-java.lang.Object.displayName
-java.lang.Object.display_name
+d = java.time.LocalDate.now()
+d.dayOfMonth
+d.day_of_month
 ```
 
 ## Type resolution
@@ -63,6 +68,20 @@ JVM primitives are accessible as bare identifiers:
 ```notch
 int
 ```
+
+## Bringing a type into scope
+
+A fully-qualified name always works: `java.io.IOException`. To use a Java type by its
+**short name** as a value — for example `err = IOException("disk gone")` — import it first:
+
+```notch
+import java.io.IOException
+err = IOException("disk gone")
+```
+
+Exception types are the one exception to needing an import: they resolve unqualified in
+`throw`, `catch`, and `new` without one (`throw IOException("...")`, `catch IOException`,
+`new IOException("...")`). Using the bare name as a plain value still needs the import.
 
 ## Static methods
 

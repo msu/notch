@@ -57,16 +57,14 @@ public class TypeSystem {
 
     private static final String[] DEFAULT_THROWABLE_PACKAGES = {"java.lang", "java.io", "java.util"};
 
+    //asymmetry for Notch allowing "catch IOException" without import
     public static Class<?> resolveThrowableType(String name) {
-        //allows user to call catch IOException, without implementing parallel exception structure that java provides.
         NotchType direct = getType(name);
         if (direct != null) return direct.getBackingClass();
-        //if user enters simple name exception not in scope
         if (name.indexOf('.') >= 0) return null;
         for (String pkg : DEFAULT_THROWABLE_PACKAGES) {
             NotchType type = getType(pkg + "." + name);
             if (type != null) {
-                TYPESYSTEM_CACHE.put(name, type);
                 return type.getBackingClass();
             }
         }

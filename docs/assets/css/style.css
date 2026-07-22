@@ -1623,7 +1623,8 @@ section {
     }
   }
 
-  /* Flat grey cards (Pika-style): panel background, accent title, no icon. */
+  /* Flat grey cards (Pika-style): panel background, accent title. Icons are */
+  /* optional — only some tiles carry a leading emoji glyph. */
   .docs-card {
     display: block;
     padding: 1.25rem 1.5rem;
@@ -1637,6 +1638,12 @@ section {
     &:hover {
       border-color: var(--accent);
       background: var(--primary);
+    }
+
+    .docs-card-icon {
+      font-size: 1.75rem;
+      line-height: 1;
+      margin-bottom: 0.5rem;
     }
 
     & h3 {

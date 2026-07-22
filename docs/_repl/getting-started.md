@@ -48,7 +48,7 @@ notch > if true
 foo
 ```
 
-Continuation kicks in when the line parser sees an unmatched `if` or `for` keyword and waits for the matching `end`.
+Continuation kicks in when the line parser sees an unterminated block (such as `if`, `for`, `function`, `class`, or `try`) and waits for the matching `end`.
 
 ## See also
 

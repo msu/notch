@@ -14,12 +14,13 @@ Integer literal:
 42
 ```
 
-Integer literals also accept hexadecimal, binary, and octal prefixes:
+Integer literals also accept hexadecimal, binary, and octal prefixes (`0xff`,
+`0b101`, and `0o77` are 255, 5, and 63):
 
 ```notch
-0xff      # 255
-0b101     # 5
-0o77      # 63
+0xff
+0b101
+0o77
 ```
 
 Boolean literals:
@@ -40,15 +41,6 @@ String literal (single or double quoted):
 ```notch
 'hello'
 "hello"
-```
-
-## Comments
-
-Lines beginning with `//` are comments and ignored by the parser:
-
-```notch
-// this is a comment
-x = 1   // trailing comments work too
 ```
 
 ## List literal

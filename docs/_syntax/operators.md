@@ -49,12 +49,12 @@ expr is empty
 expr is not empty
 ```
 
-Tests whether a value is empty. Empty means: an empty string, an empty list, an empty map, or `null`.
+Tests whether a value is empty. Empty means: an empty string, an empty list, an empty map, or `null`. Each of these evaluates to `true`:
 
 ```notch
-"" is empty           # true
-[1] is not empty      # true
-null is empty         # true
+"" is empty
+[1] is not empty
+null is empty
 ```
 
 ## See also

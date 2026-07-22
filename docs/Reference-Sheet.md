@@ -12,9 +12,9 @@ order: 1
 <div class="code-file"><div class="code-file-title">integerLiteral.notch</div>
 {% highlight notch %}
 42
-0xff   // 255
-0b101  // 5
-0o77   // 63
+0xff
+0b101
+0o77
 {% endhighlight %}
 </div>
 
@@ -35,7 +35,7 @@ null
 {% highlight notch %}
 'hello'
 "hello"
-:hello   // terse string
+:hello
 {% endhighlight %}
 </div>
 
@@ -47,15 +47,15 @@ null
 
 <div class="code-file"><div class="code-file-title">mapLiteral.notch</div>
 {% highlight notch %}
-{'foo' -> 1, :bar -> 2}  // keys are expressions
-{}  // empty map
+{'foo' -> 1, :bar -> 2}
+{}
 {% endhighlight %}
 </div>
 
 <div class="code-file"><div class="code-file-title">setLiteral.notch</div>
 {% highlight notch %}
 {1, 2, 3}
-{,}  // empty set
+{,}
 {% endhighlight %}
 </div>
 
@@ -75,8 +75,8 @@ items[0].trim()
 
 <div class="code-file"><div class="code-file-title">unary.notch</div>
 {% highlight notch %}
--n       // negate
-!ok      // inverse
+-n
+!ok
 not ok
 {% endhighlight %}
 </div>
@@ -116,7 +116,7 @@ not ok
 
 <div class="code-file"><div class="code-file-title">emptiness.notch</div>
 {% highlight notch %}
-'' is empty  // empty string, list, map, or null
+'' is empty
 [1] is not empty
 {% endhighlight %}
 </div>
@@ -132,7 +132,7 @@ done or failed
 
 <div class="code-file"><div class="code-file-title">fallback.notch</div>
 {% highlight notch %}
-x ?: 'default'  // right side if left is null
+x ?: 'default'
 {% endhighlight %}
 </div>
 
@@ -161,20 +161,20 @@ print(x)
 <div class="code-file"><div class="code-file-title">ifStatement.notch</div>
 {% highlight notch %}
 if true print('foo') else print('bar') end
-if true print('foo') end  // else optional
+if true print('foo') end
 {% endhighlight %}
 </div>
 
 <div class="code-file"><div class="code-file-title">forStatement.notch</div>
 {% highlight notch %}
-for x in 'foo' print(x) end  // lists, strings, maps
-for x in 'foo' index i print(i) end  // index binds position
+for x in 'foo' print(x) end
+for x in 'foo' index i print(i) end
 {% endhighlight %}
 </div>
 
 <div class="code-file"><div class="code-file-title">repeatStatement.notch</div>
 {% highlight notch %}
-repeat 3 times print(it) end  // 'it' counts 1..3
+repeat 3 times print(it) end
 repeat while x < 3 x = x + 1 end
 repeat until x >= 3 x = x + 1 end
 break
@@ -223,9 +223,9 @@ end
 
 <div class="code-file"><div class="code-file-title">closure.notch</div>
 {% highlight notch %}
-\-> 1  // zero args
-\ s -> s.length  // one arg
-\ x, y -> x == y  // multiple args
+\-> 1
+\ s -> s.length
+\ x, y -> x == y
 {% endhighlight %}
 </div>
 
@@ -233,39 +233,43 @@ end
 {% highlight notch %}
 \ x -> {
   y = x + 1
-  return y  // block value; without a return, yields <undefined>
+  return y
 }
 {% endhighlight %}
 </div>
 
 <div class="code-file"><div class="code-file-title">closureInterop.notch</div>
 {% highlight notch %}
-['a', 'ab', 'abc'].map(\ s -> s.length)  // [1, 2, 3]
-(\ x, y -> x == y).toBiFunction()  // java.util.function interop
+['a', 'ab', 'abc'].map(\ s -> s.length)
+(\ x, y -> x == y).toBiFunction()
 {% endhighlight %}
 </div>
 
 ## [JVM Overview]({{ '/jvm/overview/' | relative_url }})
 
 ```notch
-import java.time.LocalDate                  // import a class
-java.lang.System.out.println("hello!")      // call methods
-list = java.util.ArrayList()                // constructors: invoke the type
-list.size                                   // property access via getters
-list.size()                                 // same thing
-java.util.List.of(1, 2, 3)                  // static methods
-java.lang.Character.TYPE                    // static properties
-for v in java.time.DayOfWeek.values         // enums iterate via .values
+import java.time.LocalDate
+java.lang.System.out.println("hello!")
+list = java.util.ArrayList()
+list.size
+list.size()
+java.util.List.of(1, 2, 3)
+java.lang.Character.TYPE
+for v in java.time.DayOfWeek.values
   print(v)
 end
 ```
 
-Overloads resolve by parameter count, then assignability, then registered
-[coercions]({{ '/jvm/coercions/' | relative_url }}) (boxed ↔ primitive,
-`BigDecimal` ↔ `int`). Calls on `null` produce a diagnostic pointing at the
-failing expression — guard with `is empty` or a `null` comparison.
+Line by line: import a class; call a method; construct by invoking the type;
+property access via getters; the same call written explicitly; a static method;
+a static property; enums iterate via `.values`.
 
-## REPL — [Getting Started]({{ '/repl/getting-started/' | relative_url }})
+Overloads resolve by parameter count, then assignability, then registered
+[coercions]({{ '/jvm/coercions/' | relative_url }}) (boxed and primitive,
+`BigDecimal` and `int`). Calls on `null` produce a diagnostic pointing at the
+failing expression - guard with `is empty` or a `null` comparison.
+
+## REPL - [Getting Started]({{ '/repl/getting-started/' | relative_url }})
 
 Launch with `notch`. Unfinished `if`/`for` blocks get a continuation prompt
 until the matching `end`. History persists in `~/.notch_history`.
@@ -284,6 +288,6 @@ until the matching `end`. History persists in `~/.notch_history`.
 
 ## More
 
-- [Notch Templates]({{ '/templates/overview/' | relative_url }}) — render text with embedded Notch expressions.
-- [JSON5]({{ '/json5/overview/' | relative_url }}) — JSON5 parser and a small query language.
-- [Chisel]({{ '/chisel/overview/' | relative_url }}) — the language-agnostic foundation Notch is built on.
+- [Notch Templates]({{ '/templates/overview/' | relative_url }}) - render text with embedded Notch expressions.
+- [JSON5]({{ '/json5/overview/' | relative_url }}) - JSON5 parser and a small query language.
+- [Chisel]({{ '/chisel/overview/' | relative_url }}) - the language-agnostic foundation Notch is built on.
