@@ -34,15 +34,19 @@ public class NotchPropertyTests {
     }
 
     @Test
-    public void invokingNullIsUndefined() {
-        final var value = eval("foo.bar()", "foo", null);
-        assertEquals(UNDEFINED, value);
+    public void invokingNullThrowsError() {
+        try {
+            eval("foo.bar()", "foo", null);
+            fail("expected RuntimeException");
+        } catch (RuntimeException e) {
+            assertTrue(e.getMessage().contains("unable to call 'foo.bar'"));
+        }
     }
 
     @Test
     public void noSuchMethodIsUndefined() {
-        final var value = eval("foo.bar()", "foo", new Foo());
-        assertEquals(UNDEFINED, value);
+        var ex = assertThrows(RuntimeException.class, () -> eval("foo.bar()", "foo", new Foo()));
+        assertContains("no method 'bar' on Foo - Did you mean 'baz'?", ex.getMessage());
     }
 
     class Foo {

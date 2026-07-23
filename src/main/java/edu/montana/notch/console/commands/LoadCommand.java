@@ -23,6 +23,12 @@ public class LoadCommand implements Runnable {
     public void run() {
         if (!FS.exists(fileName)) {
             System.out.println("file not found: " + fileName);
+            //TODO: Temp Fix need to dig deeper into Jline Parser
+            if (System.getProperty("os.name", "").toLowerCase().contains("win")) {
+                System.out.println("hint: Windows paths with backslashes are mangled by the shell");
+                System.out.println("  quote the path:       load \"C:\\Users\\foo\\bar.notch\"");
+                System.out.println("  use forward slashes:  load C:/Users/foo/bar.notch");
+            }
             return;
         }
         String content = FS.read(fileName);

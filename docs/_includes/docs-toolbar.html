@@ -22,6 +22,36 @@
     <span></span>
     <span></span>
   </button>
+  {% assign toolbar_docs_collections = "syntax,jvm,repl,chisel,templates,json5" | split: "," %}
+  {% assign toolbar_is_docs = false %}
+  {% for coll in toolbar_docs_collections %}{% if page.collection == coll %}{% assign toolbar_is_docs = true %}{% endif %}{% endfor %}
+  {% if page.docs_nav %}{% assign toolbar_is_docs = true %}{% endif %}
+  {% if toolbar_is_docs %}
+  <button id="navs-toggle" class="toolbar-btn toolbar-panels-toggle" type="button" aria-label="Collapse side panels" aria-expanded="true" title="Hide side panels ([)"
+    _="init
+         if first <html/> matches .navs-collapsed
+           set @aria-expanded to 'false'
+           set @aria-label to 'Expand side panels'
+           set @title to 'Show side panels ([)'
+         end
+       on click
+         toggle .navs-collapsed on <html/>
+         if first <html/> matches .navs-collapsed
+           set @aria-expanded to 'false'
+           set @aria-label to 'Expand side panels'
+           set @title to 'Show side panels ([)'
+           call localStorage.setItem('navs-collapsed', 'true')
+         else
+           set @aria-expanded to 'true'
+           set @aria-label to 'Collapse side panels'
+           set @title to 'Hide side panels ([)'
+           call localStorage.setItem('navs-collapsed', 'false')
+         end">
+    <!-- Lucide panel-left-close / panel-left-open (lucide.dev, ISC license) -->
+    <svg class="icon-panel-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
+    <svg class="icon-panel-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+  </button>
+  {% endif %}
   <a href="{{ '/' | relative_url }}" class="toolbar-home" aria-label="Notch home">
     <img class="brand-mark" src="{{ '/assets/images/notch-no-text.svg' | relative_url }}" width="22" height="22" alt="" aria-hidden="true">
     <span class="brand-wordmark">Notch</span>
@@ -33,14 +63,14 @@
   <div class="toolbar-spacer"></div>
   <ul class="toolbar-nav toolbar-nav-end">
     <li><a href="https://github.com/msu/notch" rel="noopener">GitHub</a></li>
-    <li><a href="https://www.cs.montana.edu" rel="noopener">MSU CS</a></li>
+    <li><a href="https://opensource.cs.montana.edu" rel="noopener">OS@MSU</a></li>
   </ul>
   <button class="toolbar-btn search-btn" type="button" aria-label="Search documentation">
     <svg class="search-btn-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
       <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/>
     </svg>
     <span class="search-btn-label">Search</span>
-    <kbd class="search-btn-shortcut" aria-hidden="true"><span class="kbd-mod">Ctrl</span>K</kbd>
+    <kbd class="search-btn-shortcut" aria-hidden="true"><span class="kbd-mod"></span>K</kbd>
   </button>
 </div>
 

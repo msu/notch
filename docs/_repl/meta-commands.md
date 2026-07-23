@@ -51,14 +51,16 @@ The REPL colorizes input in real time. Tokens map to colors via the terminal's c
 
 ## Error display
 
-Parse and runtime errors are rendered with a file location and a caret pointing at the failing token:
+Parse and runtime errors are rendered with a source line and a caret underlining the failing expression, followed by an explanatory note:
 
 ```notch
-notch > 1 +
-[notch-repl:1:5]
-  1 + 
-      ^
-unexpected end of input
+notch > [1, 2, 3].nope()
+   --> jackknife-cli
+    |
+  1 | [1, 2, 3].nope()
+    | ^^^^^^^^^^^^^^
+    |
+note: no method 'nope' on BetterList - Did you mean 'copy'?
 ```
 
 ## See also

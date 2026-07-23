@@ -266,6 +266,20 @@ public class Text {
         return Base64.getEncoder().encodeToString(value.getBytes());
     }
 
+    public static String closest(String target, Iterable<String> candidates, int maxDistance) {
+        String t = target.toLowerCase();
+        String best = null;
+        int min = Integer.MAX_VALUE;
+        for (String c : candidates) {
+            int d = levenshteinDistance(t, c.toLowerCase());
+            if (d < min) {
+                min = d;
+                best = c;
+            }
+        }
+        return min <= maxDistance ? best : null;
+    }
+
     public static int levenshteinDistance(String s1, String s2) {
         int[][] dp = new int[s1.length() + 1][s2.length() + 1];
 

@@ -78,6 +78,7 @@ public class NotchShell {
                 .variable(LineReader.SECONDARY_PROMPT_PATTERN, "      > ")
                 .option(LineReader.Option.CASE_INSENSITIVE, true)
                 .option(LineReader.Option.HISTORY_INCREMENTAL, true)
+                .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
                 .highlighter(new TerminalSyntaxHighlighter())
                 .completer(new PicocliCompleter(commandLine))
                 .build();

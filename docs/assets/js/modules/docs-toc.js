@@ -31,6 +31,13 @@ export function init() {
     headings.forEach(h => {
       if (h.offsetTop <= scrollTop) activeId = h.id;
     });
+    // At the very bottom, activate the last section even if its heading
+    // never reaches the activation line (short final sections otherwise
+    // can never light up).
+    if (headings.length &&
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+      activeId = headings[headings.length - 1].id;
+    }
     tocLinks.forEach(link => {
       link.classList.toggle('active', activeId && link.getAttribute('href') === '#' + activeId);
     });

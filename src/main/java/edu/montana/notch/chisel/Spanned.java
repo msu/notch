@@ -11,6 +11,14 @@ public interface Spanned {
         return span().end();
     }
 
+    default int startLine() {
+        return span().start().line;
+    }
+
+    default int endLine() {
+        return span().end().line;
+    }
+
     default String sourceId() {
         return span().sourceId();
     }

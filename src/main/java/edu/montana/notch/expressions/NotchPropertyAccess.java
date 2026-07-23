@@ -1,10 +1,12 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.NotchBoundMethod;
 import edu.montana.notch.runtime.NotchClosure;
 import edu.montana.notch.runtime.NotchInstance;
 import edu.montana.notch.runtime.NotchRuntime;
+import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.types.*;
 import edu.montana.notch.util.Text;
 
@@ -115,18 +117,14 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
             }
         }
 
-//        var error = new Diagnostic();
-//        error.highlight(span());
-//        String hint;
-//        if (rootValue instanceof NotchType notchType) {
-//            hint = resolveClosestFeatureName(notchType);
-//        } else {
-//            hint = resolveClosestFeatureName(runtimeType);
-//        }
-//        error.note("no property/method named %s on %s (%s)%s".formatted(Text.repr(getProperty()),
-//                Text.repr(getParentDotPath()),
-//                runtimeType.getDisplayName(), hint));
-//        throw new NotchRuntimeException(runtime.currentStackTrace(), error);
+        if (favorMethods) {
+            var error = new Diagnostic();
+            error.highlight(span());
+            String typeName = rootValue instanceof NotchType nt ? nt.getDisplayName() : runtimeType.getSimpleName();
+            String hint = resolveClosestFeatureName(rootValue instanceof NotchType nt ? nt : runtimeType);
+            error.note("no method '%s' on %s%s".formatted(getProperty(), typeName, hint));
+            throw new NotchRuntimeException(runtime.currentStackTrace(), error);
+        }
         return UNDEFINED;
     }
 
@@ -198,6 +196,10 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
 
     public String getProperty() {
         return property.str();
+    }
+
+    public Token getPropertyToken() {
+        return property;
     }
 
     public String getParentDotPath() {

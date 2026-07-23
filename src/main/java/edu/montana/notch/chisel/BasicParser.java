@@ -73,6 +73,17 @@ public class BasicParser {
         return currentToken();
     }
 
+    public Token peekNext() {
+        consumeIgnoredTokens();
+        int i = tokens.index + 1;
+        while (i < tokens.tokens.size()) {
+            Token candidate = tokens.tokens.get(i);
+            if (!ignoredTokenTypes.contains(candidate.type)) return candidate;
+            i++;
+        }
+        return tokens.getSource().eoi;
+    }
+
     public boolean peek(String... tokenTypes) {
         consumeIgnoredTokens();
         return tokens.peek(tokenTypes);

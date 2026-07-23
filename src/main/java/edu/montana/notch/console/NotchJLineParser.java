@@ -1,7 +1,7 @@
 package edu.montana.notch.console;
 
 import edu.montana.notch.NotchParser;
-import edu.montana.notch.chisel.ParseException;
+import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.TokenizeException;
 import org.jline.reader.EOFError;
@@ -14,6 +14,7 @@ public class NotchJLineParser extends DefaultParser {
         setEofOnUnclosedQuote(true);
         setEofOnUnclosedBracket(Bracket.ROUND, Bracket.SQUARE, Bracket.CURLY);
         setEofOnEscapedNewLine(true);
+        setEscapeChars(null);
     }
 
     @Override
@@ -29,16 +30,15 @@ public class NotchJLineParser extends DefaultParser {
     private static boolean isBlockIncomplete(String buffer) {
         var parser = buildParser(buffer);
         if (parser == null) return false;
-        try {
-            parser.parseAsStatement();
-            return false;
-        } catch (ParseException e) {
-            if (!parser.atEnd()) return false;
-            var notes = e.diagnostic.getNotes();
-            if (notes.isEmpty()) return false;
-            var first = notes.getFirst();
-            return first != null && first.startsWith("Unterminated");
+        parser.parseAsStatement();
+        if (!parser.atEnd()) return false;
+        for (Diagnostic diag : parser.getDiagnostics()) {
+            var notes = diag.getNotes();
+            if (!notes.isEmpty() && notes.getFirst().toLowerCase().startsWith("unterminated")) {
+                return true;
+            }
         }
+        return false;
     }
 
     private static NotchParser buildParser(String buffer) {

@@ -73,6 +73,9 @@ public class NotchTemplateParser extends BasicParser {
 
         var commandParser = new NotchParser(data.notchTokens());
         command.parseCommand(commandParser);
+        if (commandParser.hasErrors()) {
+            throw new ParseException(commandParser.getDiagnostics().getFirst());
+        }
         if (!commandParser.atEnd()) {
             final var diag = new Diagnostic();
             diag.note("unexpected extra tokens here...");

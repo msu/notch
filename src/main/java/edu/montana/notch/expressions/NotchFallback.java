@@ -25,7 +25,7 @@ public class NotchFallback extends NotchExpression {
             value = runtime.evaluate(primary);
         }
 
-        if (runtime.isUndefined(value)) {
+        if (runtime.isUndefined(value) || value == null) {
             value = runtime.evaluate(fallback);
         }
         return value;

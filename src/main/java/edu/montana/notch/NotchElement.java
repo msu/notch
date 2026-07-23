@@ -1,13 +1,16 @@
 package edu.montana.notch;
 
+import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.expressions.NotchErrorExpression;
-
+import edu.montana.notch.statements.NotchErrorStatement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
 
 public class NotchElement implements Spanned {
     public final Span span;
@@ -35,9 +38,17 @@ public class NotchElement implements Spanned {
         return Collections.unmodifiableList(children);
     }
 
-    public void collectErrors(List<NotchErrorExpression> out) {
-        if (this instanceof NotchErrorExpression bee) {
-            out.add(bee);
+    public List<Diagnostic> collectErrors() {
+        List<Diagnostic> out = new ArrayList<>();
+        collectErrors(out);
+        return out;
+    }
+
+    private void collectErrors(List<Diagnostic> out) {
+        if (this instanceof NotchErrorStatement s) {
+            out.add(s.diagnostic);
+        } else if (this instanceof NotchErrorExpression e) {
+            out.add(e.diagnostic);
         }
         for (var child : getChildren()) {
             child.collectErrors(out);

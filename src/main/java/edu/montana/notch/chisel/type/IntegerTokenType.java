@@ -1,6 +1,10 @@
 package edu.montana.notch.chisel.type;
 
+import edu.montana.notch.chisel.Diagnostic;
+import edu.montana.notch.chisel.Location;
+import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.TokenData;
+import edu.montana.notch.chisel.TokenizeException;
 import edu.montana.notch.chisel.TokenType;
 import edu.montana.notch.chisel.Tokenizer;
 
@@ -21,6 +25,7 @@ public class IntegerTokenType implements TokenType {
     @Override
     public TokenData tokenize(Tokenizer t) {
         if (!Character.isDigit(t.peek())) return null;
+        Location start = t.location();
         char c = t.take();
 
         int base = 10;
@@ -44,7 +49,14 @@ public class IntegerTokenType implements TokenType {
             content.append(c);
         }
 
-        int value = Integer.parseInt(content.toString(), base);
-        return new TokenData(value);
+        try {
+            int value = Integer.parseInt(content.toString(), base);
+            return new TokenData(value);
+        } catch (NumberFormatException e) {
+            var diag = new Diagnostic()
+                    .note("number too large: " + content + " exceeds the maximum integer value")
+                    .highlight(new Span(t.source(), start, t.location()));
+            throw new TokenizeException(diag);
+        }
     }
 }

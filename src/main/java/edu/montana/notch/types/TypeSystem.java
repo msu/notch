@@ -55,6 +55,22 @@ public class TypeSystem {
         });
     }
 
+    private static final String[] DEFAULT_THROWABLE_PACKAGES = {"java.lang", "java.io", "java.util"};
+
+    //asymmetry for Notch allowing "catch IOException" without import
+    public static Class<?> resolveThrowableType(String name) {
+        NotchType direct = getType(name);
+        if (direct != null) return direct.getBackingClass();
+        if (name.indexOf('.') >= 0) return null;
+        for (String pkg : DEFAULT_THROWABLE_PACKAGES) {
+            NotchType type = getType(pkg + "." + name);
+            if (type != null) {
+                return type.getBackingClass();
+            }
+        }
+        return null;
+    }
+
     public static NotchType getType(String className) {
         NotchType cached = TYPESYSTEM_CACHE.get(className);
         if (cached != null) {
