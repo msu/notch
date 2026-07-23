@@ -7,9 +7,9 @@ each i in `docs_collections` pairs with i in `collection_labels` / `collection_f
 A single loop renders every collection so users can switch sections without
 returning to the home page (Stripe / Astro / Tailwind pattern).
 {%- endcomment -%}
-{% assign docs_collections = "syntax,jvm,repl,chisel,templates,json5" | split: "," %}
-{% assign collection_labels = "Syntax,JVM,REPL,Chisel,Notch Templates,JSON5" | split: "," %}
-{% assign collection_first_url = "/syntax/overview/,/jvm/overview/,/repl/getting-started/,/chisel/overview/,/templates/overview/,/json5/overview/" | split: "," %}
+{% assign docs_collections = "getting-started,language,templates,repl" | split: "," %}
+{% assign collection_labels = "Getting Started,Language,Notch Templates,REPL" | split: "," %}
+{% assign collection_first_url = "/getting-started/install/,/language/values/,/templates/overview/,/repl/getting-started/" | split: "," %}
 
 {% assign is_docs_page = false %}
 {% for coll in docs_collections %}
@@ -33,22 +33,12 @@ Standalone pages (install, cheat sheet) opt into the docs chrome with a
     {% endif %}
     <ul class="nav-site-links" role="menubar">
         <li><a href="{{ '/' | relative_url }}">Home</a></li>
-        <li><a href="{{ '/syntax/overview/' | relative_url }}">Docs</a></li>
+        <li><a href="{{ '/language/values/' | relative_url }}">Docs</a></li>
         <li><a href="{{ '/templates/overview/' | relative_url }}">Notch Templates</a></li>
         <li><a href="https://github.com/msu/notch" rel="noopener">GitHub</a></li>
         <li><a href="https://opensource.cs.montana.edu" rel="noopener">OS@MSU</a></li>
     </ul>
     <div class="nav-content">
-        {% if is_docs_page %}
-        <ul class="docs-nav-list docs-nav-top" role="menubar">
-            <li class="docs-nav-chapter{% if page.url == '/install/' %} active{% endif %}" role="none">
-                <a href="{{ '/install/' | relative_url }}" role="menuitem">Install</a>
-            </li>
-            <li class="docs-nav-chapter{% if page.url == '/reference-sheet/' %} active{% endif %}" role="none">
-                <a href="{{ '/reference-sheet/' | relative_url }}" role="menuitem">Reference Sheet</a>
-            </li>
-        </ul>
-        {% endif %}
         {% if is_docs_page %}{% for coll in docs_collections %}
             {% assign idx = forloop.index0 %}
             {% assign label = collection_labels[idx] %}

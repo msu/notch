@@ -35,51 +35,33 @@ permalink: pretty
 
 # Collections
 collections:
-  syntax:
+  getting-started:
     output: true
-    permalink: /syntax/:name/
-  jvm:
+    permalink: /getting-started/:name/
+  language:
     output: true
-    permalink: /jvm/:name/
-  repl:
-    output: true
-    permalink: /repl/:name/
-  chisel:
-    output: true
-    permalink: /chisel/:name/
+    permalink: /language/:name/
   templates:
     output: true
     permalink: /templates/:name/
-  json5:
+  repl:
     output: true
-    permalink: /json5/:name/
+    permalink: /repl/:name/
 
 # Defaults
 defaults:
   - scope:
       path: ""
-      type: "syntax"
+      type: "getting-started"
     values:
       layout: "docs"
-      collection: "syntax"
+      collection: "getting-started"
   - scope:
       path: ""
-      type: "jvm"
+      type: "language"
     values:
       layout: "docs"
-      collection: "jvm"
-  - scope:
-      path: ""
-      type: "repl"
-    values:
-      layout: "docs"
-      collection: "repl"
-  - scope:
-      path: ""
-      type: "chisel"
-    values:
-      layout: "docs"
-      collection: "chisel"
+      collection: "language"
   - scope:
       path: ""
       type: "templates"
@@ -88,7 +70,7 @@ defaults:
       collection: "templates"
   - scope:
       path: ""
-      type: "json5"
+      type: "repl"
     values:
       layout: "docs"
-      collection: "json5"
+      collection: "repl"

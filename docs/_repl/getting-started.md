@@ -8,7 +8,7 @@ order: 1
 
 ## Install Notch first
 
-See the [install page]({{ '/install/' | relative_url }}) for the one-line install on macOS, Linux, and Windows. Once installed, `notch` is on your `PATH`.
+See the [install page]({{ '/getting-started/install/' | relative_url }}) for the one-line install on macOS, Linux, and Windows. Once installed, `notch` is on your `PATH`.
 
 ## Launch the REPL
 
@@ -53,4 +53,4 @@ Continuation kicks in when the line parser sees an unterminated block (such as `
 ## See also
 
 - [Meta Commands](../meta-commands/) for the built-in subcommands.
-- [Syntax Overview](../../syntax/overview/) for what to type at the prompt.
+- [Values & Literals](../../language/values/) for what to type at the prompt.

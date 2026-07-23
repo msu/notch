@@ -6,12 +6,10 @@ layout: default
   <div class="docs-content">
     {% if page.title %}
     {% case page.collection %}
-      {% when 'syntax' %}{% assign coll_label = 'Syntax' %}
-      {% when 'jvm' %}{% assign coll_label = 'JVM' %}
-      {% when 'repl' %}{% assign coll_label = 'REPL' %}
-      {% when 'chisel' %}{% assign coll_label = 'Chisel' %}
+      {% when 'getting-started' %}{% assign coll_label = 'Getting Started' %}
+      {% when 'language' %}{% assign coll_label = 'Language' %}
       {% when 'templates' %}{% assign coll_label = 'Notch Templates' %}
-      {% when 'json5' %}{% assign coll_label = 'JSON5' %}
+      {% when 'repl' %}{% assign coll_label = 'REPL' %}
     {% endcase %}
     <header class="docs-header">
       {% if coll_label %}<p class="docs-section-label">{{ coll_label }}</p>{% endif %}

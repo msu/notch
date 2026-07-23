@@ -2,14 +2,11 @@
 layout: null
 ---
 [
-{% assign sorted_syntax = site.syntax | sort: "order" %}
-{% assign sorted_jvm = site.jvm | sort: "order" %}
-{% assign sorted_repl = site.repl | sort: "order" %}
-{% assign sorted_chisel = site.chisel | sort: "order" %}
+{% assign sorted_getting_started = site['getting-started'] | sort: "order" %}
+{% assign sorted_language = site.language | sort: "order" %}
 {% assign sorted_templates = site.templates | sort: "order" %}
-{% assign sorted_json5 = site.json5 | sort: "order" %}
-{% assign standalone = site.pages | where_exp: "p", "p.docs_nav" %}
-{% assign all_docs = standalone | concat: sorted_syntax | concat: sorted_jvm | concat: sorted_repl | concat: sorted_chisel | concat: sorted_templates | concat: sorted_json5 %}
+{% assign sorted_repl = site.repl | sort: "order" %}
+{% assign all_docs = sorted_getting_started | concat: sorted_language | concat: sorted_templates | concat: sorted_repl %}
 {% for doc in all_docs %}
   {
     "title": {{ doc.title | jsonify }},
