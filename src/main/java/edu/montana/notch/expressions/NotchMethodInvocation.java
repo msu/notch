@@ -7,6 +7,7 @@ import edu.montana.notch.runtime.NotchClosure;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.types.NotchJavaMethod;
+import edu.montana.notch.types.NotchJavaType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,10 @@ public class NotchMethodInvocation extends NotchExpression {
         } else if (functionObj instanceof NotchJavaMethod jm) {
             try (var ignoredTrace = runtime.trace(span(), jm.getQualifiedName())) {
                 return jm.invoke(null, argValues);
+            }
+        } else if (functionObj instanceof NotchJavaType jt) {
+            try (var ignoredTrace = runtime.trace(span(), jt.getDisplayName())) {
+                return jt.newInstance(argValues.toArray(Object[]::new));
             }
         } else if (functionObj instanceof Callable<?> c) {
             try (var ignoreTrace = runtime.trace(span(), "<callable:%s>".formatted(NotchRuntime.className(c)))) {

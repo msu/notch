@@ -154,11 +154,12 @@ public class NotchTemplates {
         return contentBlock;
     }
 
-    private FragmentCommand.Fragment findFragment(String fragment, NotchTemplateContentBlock content) {
-        final var fragments = content.collectGlobals(FragmentCommand.class);
+    private FragmentCommand.Fragment findFragment(String fragment, NotchTemplateRuntime runtime) {
+        final var fragments = runtime.globals(FragmentCommand.class);
         for (var cmd : fragments) {
-            if (cmd.getFragmentName().equals(fragment)) {
-                return cmd.fragment;
+            if (!(cmd instanceof FragmentCommand fragmentCmd)) continue;
+            if (fragmentCmd.getFragmentName().equals(fragment)) {
+                return fragmentCmd.fragment;
             }
         }
         throw new RenderException("Fragment " + fragment + " not found");
@@ -173,10 +174,12 @@ public class NotchTemplates {
     public void renderFromSource(Source source, String fragmentName, NotchTemplateRuntime runtime, Drain out) {
         final var contentBlock = parseSource(source);
         if (fragmentName != null) {
-            final var fragment = findFragment(fragmentName, contentBlock);
+            contentBlock.preRender(runtime);
+            FragmentCommand.Fragment fragment = findFragment(fragmentName, runtime);
             fragment.render(new BetterList<>(), runtime, out);
+            contentBlock.postRender(runtime);
         } else {
-            contentBlock.globalRender(runtime, out);
+            contentBlock.fullRender(runtime, out);
         }
     }
 

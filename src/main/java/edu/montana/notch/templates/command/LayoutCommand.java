@@ -1,12 +1,15 @@
 package edu.montana.notch.templates.command;
 
 import edu.montana.notch.NotchParser;
+import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.Drain;
+import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplateParser;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
+import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.BetterMap;
 import edu.montana.notch.util.Key;
 
@@ -17,14 +20,17 @@ public class LayoutCommand extends NotchTemplateCommand {
 
     public LayoutCommand() {
         super("layout");
+        isGlobal = true;
     }
 
     Token templateName;
-    NotchTemplateContentBlock bodyContent;
+    private NotchTemplateContentBlock layoutContent;
+    private NotchTemplateContentBlock bodyContent;
 
     @Override
     public void parseCommand(NotchParser parser) {
         templateName = parser.expect("string", "expected template name");
+        layoutContent = templates.getTemplateContent(templateName.str());
     }
 
     @Override
@@ -32,43 +38,38 @@ public class LayoutCommand extends NotchTemplateCommand {
         bodyContent = parser.parseContentBlock();
     }
 
-    @Override
-    public void render(NotchTemplateRuntime runtime, Drain out) {
-        final var layoutContent = runtime.templates().getTemplateContent(templateName.str());
-        final var contentGlobals = bodyContent.collectGlobals();
-        final var layoutGlobals = layoutContent.collectGlobals();
+    private BetterMap<String, String> blocks;
+    private NotchTemplateRuntime layoutRuntime;
+    private NotchTemplateRuntime contentRuntime;
 
-        final var blocks = new BetterMap<String, String>();
-        final var layoutRuntime = new NotchTemplateRuntime(layoutContent.source(), runtime);
+    @Override
+    public void preRender(NotchTemplateRuntime runtime) {
+        blocks = new BetterMap<>();
+
+        layoutRuntime = new NotchTemplateRuntime(layoutContent.source(), runtime);
         layoutRuntime.storage(MODE, Mode.LayoutFile);
         layoutRuntime.storage(BLOCKS, blocks);
+        layoutContent.preRender(layoutRuntime);
 
-        for (final var global : layoutGlobals) {
-            global.preRender(layoutRuntime);
-        }
+        contentRuntime = new NotchTemplateRuntime(source(), layoutRuntime);
+        contentRuntime.storage(MODE, Mode.ContentFile);
+        contentRuntime.storage(BLOCKS, blocks);
+        bodyContent.preRender(contentRuntime);
+    }
 
-        {
-            final var contentRuntime = new NotchTemplateRuntime(source(), layoutRuntime);
-            contentRuntime.storage(MODE, Mode.ContentFile);
-            contentRuntime.storage(BLOCKS, blocks);
-            for (final var global : contentGlobals) {
-                global.preRender(contentRuntime);
-            }
-
-            final var contentSb = new StringBuilder();
-            bodyContent.render(contentRuntime, new Drain(contentSb));
-            blocks.put(null, contentSb.toString());
-
-            for (final var global : contentGlobals) {
-                global.postRender(contentRuntime);
-            }
-        }
+    @Override
+    public void render(NotchTemplateRuntime runtime, Drain out) {
+        final var contentSb = new StringBuilder();
+        bodyContent.render(contentRuntime, new Drain(contentSb));
+        blocks.put(null, contentSb.toString());
 
         layoutContent.render(layoutRuntime, out);
+    }
 
-        for (final var global : contentGlobals) {
-            global.postRender(layoutRuntime);
-        }
+    @Override
+    public void postRender(NotchTemplateRuntime runtime) {
+        bodyContent.postRender(contentRuntime);
+        layoutContent.postRender(layoutRuntime);
     }
 
     public enum Mode {

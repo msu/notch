@@ -20,6 +20,7 @@ public final class BasicNotchTemplateCommands {
             new SetCommand(),
             new CommentCommand(),
             new RequireCommand(),
+            new RawCommand(),
     };
 
     public static void addTo(NotchTemplates templates) {

@@ -112,4 +112,27 @@ public class FragmentTests extends NotchTemplateTestBase {
                 </div>
                 """, result);
     }
+
+    @Test
+    public void testFragmentInLayout() {
+        registerTemplate("layout.html", """
+                Hello!!
+                
+                #content
+                """);
+
+        registerTemplate("child.html", """
+                #layout :layout.html
+                
+                #fragment World
+                World!!
+                #end
+                """);
+
+        var result = renderTemplate("child.html");
+        assertEquals("Hello!!\n\n\nWorld!!\n", result);
+
+        result = renderTemplate("child.html#World");
+        assertEquals("World!!\n", result);
+    }
 }

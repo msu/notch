@@ -47,9 +47,10 @@ public class RenderException extends RuntimeException {
             }
         }
 
-        if (super.getMessage() != null) {
+        String superMessage = super.getMessage();
+        if (superMessage != null) {
             msg.append("\nInternal Error: ");
-            msg.append(getMessage());
+            msg.append(superMessage);
         }
 
         return msg.toString();

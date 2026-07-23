@@ -10,7 +10,6 @@ import edu.montana.notch.templates.ast.content.NotchTemplateContentItem;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentText;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.templates.runtime.RenderException;
-import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.Exceptions;
 
 import java.util.Collections;
@@ -28,18 +27,15 @@ public class NotchTemplateContentBlock implements Spanned {
         this.terminalCommand = terminalCommand;
     }
 
-    public String globalRender(NotchTemplateRuntime runtime) {
+    public String fullRender(NotchTemplateRuntime runtime) {
         final var sb = new StringBuilder();
-        globalRender(runtime, new Drain(sb));
+        fullRender(runtime, new Drain(sb));
         return sb.toString();
     }
 
-    public void globalRender(NotchTemplateRuntime runtime, Drain out) {
-        final var globals = collectGlobals();
+    public void fullRender(NotchTemplateRuntime runtime, Drain out) {
         try {
-            for (var global : globals) {
-                global.preRender(runtime);
-            }
+            preRender(runtime);
         } catch (RenderException e) {
             throw Exceptions.rethrow(e);
         } catch (Exception e) {
@@ -49,9 +45,7 @@ public class NotchTemplateContentBlock implements Spanned {
         render(runtime, out);
 
         try {
-            for (var global : globals) {
-                global.postRender(runtime);
-            }
+            postRender(runtime);
         } catch (RenderException e) {
             throw Exceptions.rethrow(e);
         } catch (Exception e) {
@@ -93,57 +87,27 @@ public class NotchTemplateContentBlock implements Spanned {
         return span;
     }
 
-    public BetterList<NotchTemplateCommand> collectGlobals() {
-        final var out = new BetterList<NotchTemplateCommand>();
-        collectGlobals(out);
-        return out;
-    }
-
-    public void collectGlobals(BetterList<NotchTemplateCommand> out) {
+    public void preRender(NotchTemplateRuntime runtime) {
         for (var item : content()) {
-            if (item instanceof NotchTemplateContentCommand cmd) {
-                collectGlobals(out, cmd.command);
+            if (item instanceof NotchTemplateContentCommand itemCmd) {
+                runtime.preRender(itemCmd.command);
             }
         }
-        var cmd = terminalCommand();
-        if (cmd != null) {
-            collectGlobals(out, cmd);
+        var terminalCommand = terminalCommand();
+        if (terminalCommand != null) {
+            terminalCommand.preRender(runtime);
         }
     }
 
-    private void collectGlobals(BetterList<NotchTemplateCommand> out, NotchTemplateCommand command) {
-        if (command.isGlobal()) {
-            out.add(command);
-        }
-
-        for (final var child : command.getChildCommands()) {
-            collectGlobals(out, child);
-        }
-    }
-
-    public <T extends NotchTemplateCommand> BetterList<T> collectGlobals(Class<T> clazz) {
-        final var out = new BetterList<T>();
-        collectGlobals(out, clazz);
-        return out;
-    }
-
-
-    public <T extends NotchTemplateCommand> void collectGlobals(BetterList<T> out, Class<T> clazz) {
+    public void postRender(NotchTemplateRuntime runtime) {
         for (var item : content()) {
-            if (!(item instanceof NotchTemplateContentCommand cmd)) {
-                continue;
+            if (item instanceof NotchTemplateContentCommand itemCmd) {
+                itemCmd.command.postRender(runtime);
             }
-            collectGlobals(out, clazz, cmd.command);
         }
-    }
-
-    private <T extends NotchTemplateCommand> void collectGlobals(BetterList<T> out, Class<T> clazz, NotchTemplateCommand command) {
-        if (command.isGlobal() && clazz.isAssignableFrom(command.getClass())) {
-            out.add(clazz.cast(command));
-        }
-
-        for (final var child : command.getChildCommands()) {
-            collectGlobals(out, clazz, child);
+        var terminalCommand = terminalCommand();
+        if (terminalCommand != null) {
+            terminalCommand.postRender(runtime);
         }
     }
 }

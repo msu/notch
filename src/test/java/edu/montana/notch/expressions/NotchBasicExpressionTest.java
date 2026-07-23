@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 
 import static edu.montana.notch.NotchTestUtils.eval;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NotchBasicExpressionTest {
 
@@ -158,6 +159,38 @@ public class NotchBasicExpressionTest {
         assertEquals(false, eval("5 > 3 && 10 > 20"));
         assertEquals(true, eval("5 > 10 || 10 < 20"));
         assertEquals(true, eval("!(5 > 10)"));
+    }
+
+    @Test
+    public void testIsEmpty() {
+        assertEquals(true, eval("[] is empty"));
+        assertEquals(false, eval("[1] is empty"));
+        assertEquals(false, eval(":hello is empty"));
+        assertEquals(true, eval("'' is empty"));
+        assertEquals(true, eval(":hello is not empty"));
+        assertEquals(false, eval("'' is not empty"));
+        assertEquals(false, eval("[] is not empty"));
+        assertEquals(true, eval("[1] is not empty"));
+        assertEquals(true, eval("foo? is empty"));
+        assertEquals(false, eval("foo? is not empty"));
+    }
+
+    @Test
+    public void testIsUndefined() {
+        assertEquals(true, eval("foo? is undefined"));
+        assertEquals(false, eval("foo? is undefined", "foo", 1));
+        assertEquals(false, eval("foo? is undefined", "foo", null));
+        assertEquals(false, eval("foo? is not undefined"));
+        assertEquals(true, eval("foo? is not undefined", "foo", 1));
+        assertEquals(true, eval("foo is not undefined", "foo", null));
+    }
+
+    @Test
+    public void testIsNull() {
+        assertEquals(true, eval("foo is null", "foo", null));
+        assertEquals(false, eval("foo is null", "foo", 1));
+        assertEquals(false, eval("foo is not null", "foo", null));
+        assertEquals(true, eval("foo is not null", "foo", 1));
     }
 
     private static class MyCallable implements Callable<Boolean> {

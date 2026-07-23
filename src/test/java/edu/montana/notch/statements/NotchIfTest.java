@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static edu.montana.notch.NotchTestUtils.exec;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class NotchIfTest {
 
@@ -312,7 +314,7 @@ class NotchIfTest {
 
     @Test
     void testIfElseScopeIsolation() {
-        String result = exec("""
+        RuntimeException exc = assertThrows(RuntimeException.class, () -> exec("""
                 if false
                     trueVar = 'true branch'
                 else
@@ -320,8 +322,8 @@ class NotchIfTest {
                 end
                 print(trueVar)
                 print(falseVar)
-                """);
-        assertEquals("<undefined>\nfalse branch\n", result);
+                """));
+        assertContains("unknown variable \"trueVar\"", exc.getMessage());
     }
 
     @Test

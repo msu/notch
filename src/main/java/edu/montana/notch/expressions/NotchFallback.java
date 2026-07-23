@@ -1,6 +1,7 @@
 package edu.montana.notch.expressions;
 
 import edu.montana.notch.runtime.NotchRuntime;
+import edu.montana.notch.runtime.UnknownVariableException;
 
 public class NotchFallback extends NotchExpression {
     public final NotchExpression primary, fallback;
@@ -13,7 +14,17 @@ public class NotchFallback extends NotchExpression {
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        var value = runtime.evaluate(primary);
+        Object value;
+        if (primary instanceof NotchIdentifier || primary instanceof NotchFallback) {
+            try {
+                value = runtime.evaluate(primary);
+            } catch (UnknownVariableException e) {
+                value = NotchRuntime.UNDEFINED;
+            }
+        } else {
+            value = runtime.evaluate(primary);
+        }
+
         if (runtime.isUndefined(value)) {
             value = runtime.evaluate(fallback);
         }

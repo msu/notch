@@ -87,6 +87,11 @@ public class NotchRuntime {
         return symbols;
     }
 
+    public void defineOrUpdateGlobal(String sym, Object value) {
+        final var frame = values.get(0);
+        frame.put(sym, value);
+    }
+
     public void defineOrUpdate(String sym, Object value) {
         if (isUndefined(value)) {
             unsetSymbol(sym);

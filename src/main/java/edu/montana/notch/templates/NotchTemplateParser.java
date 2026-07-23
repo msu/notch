@@ -69,6 +69,7 @@ public class NotchTemplateParser extends BasicParser {
         command = command.newInstance();
         command.commandToken = data.commandName();
         command.span = data.commandName().span;
+        command.templates = templates;
 
         var commandParser = new NotchParser(data.notchTokens());
         command.parseCommand(commandParser);
@@ -108,7 +109,6 @@ public class NotchTemplateParser extends BasicParser {
         var items = new ArrayList<NotchTemplateContentItem>();
         NotchTemplateCommand endCommand = null;
 
-        outer:
         while (!atEnd()) {
             var text = parseText();
             if (text != null) {
@@ -136,14 +136,16 @@ public class NotchTemplateParser extends BasicParser {
                     break;
                 }
 
+                take();
                 text = new NotchTemplateContentText(token.span);
                 items.add(text);
                 continue;
             }
 
-            var expr = parseExpression();
-            if (expr != null) {
-                items.add(expr);
+            if (peek("expression")) {
+                final var token = take();
+                text = new NotchTemplateContentText(token.span);
+                items.add(text);
                 continue;
             }
 

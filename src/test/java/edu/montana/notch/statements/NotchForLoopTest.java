@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static edu.montana.notch.NotchTestUtils.exec;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class NotchForLoopTest {
 
@@ -54,24 +56,24 @@ class NotchForLoopTest {
 
     @Test
     void testForLoopScopeIsolation() {
-        String result = exec("""
+        var exc = assertThrows(RuntimeException.class, () -> exec("""
                 for x in 'ab'
                     print(x)
                 end
                 print(x)
-                """);
-        assertEquals("a\nb\n<undefined>\n", result);
+                """));
+        assertContains("unknown variable \"x\"", exc.getMessage());
     }
 
     @Test
     void testForLoopIndexScopeIsolation() {
-        String result = exec("""
+        var exc = assertThrows(RuntimeException.class, () -> exec("""
                 for x in 'ab' index i
                     print(i)
                 end
                 print(i)
-                """);
-        assertEquals("0\n1\n<undefined>\n", result);
+                """));
+        assertContains("unknown variable \"i\"", exc.getMessage());
     }
 
     @Test
@@ -231,15 +233,15 @@ class NotchForLoopTest {
 
     @Test
     void testForLoopBreakingOutOfScope() {
-        String result = exec("""
+        var exc = assertThrows(RuntimeException.class, () -> exec("""
                 outer = 'set'
                 for x in 'ab'
                     inner = x
                 end
                 print(outer)
                 print(inner)
-                """);
-        assertEquals("set\n<undefined>\n", result);
+                """));
+        assertContains("unknown variable \"inner\"", exc.getMessage());
     }
 
     @Test

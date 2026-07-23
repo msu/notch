@@ -8,6 +8,7 @@ import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentCommand;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
+import edu.montana.notch.util.BetterList;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public abstract class NotchTemplateCommand implements Spanned {
     protected List<NotchTemplateCommand> childCommands = new ArrayList<>();
     protected boolean isGlobal = false;
     protected boolean isSingleton = false;
+    protected NotchTemplates templates;
 
     public NotchTemplateCommand(String commandName) {
         Objects.requireNonNull(commandName);
@@ -45,11 +47,17 @@ public abstract class NotchTemplateCommand implements Spanned {
     }
 
     public void preRender(NotchTemplateRuntime runtime) {
+        for (var child : getChildCommands()) {
+            runtime.preRender(child);
+        }
     }
 
     public abstract void render(NotchTemplateRuntime runtime, Drain out);
 
     public void postRender(NotchTemplateRuntime runtime) {
+        for (var child : getChildCommands()) {
+            child.postRender(runtime);
+        }
     }
 
     protected void addChildCommand(NotchTemplateCommand cmd) {

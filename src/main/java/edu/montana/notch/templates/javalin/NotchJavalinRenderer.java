@@ -1,6 +1,7 @@
 package edu.montana.notch.templates.javalin;
 
 import edu.montana.notch.templates.NotchTemplates;
+import edu.montana.notch.util.Key;
 import io.javalin.http.Context;
 import io.javalin.rendering.FileRenderer;
 
@@ -41,6 +42,8 @@ public class NotchJavalinRenderer implements FileRenderer {
         // NotchTemplates expects a Map<String, Object>; copy the model since the engine
         // does not need to retain a reference to Javalin's map.
         final var vars = new LinkedHashMap<String, Object>(model);
+        // TODO: put context into runtime storage
+        vars.put("JAVALIN_CONTEXT", context);
         return templates.renderTemplate(filePath, vars);
     }
 }

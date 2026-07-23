@@ -42,8 +42,6 @@ public class LiteralTokenType implements TokenType {
             pair("?[", new LiteralTokenType("?[")),
             pair("??", new LiteralTokenType("??")),
             pair("?:", new LiteralTokenType("?:")),
-            pair("?.", new LiteralTokenType("?.")),
-            pair("?(", new LiteralTokenType("?(")),
             pair("?", new LiteralTokenType("?")),
             pair(">>>", new LiteralTokenType(">>>")),
             pair(">>=", new LiteralTokenType(">>=")),

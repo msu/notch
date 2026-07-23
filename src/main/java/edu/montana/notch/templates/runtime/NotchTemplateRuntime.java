@@ -7,13 +7,15 @@ import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplates;
+import edu.montana.notch.util.BetterList;
+import edu.montana.notch.util.BetterMap;
 import edu.montana.notch.util.Exceptions;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class NotchTemplateRuntime extends NotchRuntime {
     private LinkedHashMap<String, Object> config = new LinkedHashMap<>();
+    private BetterList<NotchTemplateCommand> globals = new BetterList<>();
     private final NotchTemplates templates;
     private Helper helper = null;
 
@@ -31,6 +33,7 @@ public class NotchTemplateRuntime extends NotchRuntime {
             NotchTemplateRuntime parent
     ) {
         super(source, parent);
+        this.globals = parent.globals;
         this.templates = parent.templates;
         this.config = parent.config;
         this.helper = parent.helper;
@@ -110,6 +113,21 @@ public class NotchTemplateRuntime extends NotchRuntime {
         } catch (NotchRuntimeException e) {
             throw new RenderException(e);
         }
+    }
+
+    public void preRender(NotchTemplateCommand command) {
+        if (command.isGlobal()) {
+            globals.add(command);
+        }
+        command.preRender(this);
+    }
+
+    public <T extends NotchTemplateCommand> List<T> globals(Class<T> clazz) {
+        return globals.filter(clazz);
+    }
+
+    public List<NotchTemplateCommand> globals() {
+        return globals;
     }
 
     private static class Helper {

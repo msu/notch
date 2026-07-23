@@ -1,17 +1,24 @@
 package edu.montana.notch.types;
 
 import edu.montana.notch.util.Exceptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 
 import static edu.montana.notch.util.Exceptions.safelyEval;
 
 public class NotchJavaField implements NotchField {
+    private static final Logger log = LoggerFactory.getLogger(NotchJavaField.class);
     private Field field;
 
     public NotchJavaField(Field field) {
         this.field = field;
-        field.setAccessible(true);
+        try {
+            field.setAccessible(true);
+        } catch (SecurityException e) {
+            log.error("Cannot access field {}.", field.getName(), e);
+        }
     }
 
     @Override

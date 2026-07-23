@@ -3,6 +3,7 @@ package edu.montana.notch;
 import edu.montana.notch.chisel.*;
 import edu.montana.notch.expressions.*;
 import edu.montana.notch.statements.*;
+import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.util.Text;
 
@@ -176,11 +177,11 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchExpression parseFallbackExpr() {
-        var expr = parseLogicalExpression();
+        var expr = parseLogicalOrExpression();
         if (expr == null) return null;
 
         while (take("?:")) {
-            var fallback = parseLogicalExpression();
+            var fallback = parseLogicalOrExpression();
             if (fallback == null) {
                 final var diag = new Diagnostic()
                         .note("expected expression after '?:' operator")
@@ -193,12 +194,30 @@ public class NotchParser extends BasicParser {
         return expr;
     }
 
-    private NotchExpression parseLogicalExpression() {
+    private NotchExpression parseLogicalOrExpression() {
+        var expr = parseLogicalAndExpression();
+        if (expr == null) return null;
+
+        while (take("||") || takeIdent("or")) {
+            final var op = lastToken();
+            var rhs = parseLogicalAndExpression();
+            if (rhs == null) {
+                final var diag = new Diagnostic()
+                        .note("expected an expression after %s".formatted(repr(op.type)))
+                        .highlight(op);
+                throw new ParseException(diag);
+            }
+            expr = new NotchLogicalExpression(op, expr, rhs);
+        }
+        return expr;
+    }
+
+    private NotchExpression parseLogicalAndExpression() {
         NotchExpression expr = parseEqualityExpr();
         if (expr == null) return null;
 
-        while (peek("&&", "||") || peekIdent("and", "or")) {
-            Token op = take();
+        while (take("&&") || takeIdent("and")) {
+            final var op = lastToken();
             var rhs = parseEqualityExpr();
             if (rhs == null) {
                 final var diag = new Diagnostic()
@@ -375,6 +394,22 @@ public class NotchParser extends BasicParser {
             }
             tokens.index = beforeEmpty;
         }
+        if (peekIdent("null")) {
+            int beforeEmpty = tokens.index;
+            tokens.take();
+            if (!peek("(") && !peek(".")) {
+                return new IsNullExpression(lhs, isInverted, tokens.prev());
+            }
+            tokens.index = beforeEmpty;
+        }
+        if (peekIdent("undefined")) {
+            int beforeEmpty = tokens.index;
+            tokens.take();
+            if (!peek("(") && !peek(".")) {
+                return new IsUndefinedExpression(lhs, isInverted, tokens.prev());
+            }
+            tokens.index = beforeEmpty;
+        }
         NotchExpression rhs = parseComparisonExpression();
         if (rhs == null) {
             throw new ParseException(new Diagnostic()
@@ -460,7 +495,7 @@ public class NotchParser extends BasicParser {
 
         Token word = consume("ident");
         if (word != null) {
-            return new NotchIdentifier(word);
+            return new NotchIdentifier(word, !take("?"), lastToken());
         }
 
         Token intToken = consume("int");

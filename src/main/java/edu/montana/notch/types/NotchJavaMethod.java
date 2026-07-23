@@ -4,6 +4,8 @@ import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.types.coercions.Coercion;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.Exceptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
@@ -17,6 +19,7 @@ import static java.lang.Integer.MAX_VALUE;
 
 public class NotchJavaMethod implements NotchMethod {
 
+    private static final Logger log = LoggerFactory.getLogger(NotchJavaMethod.class);
     private final BetterList<Method> javaMethods;
     private final String name;
     private final Class backingClass;
@@ -30,8 +33,12 @@ public class NotchJavaMethod implements NotchMethod {
         Method[] allMethods = backingClass.getMethods();
         for (Method m : allMethods) {
             if (m.getName().equals(methodName) && Modifier.isStatic(m.getModifiers()) == staticMethod) {
-                m.setAccessible(true);
-                javaMethods.add(m);
+                try {
+                    m.setAccessible(true);
+                    javaMethods.add(m);
+                } catch (SecurityException e) {
+                    log.error("Cannot access method {}.{}()", backingClass.getName(), methodName);
+                }
             }
         }
     }

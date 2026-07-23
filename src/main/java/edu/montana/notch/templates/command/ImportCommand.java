@@ -7,17 +7,16 @@ import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
-import edu.montana.notch.templates.NotchTemplateParser;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
 import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.templates.runtime.NotchTemplateImportable;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
-import edu.montana.notch.templates.runtime.RenderException;
 import edu.montana.notch.types.TypeSystem;
 import edu.montana.notch.util.BetterMap;
 import edu.montana.notch.util.Text;
 
 import java.util.List;
+import java.util.Map;
 
 public class ImportCommand extends NotchTemplateCommand {
     public ImportCommand() {
@@ -50,7 +49,7 @@ public class ImportCommand extends NotchTemplateCommand {
     }
 
     NotchTemplateContentBlock contentBlock;
-    List<NotchTemplateCommand> globals;
+    NotchTemplateRuntime contentRuntime;
 
     @Override
     public void preRender(NotchTemplateRuntime runtime) {
@@ -63,38 +62,29 @@ public class ImportCommand extends NotchTemplateCommand {
                 diag.note("I don't know what this type is: %s".formatted(Text.repr(qname)));
                 throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
             }
-            runtime.defineOrUpdate(notchType.getSimpleName(), notchType);
+            runtime.defineOrUpdateGlobal(notchType.getSimpleName(), notchType);
         } else if (path != null) {
-            var templates = runtime.templates();
-            var content = templates.getLoader().loadSource(path.str());
-            var parser = new NotchTemplateParser(templates, content);
-            try {
-                contentBlock = parser.parseContentBlock();
-            } catch (ParseException e) {
-                throw new RenderException(e);
-            }
+            contentBlock = templates.getTemplateContent(path.str());
 
-            globals = contentBlock.collectGlobals();
-            for (var command : globals) {
-                command.preRender(runtime);
-            }
+            contentRuntime = new NotchTemplateRuntime(contentBlock.source(), runtime.templates(), Map.of());
+            contentBlock.preRender(contentRuntime);
 
             if (alias == null) {
-                for (var global : globals) {
+                for (var global : contentRuntime.globals()) {
                     if (!(global instanceof NotchTemplateImportable imp)) continue;
                     var values = imp.getExportedValues();
                     for (var value : values.entrySet()) {
-                        runtime.defineOrUpdate(value.getKey(), value.getValue());
+                        runtime.defineOrUpdateGlobal(value.getKey(), value.getValue());
                     }
                 }
             } else {
                 var imports = new BetterMap<String, Object>();
-                for (var global : globals) {
+                for (var global : contentRuntime.globals()) {
                     if (!(global instanceof NotchTemplateImportable imp)) continue;
                     var values = imp.getExportedValues();
                     imports.putAll(values);
                 }
-                runtime.defineOrUpdate(alias.str(), imports);
+                runtime.defineOrUpdateGlobal(alias.str(), imports);
             }
         } else {
             throw new IllegalStateException("unreachable");
@@ -103,10 +93,8 @@ public class ImportCommand extends NotchTemplateCommand {
 
     @Override
     public void postRender(NotchTemplateRuntime runtime) {
-        if (globals != null) {
-            for (var cmd : globals) {
-                cmd.postRender(runtime);
-            }
+        if (contentBlock != null) {
+            contentBlock.postRender(contentRuntime);
         }
     }
 

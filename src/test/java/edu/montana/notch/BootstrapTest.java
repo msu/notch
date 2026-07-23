@@ -1,6 +1,7 @@
 package edu.montana.notch;
 
 import edu.montana.notch.runtime.NotchClosure;
+import edu.montana.notch.templates.runtime.RenderException;
 import edu.montana.notch.types.NotchMethod;
 import edu.montana.notch.types.NotchType;
 import edu.montana.notch.types.TypeSystem;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static edu.montana.notch.NotchTestUtils.eval;
 import static edu.montana.notch.NotchTestUtils.exec;
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,8 +64,11 @@ public class BootstrapTest {
         result = exec("for x in 'foo' index i print(i) end");
         assertEquals("0\n1\n2\n", result);
 
-        result = exec("for x in 'foo' index i print(i) print(x) end print(x)");
-        assertEquals("0\nf\n1\no\n2\no\n<undefined>\n", result);
+        result = exec("for x in 'foo' index i print(i) end print(i?)");
+        assertEquals("0\n1\n2\n<undefined>\n", result);
+
+        var exc = assertThrows(RuntimeException.class, () -> exec("for x in 'foo' index i print(i) print(x) end print(x)"));
+        assertContains("unknown variable \"x\"", exc.getMessage());
     }
 
     @Test

@@ -11,6 +11,8 @@ import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.types.NotchType;
 import edu.montana.notch.types.TypeSystem;
 
+import java.lang.reflect.Constructor;
+
 public class HelperCommand extends NotchTemplateCommand {
     public HelperCommand() {
         super("helper");
@@ -38,9 +40,16 @@ public class HelperCommand extends NotchTemplateCommand {
     @Override
     public void preRender(NotchTemplateRuntime runtime) {
         NotchType type = TypeSystem.getType(path.qualifiedClass().getName());
-        Object helper;
+        Object helper = null;
         try {
-            helper = type.newInstance(new Object[0]);
+            try {
+                Constructor cons = type.getBackingClass().getConstructor(NotchTemplateRuntime.class);
+                helper = cons.newInstance(runtime);
+            } catch (NoSuchMethodException | SecurityException e) {}
+
+            if (helper == null) {
+                helper = type.newInstance(new Object[0]);
+            }
         } catch (Exception e) {
             final var diag = new Diagnostic();
             diag.highlight(path);

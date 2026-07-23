@@ -10,6 +10,10 @@ public final class EndCommand extends NotchTemplateCommand {
         super("end");
     }
 
+    public EndCommand(String name) {
+        super(name);
+    }
+
     @Override
     public void parseCommand(NotchParser parser) {
     }
