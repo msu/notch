@@ -7,11 +7,13 @@ import { init as initDocsSearch } from './modules/docs-search.js';
 import { init as initDocsToc } from './modules/docs-toc.js';
 import { init as initSearchHighlight } from './modules/search-highlight.js';
 import { init as initCodeCopy } from './modules/code-copy.js';
+import { init as initCodeLineHover } from './modules/code-line-hover.js';
 
 initDocsSearch();
 initDocsToc();
 initSearchHighlight();
 initCodeCopy();
+initCodeLineHover();
 
 // '[' toggles the side panels -- a labeled, documented second route to the
 // Contents-header button. Clicking it keeps aria/localStorage in one place.

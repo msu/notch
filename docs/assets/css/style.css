@@ -343,6 +343,26 @@ input {
     background-color: transparent;
     color: inherit;
     padding: 0;
+    /* Fill the (full-width) pre so each .code-line stretches the whole row -  */
+    /* the hover highlight then covers past short lines, not just the text.    */
+    /* (The pre itself is widened by the .docs-body .highlight pre override.)  */
+    display: block;
+    min-width: 100%;
+  }
+
+  /* Per-line hover highlight. modules/code-line-hover.js wraps each line in a */
+  /* .code-line; min-height keeps blank lines a full row tall. */
+  .code-line {
+    display: block;
+    min-height: 1.6em;
+    transition: background-color 0.1s ease;
+  }
+
+  .code-line:hover {
+    /* Whisper-subtle, like an editor's current-line background (IntelliJ's */
+    /* caret row is only ~+7 lightness): it sits behind the code and just   */
+    /* indicates the line, rather than reading as a highlight. */
+    background-color: rgba(255, 255, 255, 0.04);
   }
 
   & table td { padding: 5px; }
@@ -981,6 +1001,13 @@ input:focus:not(:focus-visible) {
     min-width: 0;
   }
 
+  /* ...except dark .highlight code panels, which fill the panel so the        */
+  /* per-line hover highlight (see .code-line) spans the full width. Higher    */
+  /* specificity than the rule above; max-content still lets wide code scroll. */
+  & .highlight pre {
+    min-width: 100%;
+  }
+
   & table {
     margin: 1rem 0;
   }
@@ -1285,11 +1312,26 @@ input:focus:not(:focus-visible) {
   }
 }
 
+/* ⚠  DO NOT DELETE — see the glow warning above the hero-glow keyframes.          */
+/* Notch is magical, and magical things must glow.                                 */
+/* Same warm rim as the hero mark, blur scaled down for the ~22px nav glyph so it   */
+/* stays a tight edge glow rather than a fuzzy blob. Same 4s cycle as the hero.     */
+@keyframes brand-glow {
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(216, 130, 100, 0.30)); }
+  50%      { filter: drop-shadow(0 0 3px rgba(216, 130, 100, 0.45)); }
+}
+
 .brand-mark {
   flex: 0 0 22px;
   width: 22px;
   height: 22px;
   display: block;
+  animation: brand-glow 4s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    filter: drop-shadow(0 0 2.5px rgba(216, 130, 100, 0.35));
+  }
 }
 
 .brand-wordmark {
@@ -1552,6 +1594,19 @@ section {
   width: 100%;
 }
 
+/* ======================================================================= */
+/*  ⚠  DO NOT DELETE — the logo glow (hero-glow + brand-glow) stays.        */
+/*  Notch is magical, and magical things must glow. Removing these makes    */
+/*  the mark go dark and cold. Tune the values if you must; keep the glow.  */
+/* ======================================================================= */
+
+/* Faint warm rim on the hero mark — drop-shadow traces the glyph's edges (incl. the */
+/* V-notch); pulse amplitude kept nearly subliminal so the motion is easy to miss.   */
+@keyframes hero-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(216, 130, 100, 0.30)); }
+  50%      { filter: drop-shadow(0 0 8px rgba(216, 130, 100, 0.40)); }
+}
+
 .hero {
   padding: 2.5rem 0 0;
   margin-bottom: 0;
@@ -1568,6 +1623,12 @@ section {
     flex: 0 0 auto;
     width: clamp(187px, 32vw, 323px);
     height: auto;
+    animation: hero-glow 4s ease-in-out infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+      filter: drop-shadow(0 0 7px rgba(216, 130, 100, 0.35));
+    }
   }
 
   .tagline {
