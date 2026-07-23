@@ -74,11 +74,9 @@ public final class NotchCommand {
     private static String userFacingMessage(Throwable e) {
         if (e instanceof NotchRuntimeException nre) {
             return nre.diagnostic.render(false);
-        }
-        if (e instanceof ParseException pe) {
+        } else if (e instanceof ParseException pe) {
             return pe.diagnostic.render(false);
-        }
-        if (e instanceof TokenizeException te) {
+        } else if (e instanceof TokenizeException te) {
             return te.diagnostic.render(false);
         }
         return e.getMessage();
