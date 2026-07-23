@@ -13,7 +13,13 @@ import edu.montana.notch.statements.NotchStatement;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class NotchTestUtils {
+    public static RuntimeException evalEx(String src, Object... vars) {
+        return assertThrows(RuntimeException.class, () -> eval(src, vars));
+    }
+
     public static Object eval(String src, Object... vars) {
         try {
             Source source = new Source("<eval>", src);

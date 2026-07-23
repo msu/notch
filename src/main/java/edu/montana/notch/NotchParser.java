@@ -395,8 +395,16 @@ public class NotchParser extends BasicParser {
             var notExpr = new NotchNegateExpression(span, expr);
             return notExpr;
         } else {
-            return parseIndirectExpression();
+            return parseNotNullExpression();
         }
+    }
+
+    private NotchExpression parseNotNullExpression() {
+        NotchExpression expr = parseIndirectExpression();
+        if (expr != null && take("!")) {
+            return new NotchNotNullExpression(expr, lastToken());
+        }
+        return expr;
     }
 
     private NotchExpression parseIndirectExpression() {
