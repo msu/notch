@@ -3,11 +3,11 @@ package edu.montana.notch.runtime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public final class NotchInstance {
+public final class NotchClassInstance {
     public final NotchClass type;
     public final Map<String, Object> fields = new LinkedHashMap<>();
 
-    public NotchInstance(NotchClass type) {
+    public NotchClassInstance(NotchClass type) {
         this.type = type;
     }
 

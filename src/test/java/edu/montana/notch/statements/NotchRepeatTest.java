@@ -2,6 +2,7 @@ package edu.montana.notch.statements;
 
 import org.junit.jupiter.api.Test;
 
+import static edu.montana.notch.AssertContains.assertContains;
 import static edu.montana.notch.NotchTestUtils.exec;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -92,13 +93,13 @@ class NotchRepeatTest {
 
     @Test
     void testRepeatItScopeIsolated() {
-        String result = exec("""
+        var exc = assertThrows(RuntimeException.class, () -> exec("""
                 repeat 2 times
                     print(it)
                 end
                 print(it)
-                """);
-        assertEquals("1\n2\n<undefined>\n", result);
+                """));
+        assertContains("unknown variable \"it\"", exc.getMessage());
     }
 
     @Test

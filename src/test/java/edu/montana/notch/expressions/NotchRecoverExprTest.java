@@ -50,9 +50,11 @@ class NotchRecoverExprTest {
 
     @Test
     void catchAfterExprGivesClearError() {
+        // TODO: make 3 diagnostics one here (you can highlight multiple things so highlight & note both catch & recover)
         var ex = assertThrows(RuntimeException.class, () -> exec(BOOM + """
                 x = boom() catch print("logged") recover 0
                 """));
+        System.out.println(ex.getMessage());
         assertTrue(ex.getMessage().contains("try/catch block"),
                 "expected guidance about try/catch block but got: " + ex.getMessage());
     }
@@ -92,7 +94,10 @@ class NotchRecoverExprTest {
     @Test
     void typedRecoverFirstMatch() {
         assertEquals("1\n", exec(IO_ERROR + """
-                x = ioError() recover from IOException 1 recover from Exception 2 recover 0
+                x = ioError()
+                    recover from IOException 1
+                    recover from Exception 2
+                    recover 0
                 print(x)
                 """));
     }

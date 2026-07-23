@@ -4,7 +4,7 @@ import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchExpression;
-import edu.montana.notch.runtime.NotchInstance;
+import edu.montana.notch.runtime.NotchClassInstance;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 
@@ -23,7 +23,7 @@ public class NotchPropertyAssignment extends NotchStatement {
     @Override
     public void execute(NotchRuntime runtime) {
         Object rootValue = runtime.evaluate(root);
-        if (!(rootValue instanceof NotchInstance instance)) {
+        if (!(rootValue instanceof NotchClassInstance instance)) {
             var diag = new Diagnostic();
             diag.setTitle("cannot assign a property on a non-instance value");
             diag.highlight(span());
