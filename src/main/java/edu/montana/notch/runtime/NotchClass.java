@@ -44,13 +44,14 @@ public final class NotchClass {
         return Text.closest(name, declaredFields, 2);
     }
 
-    public NotchInstance construct(NotchRuntime caller, List<Object> args) {
+    public NotchClassInstance construct(NotchRuntime caller, List<Object> args) {
         if (args.size() != headerFields.size()) {
             throw new IllegalArgumentException(
                     "class %s expects %d constructor argument(s), got %d"
                             .formatted(name, headerFields.size(), args.size()));
         }
-        NotchInstance instance = new NotchInstance(this);
+        NotchClassInstance instance = new NotchClassInstance(this);
+        // TODO(zc): check args.size == headerFields.size & diagnostic-throw (probably do this in parsing?)
         for (int i = 0; i < headerFields.size(); i++) {
             String fieldName = headerFields.get(i).getName().str();
             instance.fields.put(fieldName, args.get(i));
@@ -71,7 +72,7 @@ public final class NotchClass {
         return instance;
     }
 
-    public NotchClosure boundMethod(NotchInstance self, String methodName) {
+    public NotchClosure boundMethod(NotchClassInstance self, String methodName) {
         Method m = methods.get(methodName);
         if (m == null) return null;
         NotchRuntime methodScope = new NotchRuntime(captured.source, captured);

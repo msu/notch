@@ -4,7 +4,7 @@ import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.NotchBoundMethod;
 import edu.montana.notch.runtime.NotchClosure;
-import edu.montana.notch.runtime.NotchInstance;
+import edu.montana.notch.runtime.NotchClassInstance;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.types.*;
@@ -56,7 +56,7 @@ public class NotchPropertyAccess extends NotchExpression implements DotPathMembe
             return UNDEFINED;
         }
 
-        if (rootValue instanceof NotchInstance instance) {
+        if (rootValue instanceof NotchClassInstance instance) {
             String prop = property.str();
             if (favorMethods) {
                 NotchClosure method = instance.type.boundMethod(instance, prop);
