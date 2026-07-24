@@ -94,8 +94,7 @@ class NotchRecoverExprTest {
     @Test
     void typedRecoverFirstMatch() {
         assertEquals("1\n", exec(IO_ERROR + """
-                x = ioError()
-                    recover from IOException 1
+                x = ioError() recover from IOException 1
                     recover from Exception 2
                     recover 0
                 print(x)
