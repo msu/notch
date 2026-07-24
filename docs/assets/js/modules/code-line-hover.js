@@ -57,5 +57,13 @@ export function init() {
 
     code.textContent = '';
     lines.forEach((line) => code.appendChild(line));
+
+    // Tag multi-line notch programs so CSS can add a line-number gutter.
+    // Terminal/plaintext transcripts (.language-plaintext) and one-liners
+    // are left unnumbered. Numbers are CSS-generated, so they never appear
+    // in copied text or selections.
+    if (lines.length > 1 && code.closest('.language-notch, figure.highlight')) {
+      code.classList.add('with-linenos');
+    }
   });
 }

@@ -22,7 +22,7 @@
     <span></span>
     <span></span>
   </button>
-  {% assign toolbar_docs_collections = "syntax,jvm,repl,chisel,templates,json5" | split: "," %}
+  {% assign toolbar_docs_collections = "getting-started,language,templates,repl" | split: "," %}
   {% assign toolbar_is_docs = false %}
   {% for coll in toolbar_docs_collections %}{% if page.collection == coll %}{% assign toolbar_is_docs = true %}{% endif %}{% endfor %}
   {% if page.docs_nav %}{% assign toolbar_is_docs = true %}{% endif %}
@@ -57,7 +57,7 @@
     <span class="brand-wordmark">Notch</span>
   </a>
   <ul class="toolbar-nav">
-    <li><a href="{{ '/syntax/overview/' | relative_url }}">Docs</a></li>
+    <li><a href="{{ '/language/values/' | relative_url }}">Docs</a></li>
     <li><a href="{{ '/templates/overview/' | relative_url }}">Templates</a></li>
   </ul>
   <div class="toolbar-spacer"></div>

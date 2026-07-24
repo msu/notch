@@ -28,6 +28,8 @@ export function init() {
     resultsList.innerHTML = '';
     emptyState.hidden = true;
     activeIdx = -1;
+    // Return focus to the trigger so keyboard users keep their place.
+    searchBtn.focus();
   }
 
   function loadIndex() {
@@ -147,6 +149,24 @@ export function init() {
 
   overlay.addEventListener('keydown', e => {
     if (e.key === 'Escape') { closeSearch(); return; }
+
+    // Focus trap: keep Tab cycling within the modal (aria-modal="true").
+    // Focusables are the input and any result links.
+    if (e.key === 'Tab') {
+      const focusables = overlay.querySelectorAll('.search-input, .search-results a');
+      if (focusables.length > 0) {
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+      return;
+    }
 
     const items = resultsList.querySelectorAll('a');
     if (e.key === 'ArrowDown') {
