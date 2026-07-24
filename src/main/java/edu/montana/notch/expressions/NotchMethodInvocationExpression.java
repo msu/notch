@@ -14,12 +14,12 @@ import java.util.concurrent.Callable;
 
 import static edu.montana.notch.util.Exceptions.safelyEval;
 
-public class NotchMethodInvocation extends NotchExpression {
+public class NotchMethodInvocationExpression extends NotchExpression {
 
     public final NotchExpression root;
     public final List<NotchExpression> args;
 
-    public NotchMethodInvocation(NotchExpression root, List<NotchExpression> args, Location end) {
+    public NotchMethodInvocationExpression(NotchExpression root, List<NotchExpression> args, Location end) {
         super(root.span().through(end));
         this.root = Objects.requireNonNull(root);
         this.args = List.copyOf(Objects.requireNonNull(args));
@@ -34,9 +34,9 @@ public class NotchMethodInvocation extends NotchExpression {
         if (functionObj == null || runtime.isUndefined(functionObj)) {
             var diag = new Diagnostic();
             diag.highlight(root.span());
-            if (root instanceof NotchPropertyAccess pa) {
+            if (root instanceof NotchPropertyAccessExpression pa) {
                 diag.note("unable to call '%s', value was null".formatted(pa.getDotPath()));
-            } else if (root instanceof NotchIdentifier ni) {
+            } else if (root instanceof NotchIdentifierExpression ni) {
                 diag.note("undefined function '%s'".formatted(ni.name()));
                 addJavaTypeHints(diag, ni.name());
             } else {

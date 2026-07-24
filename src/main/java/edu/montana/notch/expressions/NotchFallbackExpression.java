@@ -3,10 +3,10 @@ package edu.montana.notch.expressions;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.UnknownVariableException;
 
-public class NotchFallback extends NotchExpression {
+public class NotchFallbackExpression extends NotchExpression {
     public final NotchExpression primary, fallback;
 
-    public NotchFallback(NotchExpression primary, NotchExpression fallback) {
+    public NotchFallbackExpression(NotchExpression primary, NotchExpression fallback) {
         super(primary.span.through(fallback));
         this.primary = addChild(primary);
         this.fallback = addChild(fallback);
@@ -15,7 +15,7 @@ public class NotchFallback extends NotchExpression {
     @Override
     public Object evaluate(NotchRuntime runtime) {
         Object value;
-        if (primary instanceof NotchIdentifier || primary instanceof NotchFallback) {
+        if (primary instanceof NotchIdentifierExpression || primary instanceof NotchFallbackExpression) {
             try {
                 value = runtime.evaluate(primary);
             } catch (UnknownVariableException e) {

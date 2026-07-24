@@ -4,11 +4,11 @@ package edu.montana.notch.expressions;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.NotchRuntime;
 
-public class IsUndefinedExpression extends NotchExpression {
+public class NotchIsUndefinedExpression extends NotchExpression {
     public final NotchExpression expression;
     public final boolean isInverted;
 
-    public IsUndefinedExpression(NotchExpression expression, boolean isInverted, Token end) {
+    public NotchIsUndefinedExpression(NotchExpression expression, boolean isInverted, Token end) {
         super(expression.span.through(end));
         this.expression = expression;
         this.isInverted = isInverted;

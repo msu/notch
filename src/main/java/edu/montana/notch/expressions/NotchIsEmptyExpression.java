@@ -3,11 +3,11 @@ package edu.montana.notch.expressions;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.NotchRuntime;
 
-public class IsEmptyExpression extends NotchExpression {
+public class NotchIsEmptyExpression extends NotchExpression {
     public final NotchExpression lhs;
     public final boolean isInverted;
 
-    public IsEmptyExpression(NotchExpression lhs, boolean isInverted, Token end) {
+    public NotchIsEmptyExpression(NotchExpression lhs, boolean isInverted, Token end) {
         super(lhs.span.through(end.span));
         this.lhs = lhs;
         this.isInverted = isInverted;

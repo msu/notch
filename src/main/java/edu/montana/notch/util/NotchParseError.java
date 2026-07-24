@@ -7,7 +7,7 @@ import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchClosureExpression;
 import edu.montana.notch.expressions.NotchExpression;
-import edu.montana.notch.expressions.NotchIdentifier;
+import edu.montana.notch.expressions.NotchIdentifierExpression;
 
 public class NotchParseError {
 
@@ -137,7 +137,7 @@ public class NotchParseError {
         Token next = parser.currentToken();
         boolean inputFollowsOnSameLine = !next.type.equals("eoi") && next.startLine() == expr.endLine();
 
-        if (expr instanceof NotchIdentifier keywordCandidate && inputFollowsOnSameLine && next.type.equals("ident")) {
+        if (expr instanceof NotchIdentifierExpression keywordCandidate && inputFollowsOnSameLine && next.type.equals("ident")) {
             Token afterNext = parser.peekNext();
             if (afterNext.type.equals("=") && afterNext.startLine() == next.endLine()) {
                 diag.note("'" + keywordCandidate.name() + "' is not a keyword in Notch");

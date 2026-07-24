@@ -14,13 +14,13 @@ import java.util.Map;
 
 import static edu.montana.notch.runtime.NotchRuntime.UNDEFINED;
 
-public class NotchPropertyAccess extends NotchExpression implements DotPathMember {
+public class NotchPropertyAccessExpression extends NotchExpression implements DotPathMember {
     private Token property;
     private NotchExpression root;
     private boolean favorMethods;
     private final String dotPath;
 
-    public NotchPropertyAccess(NotchExpression root, Token property) {
+    public NotchPropertyAccessExpression(NotchExpression root, Token property) {
         super(root.span.through(property.end()));
         this.root = addChild(root);
         this.property = property;

@@ -10,7 +10,7 @@ import static edu.montana.notch.runtime.NotchRuntime.UNDEFINED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class NotchMethodInvocationTest {
+public class NotchMethodInvocationExpressionTest {
 
     @Test
     public void testMethodInvocationWorks() {

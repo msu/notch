@@ -6,10 +6,10 @@ import edu.montana.notch.util.BetterSet;
 
 import java.util.List;
 
-public class NotchSetLiteral extends NotchExpression {
+public class NotchSetLiteralExpression extends NotchExpression {
     public final List<NotchExpression> values;
 
-    public NotchSetLiteral(Span span, List<NotchExpression> values) {
+    public NotchSetLiteralExpression(Span span, List<NotchExpression> values) {
         super(span);
         this.values = values;
 

@@ -3,9 +3,9 @@ package edu.montana.notch.statements;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.expressions.NotchExpression;
-import edu.montana.notch.expressions.NotchIdentifier;
-import edu.montana.notch.expressions.NotchInstantiation;
-import edu.montana.notch.expressions.NotchMethodInvocation;
+import edu.montana.notch.expressions.NotchIdentifierExpression;
+import edu.montana.notch.expressions.NotchInstantiationExpression;
+import edu.montana.notch.expressions.NotchMethodInvocationExpression;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 
@@ -28,15 +28,15 @@ public class NotchThrowStatement extends NotchStatement {
 
     private Object constructOrEvaluate(NotchRuntime runtime) {
         //allow for an expression to be thrown
-        if (!(operand instanceof NotchMethodInvocation call)) return runtime.evaluate(operand);
-        if (!(call.root instanceof NotchIdentifier id)) return runtime.evaluate(operand);
+        if (!(operand instanceof NotchMethodInvocationExpression call)) return runtime.evaluate(operand);
+        if (!(call.root instanceof NotchIdentifierExpression id)) return runtime.evaluate(operand);
         String name = id.name();
         if (runtime.getSymbol(name) != NotchRuntime.UNDEFINED) return runtime.evaluate(operand);
         List<Object> argValues = new ArrayList<>(call.args.size());
         for (NotchExpression arg : call.args) argValues.add(runtime.evaluate(arg));
         //exception name not in scope (i.e called as throw example('msg'), attempt construction
         try {
-            Object constructed = NotchInstantiation.tryConstructThrowable(name, argValues);
+            Object constructed = NotchInstantiationExpression.tryConstructThrowable(name, argValues);
             if (constructed != null) return constructed;
         } catch (IllegalArgumentException e) {
             var diag = new Diagnostic();

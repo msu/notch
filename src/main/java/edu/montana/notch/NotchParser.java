@@ -3,7 +3,6 @@ package edu.montana.notch;
 import edu.montana.notch.chisel.*;
 import edu.montana.notch.expressions.*;
 import edu.montana.notch.statements.*;
-import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.util.NotchParseError;
 import edu.montana.notch.util.Text;
@@ -243,7 +242,7 @@ public class NotchParser extends BasicParser {
             if (fallback == null) {
                 throw errorHandler.expectedExpressionAfterOperator("?:");
             }
-            expr = new NotchFallback(expr, fallback);
+            expr = new NotchFallbackExpression(expr, fallback);
         }
 
         return expr;
@@ -432,7 +431,7 @@ public class NotchParser extends BasicParser {
             var beforeEmpty = checkpoint();
             tokens.take();
             if (!peek("(") && !peek(".")) {
-                return new IsEmptyExpression(lhs, isInverted, tokens.prev());
+                return new NotchIsEmptyExpression(lhs, isInverted, tokens.prev());
             }
             rollbackTo(beforeEmpty);
         }
@@ -440,7 +439,7 @@ public class NotchParser extends BasicParser {
             int beforeEmpty = tokens.index;
             tokens.take();
             if (!peek("(") && !peek(".")) {
-                return new IsNullExpression(lhs, isInverted, tokens.prev());
+                return new NotchIsNullExpression(lhs, isInverted, tokens.prev());
             }
             tokens.index = beforeEmpty;
         }
@@ -448,7 +447,7 @@ public class NotchParser extends BasicParser {
             int beforeEmpty = tokens.index;
             tokens.take();
             if (!peek("(") && !peek(".")) {
-                return new IsUndefinedExpression(lhs, isInverted, tokens.prev());
+                return new NotchIsUndefinedExpression(lhs, isInverted, tokens.prev());
             }
             tokens.index = beforeEmpty;
         }
@@ -486,8 +485,8 @@ public class NotchParser extends BasicParser {
             if (!take(")")) {
                 throw errorHandler.expectedCloseParenForArguments();
             }
-            NotchMethodInvocation methodInvocation = new NotchMethodInvocation(root, args, lastToken().end());
-            if (root instanceof NotchPropertyAccess pa) {
+            NotchMethodInvocationExpression methodInvocation = new NotchMethodInvocationExpression(root, args, lastToken().end());
+            if (root instanceof NotchPropertyAccessExpression pa) {
                 pa.setFavorMethods(true);
             }
             return methodInvocation;
@@ -501,16 +500,8 @@ public class NotchParser extends BasicParser {
                 throw errorHandler.keywordAsPropertyName();
             }
             Token propName = requireIdent("Expected a property name");
-            NotchPropertyAccess propAccess = new NotchPropertyAccess(root, propName);
+            NotchPropertyAccessExpression propAccess = new NotchPropertyAccessExpression(root, propName);
             return propAccess;
-        }
-        return null;
-    }
-
-    public NotchString parseString() {
-        Token stringToken = consume("string");
-        if (stringToken != null) {
-            return new NotchString(stringToken);
         }
         return null;
     }
@@ -529,22 +520,22 @@ public class NotchParser extends BasicParser {
 
         Token bool = consume("bool");
         if (bool != null) {
-            return new NotchBoolean(bool);
+            return new NotchBooleanExpression(bool);
         }
 
         Token word = consume("ident");
         if (word != null) {
-            return new NotchIdentifier(word, !take("?"), lastToken());
+            return new NotchIdentifierExpression(word, !take("?"), lastToken());
         }
 
         Token intToken = consume("int");
         if (intToken != null) {
-            return new NotchInteger(intToken);
+            return new NotchIntegerExpression(intToken);
         }
 
         Token stringToken = consume("string");
         if (stringToken != null) {
-            return new NotchString(stringToken);
+            return new NotchStringExpression(stringToken);
         }
 
         if (peek("\\")) {
@@ -564,11 +555,11 @@ public class NotchParser extends BasicParser {
         }
 
         if (peekKeyword("this")) {
-            return new NotchIdentifier(take());
+            return new NotchIdentifierExpression(take());
         }
 
         if (peekKeyword("null")) {
-            return new NullLiteral(take());
+            return new NotchNullExpression(take());
         }
 
         return null;
@@ -582,7 +573,7 @@ public class NotchParser extends BasicParser {
         List<NotchExpression> args = parseArgList();
         require(")", "expected ')' to close the argument list");
         final var span = new Span(source(), start, lastToken().end());
-        return new NotchInstantiation(span, className, args);
+        return new NotchInstantiationExpression(span, className, args);
     }
 
     private NotchExpression parseListLiteral() {
@@ -599,7 +590,7 @@ public class NotchParser extends BasicParser {
                 }
             }
             require("]", "Expected a ']' to close the list");
-            NotchListLiteral notchListLiteral = new NotchListLiteral(start.span.through(lastToken()), listValues);
+            NotchListLiteralExpression notchListLiteral = new NotchListLiteralExpression(start.span.through(lastToken()), listValues);
             return notchListLiteral;
         }
         return null;
@@ -609,11 +600,11 @@ public class NotchParser extends BasicParser {
         Span start = currentToken().span;
         if (!take("{")) return null;
         if (take("}")) {
-            return new NotchMapLiteral(start.through(lastToken()), new ArrayList<>(), new ArrayList<>());
+            return new NotchMapLiteralExpression(start.through(lastToken()), new ArrayList<>(), new ArrayList<>());
         }
         if (take(",")) {
             require("}", "expected '}' to close the empty set '{,}'");
-            return new NotchSetLiteral(start.through(lastToken()), new ArrayList<>());
+            return new NotchSetLiteralExpression(start.through(lastToken()), new ArrayList<>());
         }
         NotchExpression first = parseExpression();
         if (take("->")) {
@@ -628,7 +619,7 @@ public class NotchParser extends BasicParser {
                 values.add(parseExpression());
             }
             require("}", "expected '}' to close the map");
-            return new NotchMapLiteral(start.through(lastToken()), keys, values);
+            return new NotchMapLiteralExpression(start.through(lastToken()), keys, values);
         } else {
             List<NotchExpression> values = new ArrayList<>();
             values.add(first);
@@ -637,7 +628,7 @@ public class NotchParser extends BasicParser {
                 values.add(parseExpression());
             }
             require("}", "expected '}' to close the set");
-            return new NotchSetLiteral(start.through(lastToken()), values);
+            return new NotchSetLiteralExpression(start.through(lastToken()), values);
         }
     }
 
@@ -837,7 +828,7 @@ public class NotchParser extends BasicParser {
         if (peek("=")) {
             throw errorHandler.cannotAssignToThisExpression(expr);
         }
-        if (expr instanceof NotchMethodInvocation || expr instanceof NotchRecoverExpression) {
+        if (expr instanceof NotchMethodInvocationExpression || expr instanceof NotchRecoverExpression) {
             return new NotchExpressionStatement(expr);
         }
         throw errorHandler.cannotBeUsedAsAStatement(expr);
@@ -1137,11 +1128,11 @@ public class NotchParser extends BasicParser {
     }
 
     private NotchExpression parseAssignmentTarget() {
-        NotchExpression target = new NotchIdentifier(take());
+        NotchExpression target = new NotchIdentifierExpression(take());
         while (peek(".") || peek("[")) {
             if (take(".")) {
                 Token property = requireIdent("expected a property name");
-                target = new NotchPropertyAccess(target, property);
+                target = new NotchPropertyAccessExpression(target, property);
             } else {
                 take("[");
                 NotchExpression index = requireExpression("expected an index expression");
@@ -1156,10 +1147,10 @@ public class NotchParser extends BasicParser {
         if (target instanceof NotchIndexExpression index) {
             return new NotchIndexAssignment(span, index.root, index.index, value);
         }
-        if (target instanceof NotchPropertyAccess propertyAccess) {
+        if (target instanceof NotchPropertyAccessExpression propertyAccess) {
             return new NotchPropertyAssignment(span, propertyAccess.getRoot(), propertyAccess.getPropertyToken(), value);
         }
-        Token varName = ((NotchIdentifier) target).token;
+        Token varName = ((NotchIdentifierExpression) target).token;
         if (varName.str().equals("this")) {
             throw errorHandler.cannotAssignToThis(varName);
         }
