@@ -538,6 +538,11 @@ public class NotchParser extends BasicParser {
             return new NotchStringExpression(stringToken);
         }
 
+        Token fStringToken = consume("fstring");
+        if (fStringToken != null) {
+            return new NotchFStringExpression(fStringToken);
+        }
+
         if (peek("\\")) {
             return parseClosureExpression();
         }

@@ -32,6 +32,13 @@ public class NotchTestUtils {
                 }
                 throw new RuntimeException(parseErrorMessage.toString());
             }
+            if (!notchParser.atEnd()) {
+                final var diag = new Diagnostic();
+                diag.setTitle("TEST:0001");
+                diag.note("extra tokens here");
+                diag.highlight(notchParser.currentToken());
+                throw new RuntimeException(diag.render());
+            }
             Object result = expr.evaluate(map(vars));
             return result;
         } catch (NotchRuntimeException ex) {

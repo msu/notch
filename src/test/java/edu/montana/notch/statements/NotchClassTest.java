@@ -162,4 +162,22 @@ class NotchClassTest {
         assertTrue(ex.getMessage().contains("cannot assign to 'this'"),
                 "expected a this-reassignment error, got: " + ex.getMessage());
     }
+
+    @Test
+    public void complexClass() {
+        var msg = exec("""
+                class Person(first, last, age)
+                    field fullName = f'{first} {last}'
+                
+                    function greet()
+                        return f"Hi, I'm {this.fullName} and I'm {this.age}"
+                    end
+                end
+                
+                person = new Person(:James, :Carlysle, -1)
+                print(person.greet())
+                """);
+
+        assertEquals("Hi, I'm James Carlysle and I'm -1\n", msg);
+    }
 }

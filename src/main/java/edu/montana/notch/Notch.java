@@ -16,11 +16,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static edu.montana.notch.chisel.type.BooleanTokenType.BOOL;
-import static edu.montana.notch.chisel.type.CStringTokenType.STR;
 import static edu.montana.notch.chisel.type.IdentTokenType.IDENT;
 import static edu.montana.notch.chisel.type.IntegerTokenType.INT;
 import static edu.montana.notch.chisel.type.WhitespaceTokenType.WHITESPACE;
 import static edu.montana.notch.token.NotchTokenTypeKeyword.NOTCH_KEYWORD;
+import static edu.montana.notch.token.NotchStringTokenType.STR;
 import static edu.montana.notch.token.TerseStringTokenType.TERSE_STRING;
 
 public class Notch {
@@ -29,12 +29,12 @@ public class Notch {
 
     public static final Tokenizer TOKENIZER = new Tokenizer()
             .withTokenType("_ws", WHITESPACE)
+            .withTokenType("string", STR)
+            .withTokenType("string", TERSE_STRING)
             .withTokenType("bool", BOOL)
             .withTokenType("keyword", NOTCH_KEYWORD)
             .withTokenType("ident", IDENT)
             .withTokenType("int", INT)
-            .withTokenType("string", STR)
-            .withTokenType("string", TERSE_STRING)
             .withTokenTypes(LiteralTokenType.COMMON);
 
     public static <T> T eval(String code) {
