@@ -2,10 +2,7 @@ package edu.montana.notch.expressions;
 
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Location;
-import edu.montana.notch.runtime.NotchBoundMethod;
-import edu.montana.notch.runtime.NotchClosure;
-import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.runtime.NotchRuntimeException;
+import edu.montana.notch.runtime.*;
 import edu.montana.notch.types.NotchJavaMethod;
 import edu.montana.notch.types.NotchType;
 import edu.montana.notch.types.TypeSystem;
@@ -30,7 +27,10 @@ public class NotchMethodInvocation extends NotchExpression {
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        Object functionObj = runtime.evaluate(root);
+        Object functionObj = null;
+        try {
+            functionObj = runtime.evaluate(root);
+        } catch (UnknownVariableException ignored) {}
         if (functionObj == null || runtime.isUndefined(functionObj)) {
             var diag = new Diagnostic();
             diag.highlight(root.span());
@@ -60,7 +60,7 @@ public class NotchMethodInvocation extends NotchExpression {
             }
         } else if (functionObj instanceof NotchJavaMethod jm) {
             try (var ignoredTrace = runtime.trace(span(), jm.getQualifiedName())) {
-                return jm.invoke(null, argValues);
+                return jm.invoke(runtime, null, argValues);
             }
         } else if (functionObj instanceof NotchType type) {
             try (var ignoredTrace = runtime.trace(span(), "<constructor:" + type.getSimpleName() + ">")) {
