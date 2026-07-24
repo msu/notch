@@ -44,7 +44,7 @@ public class NotchJavaMethod implements NotchMethod {
     }
 
     @Override
-    public Object invoke(Object rootVal, List<Object> args) {
+    public Object invoke(NotchRuntime runtime, Object rootVal, List<Object> args) {
         try {
             if (javaMethods.isEmpty()) {
                 throw new NoSuchMethodException("No methods named " + this.name + " were found on " + backingClass.getName());
@@ -159,7 +159,7 @@ public class NotchJavaMethod implements NotchMethod {
     }
 
     @Override
-    public boolean canInvokeWith(List<Object> args) {
+    public boolean canInvokeWith(NotchRuntime runtime, List<Object> args) {
         Method method = bestMatch(args);
         return method != null;
     }

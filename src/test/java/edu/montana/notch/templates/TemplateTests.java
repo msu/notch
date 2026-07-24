@@ -68,7 +68,7 @@ public class TemplateTests extends NotchTemplateTestBase {
         }
 
         @Override
-        public Object resolveSymbol(String name) {
+        public Object resolveSymbol(NotchRuntime runtime, String name) {
             if (name.equals("name")) return "friend";
             return NotchRuntime.UNDEFINED;
         }
