@@ -69,7 +69,10 @@ public class Tokenizer {
             start = loc;
 
             var tokenData = tt.second().tokenize(this);
-            if (tokenData == null) continue;
+            if (tokenData == null) {
+                loc = start;
+                continue;
+            }
 
             Token token = createToken(tt, start, tokenData);
             return token;
@@ -129,23 +132,9 @@ public class Tokenizer {
         var out = new BetterList<Token>();
 
         var start = currentCharSpan();
-        outer:
         while (start.start().index < source.content.length()) {
-            var token = peekToken();
-            if (token == null) {
-                final var diag = new Diagnostic();
-                diag.highlight(currentCharSpan());
-                diag.note("unexpected character " + repr(peek()));
-                throw new TokenizeException(diag);
-            }
-
-            for (String terminalType : terminalTokenTypes) {
-                if (token.type.equals(terminalType)) {
-                    break outer;
-                }
-            }
-
-            token = nextToken(); // it was peeked so we can just cache this, we should always get the same token
+            var token = tokenizeOne(terminalTokenTypes);
+            if (token == null) break;
             out.add(token);
 
             var loc = currentCharSpan();
@@ -160,6 +149,25 @@ public class Tokenizer {
         }
 
         return new TokenStream(source, out);
+    }
+
+    public Token tokenizeOne(String... terminalTokenTypes) throws TokenizeException {
+        var token = peekToken();
+        if (token == null) {
+            final var diag = new Diagnostic();
+            diag.highlight(currentCharSpan());
+            diag.note("unexpected character " + repr(peek()));
+            throw new TokenizeException(diag);
+        }
+
+        for (String terminalType : terminalTokenTypes) {
+            if (token.type.equals(terminalType)) {
+                return null;
+            }
+        }
+
+        token = nextToken(); // it was peeked so we can just cache this, we should always get the same token
+        return token;
     }
 
     public Span currentCharSpan() {
