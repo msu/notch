@@ -7,8 +7,10 @@ import edu.montana.notch.chisel.type.LiteralTokenType;
 import edu.montana.notch.console.NotchShell;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.Drain;
+import edu.montana.notch.runtime.builtins.NotchStructureFunction;
 import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.types.coercions.Coercion;
+import edu.montana.notch.util.BetterMap;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -82,5 +84,11 @@ public class Notch {
 
     public static void main(String[] args) {
         NotchShell.start(true);
+    }
+
+    public static Map<String, Object> defaultGlobals() {
+        var out = new BetterMap<String, Object>();
+        out.put("structure", NotchStructureFunction.getInstance());
+        return out;
     }
 }

@@ -4,17 +4,16 @@ import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.types.coercions.Coercion;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.Exceptions;
+import edu.montana.notch.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Executable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.List;
 
 import static edu.montana.notch.util.Exceptions.rethrow;
+import static edu.montana.notch.util.Pair.pair;
 import static java.lang.Integer.MAX_VALUE;
 
 public class NotchJavaMethod implements NotchMethod {
@@ -186,4 +185,20 @@ public class NotchJavaMethod implements NotchMethod {
         }
     }
 
+    @Override
+    public List<Pair<List<Pair<String, NotchType>>, NotchType>> getMethodVariants() {
+        var out = new BetterList<Pair<List<Pair<String, NotchType>>, NotchType>>();
+        for (var method : javaMethods) {
+            List<Pair<String, NotchType>> params = new BetterList<>();
+            Parameter[] parameters = method.getParameters();
+            for (Parameter param : parameters) {
+                var name = param.getName();
+                var ty = TypeSystem.getType(param.getType());
+                params.add(pair(name, ty));
+            }
+            final var rt = TypeSystem.getType(method.getReturnType());
+            out.add(pair(params, rt));
+        }
+        return out;
+    }
 }

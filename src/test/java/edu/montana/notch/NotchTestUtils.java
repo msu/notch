@@ -10,7 +10,6 @@ import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.statements.NotchStatement;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -81,7 +80,7 @@ public class NotchTestUtils {
     }
 
     public static Map<String, Object> map(Object[] vars) {
-        HashMap<String, Object> map = new HashMap<>();
+        Map<String, Object> map = Notch.defaultGlobals();
         for (int i = 0; i < vars.length; i++) {
             Object key = vars[i];
             Object val = null;
