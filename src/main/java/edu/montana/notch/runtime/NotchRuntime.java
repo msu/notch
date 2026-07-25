@@ -9,6 +9,7 @@ import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.statements.NotchStatement;
 import edu.montana.notch.templates.runtime.RenderException;
 import edu.montana.notch.types.NotchJavaType;
+import edu.montana.notch.types.TypeSystem;
 import edu.montana.notch.util.*;
 
 import java.util.*;
@@ -193,6 +194,29 @@ public class NotchRuntime {
     public Number asNumber(Object value) {
         if (value instanceof Number n) return n;
         return 0;
+    }
+
+    public <T> T coerce(Class<T> clazz, Object value, Spanned item) {
+        // for now just cast, in the future we might want looser conversions
+        return cast(clazz, value, item);
+    }
+
+    public <T> T cast(Class<T> clazz, Object value, Spanned item) {
+        try {
+            return clazz.cast(value);
+        } catch (ClassCastException e) {
+            String valueType;
+            if (value == null) valueType = "null";
+            else if (isUndefined(value)) valueType = "undefined";
+            else valueType = TypeSystem.getRuntimeType(value).getDisplayName();
+            var targetType = TypeSystem.getType(clazz).getDisplayName();
+
+            var diag = new Diagnostic();
+            diag.setTitle("value cast failed");
+            diag.highlight(item);
+            diag.note("unable to cast %s to %s".formatted(valueType, targetType));
+            throw new NotchRuntimeException(currentStackTrace(), diag);
+        }
     }
 
     public class ScopeLock implements SafeAutoClosable {

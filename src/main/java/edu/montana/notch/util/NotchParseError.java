@@ -1,10 +1,7 @@
 package edu.montana.notch.util;
 
 import edu.montana.notch.NotchParser;
-import edu.montana.notch.chisel.Diagnostic;
-import edu.montana.notch.chisel.ParseException;
-import edu.montana.notch.chisel.Span;
-import edu.montana.notch.chisel.Token;
+import edu.montana.notch.chisel.*;
 import edu.montana.notch.expressions.NotchClosureExpression;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.expressions.NotchIdentifierExpression;
@@ -260,5 +257,12 @@ public class NotchParseError {
                 .note("expected ')' to close the print arguments")
                 .highlight(parser.currentToken());
         return new ParseException(diag);
+    }
+
+    public ParseException required(Spanned item, String message) {
+        final var diag = new Diagnostic();
+        diag.highlight(item);
+        diag.note(message);
+        throw new ParseException(diag);
     }
 }

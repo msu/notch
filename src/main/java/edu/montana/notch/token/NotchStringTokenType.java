@@ -14,12 +14,10 @@ public class NotchStringTokenType implements TokenType {
     public TokenData tokenize(Tokenizer t) throws TokenizeException {
         var start = t.location();
 
-        boolean isFString = t.take('f');
-        if (!t.peek('"', '\'')) return null;
+        if (!t.peek('"', '\'', '`')) return null;
         char quote = t.take();
 
-        BetterList<Object> pieces = null;
-        if (isFString) pieces = new BetterList<>();
+        BetterList<Object> pieces = new BetterList<>();
         var content = new StringBuilder();
         while (!t.atEnd()) {
             char c = t.peek();
@@ -28,10 +26,20 @@ public class NotchStringTokenType implements TokenType {
             }
 
             t.take();
-            if (c == '\\') {
+            if (c == '}' && !t.take('}')) {
+                final var diag = new Diagnostic();
+                diag.note("this brace does not match a corresponding '{' for value interpolation");
+                diag.highlight(t.currentCharSpan());
+                throw new TokenizeException(diag);
+            } else if (c == '\\') {
                 tokenizeEscape(quote, start, t, content);
-            } else if (isFString && c == '{') {
-                tokenizeFComponent(t, content, pieces);
+            } else if (c == '{' && !t.take('{')) {
+                var expression = FStringTokenData.tokenizeFExpression(t);
+                if (!content.isEmpty()) {
+                    pieces.add(content.toString());
+                    content.setLength(0);
+                }
+                pieces.add(expression);
             } else {
                 content.append(c);
             }
@@ -44,14 +52,10 @@ public class NotchStringTokenType implements TokenType {
             throw new TokenizeException(diag);
         }
 
-        if (isFString) {
-            if (!content.isEmpty()) {
-                pieces.add(content.toString());
-            }
-            return new TokenData("fstring", new FStringTokenData(pieces));
+        if (!content.isEmpty()) {
+            pieces.add(content.toString());
         }
-
-        return new TokenData(content.toString());
+        return new TokenData(new FStringTokenData(pieces));
     }
 
     private void tokenizeEscape(char quote, Location start, Tokenizer t, StringBuilder content) {
@@ -81,19 +85,5 @@ public class NotchStringTokenType implements TokenType {
             diag.note("invalid escape " + Text.repr(c));
             throw new TokenizeException(diag);
         }
-    }
-
-    private void tokenizeFComponent(Tokenizer t, StringBuilder content, BetterList<Object> pieces) {
-        if (t.take('{')) {
-            content.append('{');
-            return;
-        }
-
-        var expression = FStringTokenData.tokenizeFExpression(t);
-        if (!content.isEmpty()) {
-            pieces.add(content.toString());
-            content.setLength(0);
-        }
-        pieces.add(expression);
     }
 }

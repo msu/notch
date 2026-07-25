@@ -43,6 +43,8 @@ public class TypeSystem {
     public static NotchType getRuntimeType(Object rootVal) {
         if (rootVal instanceof HasCustomNotchType hasNotchType) {
             return hasNotchType.getNotchType();
+        } else if (rootVal == null) {
+            return getType(Void.TYPE);
         } else {
             Class<?> aClass = rootVal.getClass();
             return getType(aClass);

@@ -506,6 +506,26 @@ public class NotchParser extends BasicParser {
         return null;
     }
 
+    public boolean peekStringExpression() {
+        return peek("string");
+    }
+
+    public NotchExpression parseStringExpression() {
+        Token stringToken = consume("string");
+        if (stringToken != null) {
+            return new NotchStringExpression(stringToken);
+        }
+        return null;
+    }
+
+    public NotchExpression requireStringExpression(String message) {
+        var str = parseStringExpression();
+        if (str != null) {
+            return str;
+        }
+        throw errorHandler.required(currentToken(), message);
+    }
+
     private NotchExpression parsePrimaryExpression() {
         Token paren = consume("(");
         if (paren != null) {
@@ -533,14 +553,9 @@ public class NotchParser extends BasicParser {
             return new NotchIntegerExpression(intToken);
         }
 
-        Token stringToken = consume("string");
-        if (stringToken != null) {
-            return new NotchStringExpression(stringToken);
-        }
-
-        Token fStringToken = consume("fstring");
-        if (fStringToken != null) {
-            return new NotchFStringExpression(fStringToken);
+        var str = parseStringExpression();
+        if (str != null) {
+            return str;
         }
 
         if (peek("\\")) {

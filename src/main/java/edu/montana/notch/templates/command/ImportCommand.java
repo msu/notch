@@ -4,6 +4,8 @@ import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.expressions.NotchExpression;
+import edu.montana.notch.expressions.NotchStringExpression;
 import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
@@ -15,7 +17,6 @@ import edu.montana.notch.types.TypeSystem;
 import edu.montana.notch.util.BetterMap;
 import edu.montana.notch.util.Text;
 
-import java.util.List;
 import java.util.Map;
 
 public class ImportCommand extends NotchTemplateCommand {
@@ -24,14 +25,14 @@ public class ImportCommand extends NotchTemplateCommand {
         isGlobal = true;
     }
 
-    Token path;
+    NotchExpression path;
     QualifiedIdent type;
     Token alias;
 
     @Override
     public void parseCommand(NotchParser commandParser) {
-        if (commandParser.peek("string")) {
-            path = commandParser.take();
+        if (commandParser.peekStringExpression()) {
+            path = commandParser.parseStringExpression();
         } else if (commandParser.peek("ident")) {
             type = QualifiedIdent.parse(commandParser);
         } else {
@@ -64,7 +65,9 @@ public class ImportCommand extends NotchTemplateCommand {
             }
             runtime.defineOrUpdateGlobal(notchType.getSimpleName(), notchType);
         } else if (path != null) {
-            contentBlock = templates.getTemplateContent(path.str());
+            var pathValue = runtime.evaluate(path);
+            var pathStr = runtime.cast(String.class, pathValue, path);
+            contentBlock = templates.getTemplateContent(pathStr);
 
             contentRuntime = new NotchTemplateRuntime(contentBlock.source(), runtime.templates(), Map.of());
             contentBlock.preRender(contentRuntime);
