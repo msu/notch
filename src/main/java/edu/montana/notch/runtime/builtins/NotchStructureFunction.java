@@ -31,6 +31,7 @@ public final class NotchStructureFunction implements NotchMethod {
         var arg = args.get(0);
         if (arg == null) return "null";
         if (runtime.isUndefined(arg)) return "<undefined>";
+        // TODO: custom implementation for bound functions, etc
         var type = TypeSystem.getType(arg.getClass());
         var out = new StringBuilder();
         out.append("class ").append(type.getSimpleName()).append(" (").append(type.getNamespace()).append(")\n");

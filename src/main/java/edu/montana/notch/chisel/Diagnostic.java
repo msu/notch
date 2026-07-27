@@ -48,6 +48,10 @@ public class Diagnostic {
     }
 
     public void render(StringBuilder sb, boolean includeStackTrace) {
+        if (includeStackTrace) {
+            renderStackTrace(sb);
+        }
+
         var highlighting = new HashMap<Highlight, List<String>>();
         int maxLineNoSize = 0;
         for (var highlight : highlights) {
@@ -113,10 +117,6 @@ public class Diagnostic {
                     sb.append(padding).append(": ").append(lines.next()).append('\n');
                 }
             }
-        }
-
-        if (includeStackTrace) {
-            renderStackTrace(sb);
         }
     }
 

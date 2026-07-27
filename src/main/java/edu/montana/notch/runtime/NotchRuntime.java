@@ -3,7 +3,6 @@ package edu.montana.notch.runtime;
 import edu.montana.notch.Notch;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Source;
-import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.statements.NotchStatement;
@@ -26,13 +25,13 @@ public class NotchRuntime {
     public final Source source;
     private LinkedList<Scope> values = new LinkedList<>();
     protected BetterList<NotchStackTraceElement> stackTraceElements = new BetterList<>();
-    private Consumer<Object> out = System.out::println;
+    private Consumer<Object> out = System.out::print;
     private BetterMap<Key, Object> storage = new BetterMap<>();
     private final Deque<Throwable> handledExceptions = new ArrayDeque<>();
 
     public static final NotchRuntime BUILTIN = new NotchRuntime(new Source("notch.builtins", "._."), Map.of());
     public NotchRuntime(Source source) {
-        this(source, Notch.defaultGlobals());
+        this(source, Notch.builtins());
     }
 
     public NotchRuntime(Source source, Map<String, Object> entryBlock) {
@@ -127,8 +126,13 @@ public class NotchRuntime {
         this.out = out;
     }
 
+    public void print(Object result) {
+        out.accept(result);
+    }
+
     public void println(Object result) {
         out.accept(result);
+        out.accept('\n');
     }
 
     public boolean isUndefined(Object value) {
@@ -143,8 +147,7 @@ public class NotchRuntime {
         return !isTruthy(value);
     }
 
-    public Iterable<?> coerceIterable(Span span, Object iterableValue) {
-
+    public Iterable<?> coerceIterable(Object iterableValue, Spanned span) {
         if (iterableValue == null) {
             return Collections.emptyList();
         }
@@ -191,13 +194,8 @@ public class NotchRuntime {
         return handledExceptions.peek();
     }
 
-    public Number asNumber(Object value) {
-        if (value instanceof Number n) return n;
-        return 0;
-    }
-
     public <T> T coerce(Class<T> clazz, Object value, Spanned item) {
-        // for now just cast, in the future we might want looser conversions
+        if (clazz == Iterable.class) return clazz.cast(coerceIterable(value, item));
         return cast(clazz, value, item);
     }
 

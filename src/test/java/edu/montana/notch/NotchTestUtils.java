@@ -61,6 +61,10 @@ public class NotchTestUtils {
         return expr.evaluate(map(vars));
     }
 
+    public static RuntimeException execEx(String src, Object... vars) {
+        return assertThrows(RuntimeException.class, () -> exec(src, vars));
+    }
+
     public static String exec(String src, Object... vars) {
         final Source source = new Source("<exec>", src);
         try {
@@ -87,7 +91,7 @@ public class NotchTestUtils {
     }
 
     public static Map<String, Object> map(Object[] vars) {
-        Map<String, Object> map = Notch.defaultGlobals();
+        Map<String, Object> map = Notch.builtins();
         for (int i = 0; i < vars.length; i++) {
             Object key = vars[i];
             Object val = null;

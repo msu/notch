@@ -4,9 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import static edu.montana.notch.AssertContains.assertContains;
 import static edu.montana.notch.NotchTestUtils.exec;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static edu.montana.notch.NotchTestUtils.execEx;
+import static org.junit.jupiter.api.Assertions.*;
 
 class NotchRepeatTest {
 
@@ -160,5 +159,17 @@ class NotchRepeatTest {
                 print('after')
                 """);
         assertEquals("after\n", result);
+    }
+
+    @Test
+    void testRepeatForeverScoping() {
+        var ex = execEx("""
+                repeat forever
+                    i = 1
+                    break
+                end
+                print(i)
+        """);
+        assertContains("unknown variable \"i\"", ex.getMessage());
     }
 }

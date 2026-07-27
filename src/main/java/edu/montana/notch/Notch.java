@@ -4,12 +4,13 @@ import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.TokenStream;
 import edu.montana.notch.chisel.Tokenizer;
 import edu.montana.notch.chisel.type.LiteralTokenType;
-import edu.montana.notch.console.NotchShell;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.Drain;
-import edu.montana.notch.runtime.builtins.NotchStructureFunction;
+import edu.montana.notch.runtime.NotchRuntime;
+import edu.montana.notch.runtime.builtins.*;
 import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.types.coercions.Coercion;
+import edu.montana.notch.util.BetterFS;
 import edu.montana.notch.util.BetterMap;
 
 import java.util.LinkedHashMap;
@@ -82,13 +83,28 @@ public class Notch {
         return map;
     }
 
-    public static void main(String[] args) {
-        NotchShell.start(true);
+    public static void run(String program) {
+        var src = new Source("<run>", program);
+        var ast = new NotchParser(src).parseAsStatement();
+        final var runtime = new NotchRuntime(src);
+        ast.execute(runtime);
     }
 
-    public static Map<String, Object> defaultGlobals() {
+    public static void main(String[] args) {
+        String file = "examples/battleship.notch";
+        String content = BetterFS.read(file);
+        Notch.run(content);
+//        NotchShell.start(true);
+    }
+
+    public static Map<String, Object> builtins() {
         var out = new BetterMap<String, Object>();
         out.put("structure", NotchStructureFunction.getInstance());
+        out.put("ask", NotchAskFunction.getInstance());
+        out.put("println", NotchPrintlnFunction.getInstance());
+        out.put("print", NotchPrintFunction.getInstance());
+        out.put("debug", NotchDebugFunction.getInstance());
+        out.put("random", NotchRandomFunction.getInstance());
         return out;
     }
 }

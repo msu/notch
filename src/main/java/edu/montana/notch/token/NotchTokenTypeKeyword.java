@@ -19,8 +19,7 @@ public class NotchTokenTypeKeyword implements TokenType {
     private NotchTokenTypeKeyword(String... keywords) {
         this.keywords.addAll(Set.of(
                 "if", "for", "else", "end", "in", "is", "not", "null", "as",
-                "repeat", "while", "until", "times", "break", "continue",
-                "print",
+                "repeat", "forever", "while", "until", "times", "break", "continue",
                 "function", "return", "class", "new", "this", "field", "import",
                 "throw", "try", "catch", "rethrow", "recover", "then"
         ));

@@ -762,10 +762,6 @@ public class NotchParser extends BasicParser {
         Span errorSpan = currentToken().span();
         var mark = checkpoint();
         try {
-            var print = parsePrintStatement();
-            if (print != null) {
-                return print;
-            }
             var ifStmt = parseIfStatement();
             if (ifStmt != null) {
                 return ifStmt;
@@ -938,6 +934,12 @@ public class NotchParser extends BasicParser {
     private NotchStatement parseRepeatStatement() {
         var start = tokens.location();
         if (!takeKeyword("repeat")) return null;
+        if (takeKeyword("forever")) {
+            List<NotchStatement> body = parseLoopBody();
+            requireKeyword("end", "Unterminated repeat statement");
+            final var span = new Span(source(), start, lastToken().end());
+            return new NotchRepeatForever(span, body);
+        }
         if (takeKeyword("while")) {
             NotchExpression cond = requireExpression("expected condition after 'while'");
             List<NotchStatement> body = parseLoopBody();
@@ -1075,7 +1077,7 @@ public class NotchParser extends BasicParser {
             value = parseExpression();
         }
         final var span = new Span(source(), start, lastToken().end());
-        return new NotchReturn(span, value);
+        return new NotchReturnStatement(span, value);
     }
 
     private boolean returnValueFollows(Token returnToken) {
@@ -1177,13 +1179,23 @@ public class NotchParser extends BasicParser {
         return new NotchAssignment(varName, value);
     }
 
-    private NotchForLoop parseForStatement() {
+    private NotchLoop parseForStatement() {
         var start = tokens.location();
         if (takeKeyword("for")) {
             if (peek("keyword")) {
                 throw errorHandler.keywordAsLoopVariable();
             }
             Token loopIdentifier = requireIdent("expected a variable name for the loop item");
+
+            if (take("<")) {
+                // lmao, this is gonna trip someone up when they change operator precedence
+                var rhs = parseAdditiveExpression();
+                var body = parseLoopBody();
+                requireKeyword("end", "Unterminated for statement");
+                final var span = new Span(source(), start, lastToken().end());
+                return new NotchForLessLoop(span, loopIdentifier, rhs, body);
+            }
+
             requireKeyword("in", "expected 'in'");
 
             NotchExpression loopExpression = requireExpression("expected expression for the loop iterable");
@@ -1232,24 +1244,6 @@ public class NotchParser extends BasicParser {
             final var span = new Span(source(), start, lastToken().end());
             NotchIf notchIf = new NotchIf(span, conditional, ifTrue, ifFalse);
             return notchIf;
-        }
-        return null;
-    }
-
-    private NotchPrint parsePrintStatement() {
-        var start = tokens.location();
-        if (takeKeyword("print")) {
-            var printToken = lastToken();
-            if (!take("(")) {
-                throw errorHandler.expectedParenAfterPrint(printToken);
-            }
-            NotchExpression expr = parseExpression();
-            if (!take(")")) {
-                throw errorHandler.expectedCloseParenForPrint();
-            }
-            final var span = new Span(source(), start, lastToken().end());
-            NotchPrint notchPrint = new NotchPrint(span, expr);
-            return notchPrint;
         }
         return null;
     }

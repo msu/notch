@@ -49,7 +49,13 @@ public class NotchRuntimeException extends RuntimeException implements Spanned {
 
     @Override
     public String getMessage() {
-        return diagnostic.render();
+        var sb = new StringBuilder();
+        sb.append("\nNotch Stack Trace:");
+        for (var elt : stackTrace.elements) {
+            sb.append(elt.hint()).append(": ").append(elt.span().sourceId()).append(":").append(elt.span().startLine()).append('\n');
+        }
+        diagnostic.render(sb, true);
+        return sb.toString();
     }
 
     @Override

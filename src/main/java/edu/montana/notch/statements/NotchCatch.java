@@ -45,12 +45,12 @@ public final class NotchCatch {
     public static boolean isControlFlow(Throwable t) {
         if (t instanceof NotchBreak.BreakSignal) return true;
         if (t instanceof NotchContinue.ContinueSignal) return true;
-        if (t instanceof NotchReturn.ReturnSignal) return true;
+        if (t instanceof NotchReturnStatement.ReturnSignal) return true;
         if (t == null) return false;
         Throwable cause = t.getCause();
         if (cause instanceof NotchBreak.BreakSignal) return true;
         if (cause instanceof NotchContinue.ContinueSignal) return true;
-        if (cause instanceof NotchReturn.ReturnSignal) return true;
+        if (cause instanceof NotchReturnStatement.ReturnSignal) return true;
         return false;
     }
 

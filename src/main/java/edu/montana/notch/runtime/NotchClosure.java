@@ -2,15 +2,13 @@ package edu.montana.notch.runtime;
 
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchExpression;
-import edu.montana.notch.statements.NotchReturn;
+import edu.montana.notch.statements.NotchReturnStatement;
 import edu.montana.notch.statements.NotchStatement;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.*;
-
-import static edu.montana.notch.runtime.NotchRuntime.UNDEFINED;
 
 public record NotchClosure(NotchRuntime closure, List<Token> parameters, NotchExpression expression,
                            List<NotchStatement> statements, String name)
@@ -33,9 +31,9 @@ public record NotchClosure(NotchRuntime closure, List<Token> parameters, NotchEx
                     for (NotchStatement statement : statements) {
                         closure.execute(statement);
                     }
-                    return UNDEFINED;
+                    return null;
                 } catch (NotchRuntimeException nre) {
-                    if (nre.getCause() instanceof NotchReturn.ReturnSignal rs) {
+                    if (nre.getCause() instanceof NotchReturnStatement.ReturnSignal rs) {
                         return rs.value;
                     }
                     throw nre;

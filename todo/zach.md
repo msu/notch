@@ -6,10 +6,10 @@
   - Survey all expressions & look for more descriptive errors sites
     - Intentionally try to trigger & test fault sites (bad addition combinations,
       non-indexable types, no such method, property, etc)
-- [Language Basics](./basics.md)
+- [Language Basics](ideas/basics.md)
 - Anti-Regression Tests
 
 
 # Backlog
-- ["except" expression](./except.md)
-- [nulls](./nulls.md)
+- ["except" expression](ideas/except.md)
+- [nulls](ideas/nulls.md)
