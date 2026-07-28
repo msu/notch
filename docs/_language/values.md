@@ -17,7 +17,7 @@ true   false                 # booleans
 null                         # null
 'hello'   "hello"            # strings
 [1, 2, 3]                    # list
-{foo = 1, bar = 2}           # map
+{'foo' -> 1, 'bar' -> 2}     # map
 {1, 2, 3}                    # set
 (1 + 2) * 3                  # grouping
 ```
@@ -70,24 +70,25 @@ A trailing comma is allowed:
 
 ## Maps
 
-Map keys may be bare identifiers, double-quoted strings, or terse strings
-prefixed with `:`.
+A map is a brace list of `key -> value` pairs. Keys are expressions - a bare name
+is read as a variable, so quote string keys (single- or double-quoted, or the
+terse `:` form):
 
 ```notch
-{foo = 1, bar = 2}
-{"foo foo" = 1, bar = 2}
-{:foo123 = 1, bar = 2}
+{'foo' -> 1, 'bar' -> 2}
+{"foo foo" -> 1, "bar" -> 2}
+{:foo123 -> 1, :bar -> 2}
 ```
 
 Map values can be any expression, including closures:
 
 ```notch
-{foo = \-> "bar"}
+{'foo' -> \-> "bar"}
 ```
 
 ## Sets
 
-A brace list without `key = value` pairs is a set:
+A brace list without `key -> value` pairs is a set:
 
 ```notch
 {1, 2, 3}

@@ -7,6 +7,8 @@ import edu.montana.notch.chisel.type.LiteralTokenType;
 import edu.montana.notch.console.NotchShell;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.Drain;
+import edu.montana.notch.runtime.NotchRuntime;
+import edu.montana.notch.statements.NotchStatement;
 import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.types.coercions.Coercion;
 
@@ -63,6 +65,25 @@ public class Notch {
 
     public static void render(String path, Appendable out, Object... kv) {
         TEMPLATES.renderTemplate(path, toMap(kv), new Drain(out));
+    }
+
+    public static void run(String program) {
+        run(new Source("<embed>", program));
+    }
+
+    public static void run(Source source) {
+        TokenStream tokens = TOKENIZER.tokenize(source);
+        NotchParser parser = new NotchParser(tokens);
+        NotchElement element = parser.parse();
+        if (parser.hasErrors()) {
+            throw new IllegalArgumentException("Notch program has parse errors: " + parser.getDiagnostics());
+        }
+        NotchRuntime runtime = new NotchRuntime(source);
+        if (element instanceof NotchStatement stmt) {
+            runtime.execute(stmt);
+        } else if (element instanceof NotchExpression expr) {
+            runtime.evaluate(expr);
+        }
     }
 
     private static Map<String, Object> toMap(Object[] kv) {

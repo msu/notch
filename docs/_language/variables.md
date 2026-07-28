@@ -48,16 +48,21 @@ p.x = 42
 ## Scope
 
 A name is visible from its binding onward within the enclosing scope. Loop
-variables are scoped to their loop - once the loop ends the loop variable reads
-as `<undefined>`:
+variables are scoped to their loop - once the loop ends the loop variable is
+unbound. A plain read of an unbound name raises an "unknown variable" error;
+append `?` to read it leniently as `<undefined>` instead:
 
 ```notch
-for x in 'foo' index i print(i) print(x) end
-print(x)
+for x in 'foo' index i
+  print(i)
+  print(x)
+end
+print(x?)
 ```
 
-The trailing `print(x)` sees `x` as `<undefined>`, because the loop binding does
-not escape the loop.
+The trailing `print(x?)` sees `x` as `<undefined>`, because the loop binding does
+not escape the loop. Without the `?`, a plain `print(x)` would raise an
+`unknown variable "x"` error.
 
 ## See also
 

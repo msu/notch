@@ -4,17 +4,22 @@ title: Notch
 ---
 
 <section class="hero">
-  <h1 class="visually-hidden">Notch</h1>
+  <h1 class="visually-hidden">Notch &mdash; a scripting and programming language for the JVM, from Montana State University (MSU)</h1>
   <div class="hero-banner">
     <img class="hero-glyph" src="{{ '/assets/images/notch.svg' | relative_url }}" alt="Notch">
-    <p class="tagline">A scripting language for Java & Minecraft, from <a href="https://www.cs.montana.edu">Montana State University</a>
-    </p>
+    <p class="tagline">Scripting<br>For Java &amp; Minecraft</p>
   </div>
 </section>
 
-<section class="code-demo">
-  <div class="demo-pane demo-code">
-    <div class="demo-title">example.notch</div>
+<section class="home-intro">
+  <p class="lead">Notch is a scripting and programming language for the JVM, built at
+  <a href="https://www.cs.montana.edu">Montana State University</a>. It runs anywhere Java runs,
+  calls directly into Java libraries, and stays small enough to learn in an afternoon.</p>
+</section>
+
+<section class="feature-showcase">
+  <div class="feature-block">
+    <div class="feature-title">Speaks Java, natively</div>
 {% highlight notch %}
 import java.time.LocalDate
 
@@ -23,6 +28,45 @@ today = LocalDate.now()
 for name in ['Alice', 'Bob', 'Carol']
   print('Hello, ' + name + '! Today is ' + today)
 end
+{% endhighlight %}
+  </div>
+
+  <div class="feature-block">
+    <div class="feature-title">Null that won't surprise you</div>
+{% highlight notch %}
+name = null
+greeting = name ?: 'anonymous'
+print(greeting)
+
+setting = config? ?: 'default'
+print(setting)
+{% endhighlight %}
+  </div>
+
+  <div class="feature-block">
+    <div class="feature-title">Reads like you'd say it</div>
+{% highlight notch %}
+print('notch' starts with 'no')
+print('notch' contains 'otc')
+print([1, 2] is not empty)
+lengths = ['a', 'ab', 'abc'].map(\ s -> s.length)
+print(lengths)
+{% endhighlight %}
+  </div>
+
+  <div class="feature-block">
+    <div class="feature-title">Objects when you want them</div>
+{% highlight notch %}
+class Greeter
+  field name
+  function hello()
+    return 'Hi, ' + this.name
+  end
+end
+
+g = new Greeter()
+g.name = 'Ada'
+print(g.hello())
 {% endhighlight %}
   </div>
 </section>
@@ -45,7 +89,7 @@ end
       <p>Interactive shell for notch</p>
     </a>
     <a class="docs-card" href="{{ '/getting-started/cheat-sheet/' | relative_url }}">
-      <h3>Cheat Sheet</h3>
+      <h3>Reference Sheet</h3>
       <p>The language at a glance.</p>
     </a>
   </div>

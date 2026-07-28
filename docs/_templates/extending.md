@@ -1,6 +1,7 @@
 ---
 title: "Custom Commands"
 subtitle: "Adding your own template commands"
+description: "Extend the Notch template engine with your own commands by subclassing NotchTemplateCommand and registering it on a NotchTemplateRegistry."
 order: 5
 ---
 

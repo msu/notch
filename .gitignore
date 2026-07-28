@@ -1,4 +1,7 @@
 target/
+# `target` is a symlink to `target.nosync` (a folder iCloud won't sync)
+/target
+target.nosync/
 /tmp/
 /.idea/
 notch.sh
@@ -12,6 +15,7 @@ bin/
 
 # Jekyll docs site (notch/docs/)
 docs/_site/
+docs/_includes/_site/
 docs/.jekyll-cache/
 docs/.jekyll-metadata
 docs/Gemfile.lock

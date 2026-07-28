@@ -1,6 +1,7 @@
 ---
 title: "Meta Commands"
 subtitle: "Built-in REPL subcommands"
+description: "The Notch REPL's built-in meta commands: subcommands available by name at the prompt for controlling your interactive session."
 order: 2
 ---
 

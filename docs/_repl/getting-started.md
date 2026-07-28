@@ -1,6 +1,7 @@
 ---
 title: "Getting Started"
 subtitle: "Working with notch from the terminal"
+description: "Get started with the Notch REPL: install Notch, launch the interactive shell, and evaluate expressions from the terminal."
 order: 1
 ---
 

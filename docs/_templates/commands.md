@@ -1,6 +1,7 @@
 ---
 title: "Built-in Commands"
 subtitle: "The 16 commands wired by BasicNotchTemplateCommands"
+description: "The 16 built-in Notch template commands wired by BasicNotchTemplateCommands: control flow, loops, includes, and more."
 order: 4
 ---
 

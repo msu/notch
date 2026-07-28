@@ -1,6 +1,7 @@
 ---
 title: "Template Syntax"
 subtitle: "Three content types: text, expressions, commands"
+description: "Notch template syntax: the three content types a template is built from - literal text, ${expressions}, and #commands."
 order: 3
 ---
 
@@ -32,7 +33,7 @@ Expressions can reference bindings the caller passes to `render`:
 Hello, ${ name }!
 ```
 
-with `{name = "world"}` renders as `Hello, world!`.
+with `{'name' -> "world"}` renders as `Hello, world!`.
 
 ## Commands
 
@@ -44,7 +45,7 @@ A line that starts with `#` is a template command. Commands drive control flow, 
 # end
 ```
 
-with `{items = ["a", "b", "c"]}` renders as:
+with `{'items' -> ["a", "b", "c"]}` renders as:
 
 ```notch
   - a

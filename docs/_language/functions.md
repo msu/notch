@@ -87,7 +87,7 @@ Returns `[1, 2, 3]`.
 Map values can be closures:
 
 ```notch
-x = {foo = \-> "bar"}
+x = {'foo' -> \-> "bar"}
 print(x.foo())
 print(x[:foo]())
 ```

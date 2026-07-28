@@ -327,9 +327,11 @@ input {
 /* Classes follow Rouge's standard naming (.c=comment, .k=keyword, .s=string, */
 /* .n*=name, .m*=number, .o=operator, .p=punctuation, .g*=generic, .err=error). */
 .highlight {
-  /* Softer dark (matches MDN's code blocks) — less contrast against the
-     off-white page than a near-black background. */
-  background-color: #2d3034;
+  /* Deep navy code panel. Sits darker than the old neutral #2d3034, which
+     lifts syntax-token contrast (even the bluest token, .nf #4385be, clears
+     ~4.6:1 on this ground). The light filename tabs above it read as an
+     editor's title bar. */
+  background-color: #011628;
   border-radius: var(--radius);
   margin: var(--spacing) 0;
   overflow-x: auto;
@@ -841,6 +843,16 @@ input:focus:not(:focus-visible) {
     }
   }
 
+  /* The Contents header (.sidebar-contents-header) is sticky at top:0 inside
+     this scrolling drawer. The drawer's 1rem top padding pushed the sticky
+     stop-point 1rem down, leaving a band above the pinned header where scrolled
+     nav items peeked through the gap under the toolbar. Zero the top padding so
+     the Contents bar pins flush beneath the toolbar. Docs drawers only — the
+     site-only drawer has no sticky header, so it keeps its top breathing room. */
+  #main-nav.docs-nav:not(.site-only) {
+    padding-top: 0;
+  }
+
   .nav-overlay {
     position: fixed;
     top: var(--toolbar-height);
@@ -935,7 +947,7 @@ input:focus:not(:focus-visible) {
   text-align: left;
 }
 
-/* Flat top-level pages (Install, Cheat Sheet) above the sections. */
+/* Flat top-level pages (Install, Reference Sheet) above the sections. */
 .docs-nav-top {
   margin-bottom: 1.25rem;
 }
@@ -1460,9 +1472,13 @@ input:focus:not(:focus-visible) {
     line-height: 1.4;
   }
 
+  /* Matched query terms glow bright orange in results (the docs' code-number
+     orange), distinct from the pale in-page post-navigation highlight (global
+     `mark`, which this override is deliberately scoped away from). */
   & mark {
-    background: var(--mark-bg);
-    color: var(--mark-text);
+    background: rgba(218, 112, 44, 0.16);
+    color: #da702c;
+    font-weight: 600;
     border-radius: 2px;
     padding: 0 1px;
   }
@@ -1665,6 +1681,9 @@ section {
     font-weight: 500;
     font-size: clamp(1.5rem, calc(1.25vw + 1.125rem), 2.375rem);
     line-height: 1.2;
+    /* "Scripting" sits on its own line (via <br>) with "For Java & Minecraft" */
+    /* centered beneath it. */
+    text-align: center;
   }
 
   /* Mobile: stack logo + tagline, both centered. Logo allowed to */
@@ -1688,6 +1707,62 @@ section {
       max-width: 32rem;
     }
   }
+}
+
+/* Home "what is Notch" intro lead paragraph (indexable, with an MSU link). */
+.home-intro {
+  margin: 0 0 2rem;
+
+  .lead {
+    margin: 0;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+}
+
+/* Feature showcase: "show, don't tell" rows - a short description beside a live */
+/* code sample. Side by side on wide screens, stacked on narrow. It is widened   */
+/* past the 72ch prose column (the override below) so code fits next to copy.    */
+body.home-layout > main > section.feature-showcase {
+  max-width: 100%;
+}
+
+/* Each feature is a self-contained "windowed" code block: a title tab (the    */
+/* example.notch look) above a dark code panel. Two across on wide screens,    */
+/* stacking to one column only when there is no longer room for both.          */
+.feature-showcase {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 0 0 3rem;
+  align-items: start;
+
+  @media (max-width: 820px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.feature-block {
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* The "example.notch"-style filename tab, reused as each block's title. */
+.feature-title {
+  background: linear-gradient(to bottom, #F3EFE9, #E4DFD6);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-muted);
+}
+
+.feature-block .highlight {
+  margin: 0;
+  border-radius: 0;
 }
 
 .docs-grid {
@@ -1798,56 +1873,6 @@ section {
     &.copied {
       opacity: 1;
     }
-  }
-}
-
-.code-demo {
-  display: flex;
-  justify-content: center;
-  margin: 0 0 2.5rem;
-
-  @media (max-width: 768px) {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-  }
-
-  .demo-pane {
-    width: 100%;
-    max-width: 640px;
-    min-width: 0;
-    border: 1px solid var(--border-muted);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .demo-title {
-    background: linear-gradient(to bottom, #F3EFE9, #E4DFD6);
-    padding: 6px 12px;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border-muted);
-  }
-
-  /* Re-skins Jekyll-Rouge .highlight inside the demo frame; colors inherit from .highlight above. */
-  .demo-code .highlight {
-    margin: 0;
-    flex: 1 1 auto;
-    border-radius: 0;
-
-    & pre {
-      padding: 1rem 1.1rem;
-      font-family: var(--font-mono);
-      font-size: 0.9rem;
-      line-height: 1.55;
-    }
-  }
-
-  @media (max-width: 700px) {
-    flex-direction: column;
   }
 }
 

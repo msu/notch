@@ -1,6 +1,7 @@
 ---
 title: "Getting Started"
 subtitle: "Load and render your first template"
+description: "Get started with Notch templates: pick a loader, build a NotchTemplateRegistry, register the built-in commands, and render your first template."
 order: 2
 ---
 
@@ -36,7 +37,7 @@ Hello, ${ name }!
 Then:
 
 ```notch
-output = registry.render("greeting", {name = "world"})
+output = registry.render("greeting", {'name' -> "world"})
 print(output)
 ```
 
