@@ -8,7 +8,6 @@ import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.util.BetterList;
-import edu.montana.notch.util.BetterMap;
 import edu.montana.notch.util.Exceptions;
 
 import java.util.*;
@@ -47,7 +46,7 @@ public class NotchTemplateRuntime extends NotchRuntime {
         }
 
         if (helper != null) {
-            return helper.resolveSymbol(sym);
+            return helper.resolveSymbol(this, sym);
         }
 
         return UNDEFINED;
@@ -146,9 +145,9 @@ public class NotchTemplateRuntime extends NotchRuntime {
             return cachedSyms;
         }
 
-        Object resolveSymbol(String name) {
+        Object resolveSymbol(NotchRuntime runtime, String name) {
             if (helper instanceof NotchTemplateHelper h) {
-                return h.resolveSymbol(name);
+                return h.resolveSymbol(runtime, name);
             }
 
             for (var field : helper.getClass().getFields()) {

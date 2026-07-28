@@ -65,7 +65,7 @@ class NotchSetMapLiteralTest {
 
     @Test
     void undefinedBareKeyThrowsWithQuoteHint() {
-        var ex = assertThrows(RuntimeException.class, () -> eval("{foo -> 1}"));
+        var ex = assertThrows(RuntimeException.class, () -> eval("{foo? -> 1}"));
         assertTrue(ex.getMessage().contains("undefined map key"),
                 "expected an undefined-map-key error, got: " + ex.getMessage());
         assertTrue(ex.getMessage().contains("quote it: 'foo'"),
@@ -76,7 +76,7 @@ class NotchSetMapLiteralTest {
     void undefinedKeySuggestsNearbyVariable() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 food = 5
-                x = {foo -> 1}
+                x = {foo? -> 1}
                 """));
         assertTrue(ex.getMessage().contains("did you mean the variable 'food'"),
                 "expected a nearby-variable suggestion, got: " + ex.getMessage());
@@ -84,7 +84,7 @@ class NotchSetMapLiteralTest {
 
     @Test
     void generalExpressionUndefinedKeyThrows() {
-        var ex = assertThrows(RuntimeException.class, () -> eval("{p.x -> 1}"));
+        var ex = assertThrows(RuntimeException.class, () -> eval("{p?.x -> 1}"));
         assertTrue(ex.getMessage().contains("undefined map key"),
                 "expected an undefined-map-key error, got: " + ex.getMessage());
     }

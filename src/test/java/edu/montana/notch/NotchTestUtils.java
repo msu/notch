@@ -10,10 +10,15 @@ import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.statements.NotchStatement;
 
-import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class NotchTestUtils {
+    public static RuntimeException evalEx(String src, Object... vars) {
+        return assertThrows(RuntimeException.class, () -> eval(src, vars));
+    }
+
     public static Object eval(String src, Object... vars) {
         try {
             Source source = new Source("<eval>", src);
@@ -26,6 +31,13 @@ public class NotchTestUtils {
                     parseErrorMessage.append("\n").append(diagnostic.render());
                 }
                 throw new RuntimeException(parseErrorMessage.toString());
+            }
+            if (!notchParser.atEnd()) {
+                final var diag = new Diagnostic();
+                diag.setTitle("TEST:0001");
+                diag.note("extra tokens here");
+                diag.highlight(notchParser.currentToken());
+                throw new RuntimeException(diag.render());
             }
             Object result = expr.evaluate(map(vars));
             return result;
@@ -75,7 +87,7 @@ public class NotchTestUtils {
     }
 
     public static Map<String, Object> map(Object[] vars) {
-        HashMap<String, Object> map = new HashMap<>();
+        Map<String, Object> map = Notch.defaultGlobals();
         for (int i = 0; i < vars.length; i++) {
             Object key = vars[i];
             Object val = null;

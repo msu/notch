@@ -2,10 +2,7 @@ package edu.montana.notch.expressions;
 
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Location;
-import edu.montana.notch.runtime.NotchBoundMethod;
-import edu.montana.notch.runtime.NotchClosure;
-import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.runtime.NotchRuntimeException;
+import edu.montana.notch.runtime.*;
 import edu.montana.notch.types.NotchJavaMethod;
 import edu.montana.notch.types.NotchType;
 import edu.montana.notch.types.TypeSystem;
@@ -17,12 +14,12 @@ import java.util.concurrent.Callable;
 
 import static edu.montana.notch.util.Exceptions.safelyEval;
 
-public class NotchMethodInvocation extends NotchExpression {
+public class NotchMethodInvocationExpression extends NotchExpression {
 
     public final NotchExpression root;
     public final List<NotchExpression> args;
 
-    public NotchMethodInvocation(NotchExpression root, List<NotchExpression> args, Location end) {
+    public NotchMethodInvocationExpression(NotchExpression root, List<NotchExpression> args, Location end) {
         super(root.span().through(end));
         this.root = Objects.requireNonNull(root);
         this.args = List.copyOf(Objects.requireNonNull(args));
@@ -30,13 +27,16 @@ public class NotchMethodInvocation extends NotchExpression {
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
-        Object functionObj = runtime.evaluate(root);
+        Object functionObj = null;
+        try {
+            functionObj = runtime.evaluate(root);
+        } catch (UnknownVariableException ignored) {}
         if (functionObj == null || runtime.isUndefined(functionObj)) {
             var diag = new Diagnostic();
             diag.highlight(root.span());
-            if (root instanceof NotchPropertyAccess pa) {
+            if (root instanceof NotchPropertyAccessExpression pa) {
                 diag.note("unable to call '%s', value was null".formatted(pa.getDotPath()));
-            } else if (root instanceof NotchIdentifier ni) {
+            } else if (root instanceof NotchIdentifierExpression ni) {
                 diag.note("undefined function '%s'".formatted(ni.name()));
                 addJavaTypeHints(diag, ni.name());
             } else {
@@ -60,7 +60,7 @@ public class NotchMethodInvocation extends NotchExpression {
             }
         } else if (functionObj instanceof NotchJavaMethod jm) {
             try (var ignoredTrace = runtime.trace(span(), jm.getQualifiedName())) {
-                return jm.invoke(null, argValues);
+                return jm.invoke(runtime, null, argValues);
             }
         } else if (functionObj instanceof NotchType type) {
             try (var ignoredTrace = runtime.trace(span(), "<constructor:" + type.getSimpleName() + ">")) {

@@ -3,10 +3,10 @@ package edu.montana.notch.expressions;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.NotchRuntime;
 
-public class NotchBoolean extends NotchExpression {
+public class NotchBooleanExpression extends NotchExpression {
     public final Token token;
 
-    public NotchBoolean(Token token) {
+    public NotchBooleanExpression(Token token) {
         super(token.span);
         this.token = token;
     }

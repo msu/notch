@@ -8,19 +8,21 @@ import edu.montana.notch.console.NotchShell;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.runtime.NotchRuntime;
+import edu.montana.notch.runtime.builtins.NotchStructureFunction;
 import edu.montana.notch.statements.NotchStatement;
 import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.types.coercions.Coercion;
+import edu.montana.notch.util.BetterMap;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static edu.montana.notch.chisel.type.BooleanTokenType.BOOL;
-import static edu.montana.notch.chisel.type.CStringTokenType.STR;
 import static edu.montana.notch.chisel.type.IdentTokenType.IDENT;
 import static edu.montana.notch.chisel.type.IntegerTokenType.INT;
 import static edu.montana.notch.chisel.type.WhitespaceTokenType.WHITESPACE;
 import static edu.montana.notch.token.NotchTokenTypeKeyword.NOTCH_KEYWORD;
+import static edu.montana.notch.token.NotchStringTokenType.STR;
 import static edu.montana.notch.token.TerseStringTokenType.TERSE_STRING;
 
 public class Notch {
@@ -29,12 +31,12 @@ public class Notch {
 
     public static final Tokenizer TOKENIZER = new Tokenizer()
             .withTokenType("_ws", WHITESPACE)
+            .withTokenType("string", STR)
+            .withTokenType("string", TERSE_STRING)
             .withTokenType("bool", BOOL)
             .withTokenType("keyword", NOTCH_KEYWORD)
             .withTokenType("ident", IDENT)
             .withTokenType("int", INT)
-            .withTokenType("string", STR)
-            .withTokenType("string", TERSE_STRING)
             .withTokenTypes(LiteralTokenType.COMMON);
 
     public static <T> T eval(String code) {
@@ -103,5 +105,11 @@ public class Notch {
 
     public static void main(String[] args) {
         NotchShell.start(true);
+    }
+
+    public static Map<String, Object> defaultGlobals() {
+        var out = new BetterMap<String, Object>();
+        out.put("structure", NotchStructureFunction.getInstance());
+        return out;
     }
 }

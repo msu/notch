@@ -15,6 +15,8 @@ public interface NotchType {
 
     String getSimpleName();
 
+    String getNamespace();
+
     List<NotchMethod> getMethods();
 
     List<NotchMethod> getStaticMethods();

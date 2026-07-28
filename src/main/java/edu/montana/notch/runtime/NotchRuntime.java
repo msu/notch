@@ -1,5 +1,6 @@
 package edu.montana.notch.runtime;
 
+import edu.montana.notch.Notch;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.Span;
@@ -28,8 +29,9 @@ public class NotchRuntime {
     private BetterMap<Key, Object> storage = new BetterMap<>();
     private final Deque<Throwable> handledExceptions = new ArrayDeque<>();
 
+    public static final NotchRuntime BUILTIN = new NotchRuntime(new Source("notch.builtins", "._."), Map.of());
     public NotchRuntime(Source source) {
-        this(source, Map.of());
+        this(source, Notch.defaultGlobals());
     }
 
     public NotchRuntime(Source source, Map<String, Object> entryBlock) {

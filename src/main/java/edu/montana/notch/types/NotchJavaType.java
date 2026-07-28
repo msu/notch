@@ -111,12 +111,24 @@ public class NotchJavaType implements NotchType {
 
     @Override
     public String getDisplayName() {
+        if (backingClass == Class.class) {
+            return "class " + backingClass.getName();
+        }
+        if (backingClass.isArray()) {
+            var ty = TypeSystem.getType(backingClass.getComponentType());
+            return ty.getDisplayName() + "[]";
+        }
         return backingClass.getName();
     }
 
     @Override
     public String getSimpleName() {
         return backingClass.getSimpleName();
+    }
+
+    @Override
+    public String getNamespace() {
+        return backingClass.getPackageName();
     }
 
     @Override

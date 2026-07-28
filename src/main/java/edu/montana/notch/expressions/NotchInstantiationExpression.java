@@ -12,11 +12,11 @@ import edu.montana.notch.types.TypeSystem;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NotchInstantiation extends NotchExpression {
+public class NotchInstantiationExpression extends NotchExpression {
     private final Token className;
     private final List<NotchExpression> args;
 
-    public NotchInstantiation(Span span, Token className, List<NotchExpression> args) {
+    public NotchInstantiationExpression(Span span, Token className, List<NotchExpression> args) {
         super(span);
         this.className = className;
         this.args = args;

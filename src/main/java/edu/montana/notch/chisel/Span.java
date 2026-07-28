@@ -11,7 +11,7 @@ public record Span(Source source, Location start, Location end) implements Spann
     }
 
     public Span(Source source, Location loc) {
-        this(source, loc, loc);
+        this(source, loc, new Location(loc.index + 1, loc.line, loc.column + 1));
     }
 
     @Override

@@ -3,7 +3,7 @@ package edu.montana.notch.templates.command;
 import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.ParseException;
-import edu.montana.notch.expressions.NotchMethodInvocation;
+import edu.montana.notch.expressions.NotchMethodInvocationExpression;
 import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
@@ -17,12 +17,12 @@ public class ExpandCommand extends NotchTemplateCommand {
         super("expand");
     }
 
-    private NotchMethodInvocation macroExpression;
+    private NotchMethodInvocationExpression macroExpression;
 
     @Override
     public void parseCommand(NotchParser commandParser) {
         var macro = commandParser.requireExpression("expected a macro invocation");
-        if (!(macro instanceof NotchMethodInvocation nm)) {
+        if (!(macro instanceof NotchMethodInvocationExpression nm)) {
             final var diag = new Diagnostic()
                     .highlight(macro.span())
                     .note("expected a macro invocation");

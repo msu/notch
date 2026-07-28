@@ -1,6 +1,7 @@
 package edu.montana.notch.templates.runtime;
 
 import edu.montana.notch.runtime.NotchBoundMethod;
+import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.types.NotchMethod;
 import edu.montana.notch.types.NotchProperty;
 import edu.montana.notch.types.NotchType;
@@ -50,7 +51,7 @@ public interface NotchTemplateHelper {
         return new RawString(sb.toString());
     }
 
-    public default Object optionsForEnum(Enum<?> selectedValue) {
+    default Object optionsForEnum(Enum<?> selectedValue) {
         return optionsForEnum(selectedValue.getClass(), selectedValue);
     }
 
@@ -64,7 +65,7 @@ public interface NotchTemplateHelper {
         return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
     }
 
-    default Object resolveSymbol(String name) {
+    default Object resolveSymbol(NotchRuntime runtime, String name) {
         var clazz = getClass();
         NotchType type = TypeSystem.getType(clazz);
         List<NotchProperty> properties = type.getProperties();
@@ -82,7 +83,7 @@ public interface NotchTemplateHelper {
             }
 
             if (method.getName().equals(name)) {
-                return new NotchBoundMethod(this, method);
+                return new NotchBoundMethod(runtime, this, method);
             }
         }
 

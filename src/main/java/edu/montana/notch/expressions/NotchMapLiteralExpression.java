@@ -9,11 +9,11 @@ import edu.montana.notch.util.Text;
 
 import java.util.List;
 
-public class NotchMapLiteral extends NotchExpression {
+public class NotchMapLiteralExpression extends NotchExpression {
     public final List<NotchExpression> keys;
     public final List<NotchExpression> values;
 
-    public NotchMapLiteral(Span span, List<NotchExpression> keys, List<NotchExpression> values) {
+    public NotchMapLiteralExpression(Span span, List<NotchExpression> keys, List<NotchExpression> values) {
         super(span);
         this.keys = keys;
         this.values = values;
@@ -40,7 +40,7 @@ public class NotchMapLiteral extends NotchExpression {
         var diag = new Diagnostic();
         diag.setTitle("undefined map key");
         diag.highlight(keyExpr.span());
-        if (keyExpr instanceof NotchIdentifier id) {
+        if (keyExpr instanceof NotchIdentifierExpression id) {
             String name = id.name();
             diag.note("'" + name + "' is not defined, so it can't be used as a map key");
             diag.note("to use it as text, quote it: '" + name + "'");

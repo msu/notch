@@ -23,7 +23,7 @@ public class NotchJavaProperty implements NotchProperty {
     private final String name;
 
     public static boolean isPropertyMethod(Method method) {
-        return method.getParameterTypes().length == 0;
+        return method.getParameterTypes().length == 0 && method.getReturnType() != Void.TYPE;
     }
 
     public static String propertyNameFor(Method method) {
