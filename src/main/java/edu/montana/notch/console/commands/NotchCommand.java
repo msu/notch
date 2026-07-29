@@ -1,14 +1,10 @@
 package edu.montana.notch.console.commands;
 
 import edu.montana.notch.Notch;
-import edu.montana.notch.NotchElement;
-import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.*;
 import edu.montana.notch.console.ShellContext;
-import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
-import edu.montana.notch.statements.NotchStatement;
 import org.jline.reader.LineReader;
 
 import java.io.BufferedWriter;
@@ -44,28 +40,18 @@ public final class NotchCommand {
         NotchRuntime runtime = lookupOrCreateRuntime(reader);
 
         try {
-            TokenStream tokenStream = Notch.TOKENIZER.create(source).tokenize();
-            NotchParser parser = new NotchParser(tokenStream);
-            NotchElement element = parser.parse();
-            if (parser.hasErrors()) {
-                StringBuilder shellErrorMessage = new StringBuilder();
-                for (Diagnostic diagnostic : parser.getDiagnostics()) {
-                    if (!shellErrorMessage.isEmpty()) shellErrorMessage.append("\n");
-                    String renderedDiagnostic = diagnostic.render(false);
-                    shellErrorMessage.append(renderedDiagnostic);
-                }
-                System.out.println(shellErrorMessage);
-                return;
-            }
-            if (element instanceof NotchExpression expr) {
-                Object result = runtime.evaluate(expr);
-                if (!runtime.isUndefined(result)) {
-                    System.out.println(result);
-                }
-            } else if (element instanceof NotchStatement stmt) {
-                runtime.execute(stmt);
+            Object result = Notch.run(source, runtime);
+            if (result != null && !runtime.isUndefined(result)) {
+                System.out.println(result);
             }
             if (recordOnSuccess) appendIfRecording(reader, source);
+        } catch (NotchParseErrors e) {
+            StringBuilder shellErrorMessage = new StringBuilder();
+            for (Diagnostic diagnostic : e.diagnostics) {
+                if (!shellErrorMessage.isEmpty()) shellErrorMessage.append("\n");
+                shellErrorMessage.append(diagnostic.render(false));
+            }
+            System.out.println(shellErrorMessage);
         } catch (Exception e) {
             System.out.println(userFacingMessage(e));
         }

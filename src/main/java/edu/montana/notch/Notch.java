@@ -1,5 +1,6 @@
 package edu.montana.notch;
 
+import edu.montana.notch.chisel.NotchParseErrors;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.TokenStream;
 import edu.montana.notch.chisel.Tokenizer;
@@ -74,19 +75,25 @@ public class Notch {
     }
 
     public static void run(Source source) {
+        run(source, new NotchRuntime(source));
+    }
+
+    public static Object run(Source source, NotchRuntime runtime) {
         TokenStream tokens = TOKENIZER.tokenize(source);
         NotchParser parser = new NotchParser(tokens);
         NotchElement element = parser.parse();
         if (parser.hasErrors()) {
-            throw new IllegalArgumentException("Notch program has parse errors: " + parser.getDiagnostics());
+            throw new NotchParseErrors(parser.getDiagnostics());
         }
-        NotchRuntime runtime = new NotchRuntime(source);
         if (element instanceof NotchStatement stmt) {
             runtime.execute(stmt);
+            return null;
         } else if (element instanceof NotchExpression expr) {
-            runtime.evaluate(expr);
+            return runtime.evaluate(expr);
         }
+        return null;
     }
+
 
     private static Map<String, Object> toMap(Object[] kv) {
         if (kv == null || kv.length == 0) return Map.of();
