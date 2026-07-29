@@ -2,9 +2,11 @@ package edu.montana.notch.util;
 
 import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Diagnostic;
+import edu.montana.notch.chisel.DiagnosticCode;
 import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.errors.ParserError;
 import edu.montana.notch.expressions.NotchClosureExpression;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.expressions.NotchIdentifierExpression;
@@ -17,74 +19,61 @@ public class ParserErrorHandler {
         this.parser = parser;
     }
 
+    private static Diagnostic diag(DiagnosticCode code, Object... args) {
+        return new Diagnostic().code(code).setTitle(code.title(args));
+    }
+
     public ParseException expectedConditionAfterIfOperator() {
-        final var diag = new Diagnostic()
-                .note("expected condition after 'if' operator")
+        final var diag = diag(ParserError.EP0001)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException expectedValueAfterElseOperator() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("expected value after 'else' in 'if' expression")
+        final var diag = diag(ParserError.EP0002)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException expectedExpressionAfterOperator(String operatorText) {
-        // default case
-        final var diag = new Diagnostic()
-                .note("expected expression after '%s' operator".formatted(operatorText))
+        final var diag = diag(ParserError.EP0003, operatorText)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException catchInRecoverExpression() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("'catch' is not allowed in a recover expression")
+        final var diag = diag(ParserError.EP0004)
                 .note("use a try/catch block to catch exceptions with side effects")
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException expectedExpressionAfterRecoverType() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("expected expression after recover type")
+        final var diag = diag(ParserError.EP0005)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException unexpectedTokenAfterRecover() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("unexpected token after recover: expected 'recover' or end of line")
+        final var diag = diag(ParserError.EP0006)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException expectedCommaBetweenArguments() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("Expected ','")
+        final var diag = diag(ParserError.EP0007)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException expectedCloseParenForArguments() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("Expected ')'")
+        final var diag = diag(ParserError.EP0008)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException expectedCloseParenForGrouping(Token openParen) {
-        // default case
-        final var diag = new Diagnostic()
-                .note("Expected a closing parenthesis")
+        final var diag = diag(ParserError.EP0009)
                 .highlight(openParen)
                 .highlight(parser.currentToken());
         // special case
@@ -96,25 +85,19 @@ public class ParserErrorHandler {
     }
 
     public ParseException keywordAsPropertyName() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("'" + parser.currentToken().str() + "' is a keyword and cannot be used as a property name")
+        final var diag = diag(ParserError.EP0010, parser.currentToken().str())
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException expectedStatement() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("expected a statement")
+        final var diag = diag(ParserError.EP0011)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException cannotAssignToThisExpression(NotchExpression expr) {
-        // default case
-        final var diag = new Diagnostic()
-                .note("cannot assign to this expression")
+        final var diag = diag(ParserError.EP0012)
                 .note("the target of an assignment must be a variable, a property, or an indexed element")
                 .highlight(expr);
         // special cases
@@ -126,9 +109,7 @@ public class ParserErrorHandler {
     }
 
     public ParseException cannotBeUsedAsAStatement(NotchExpression expr) {
-        // default case
-        final var diag = new Diagnostic()
-                .note("this expression cannot be used as a statement")
+        final var diag = diag(ParserError.EP0013)
                 .note("expected a function or method call, or an assignment")
                 .highlight(expr);
 
@@ -160,90 +141,68 @@ public class ParserErrorHandler {
     }
 
     public ParseException expectedExpressionAfterThrow() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("expected an expression after 'throw' on the same line")
+        final var diag = diag(ParserError.EP0014)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException rethrowOutsideCatch(Span span) {
-        // default case
-        final var diag = new Diagnostic()
-                .note("'rethrow' outside a catch")
+        final var diag = diag(ParserError.EP0015)
                 .highlight(span);
         return new ParseException(diag);
     }
 
     public ParseException catchBodyMustStartOnNewLine() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("catch body must start on a new line")
+        final var diag = diag(ParserError.EP0016)
                 .note("to bind the exception use 'catch IOException as e'")
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException expectedTimesAfterRepeatCount() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("expected 'times' after count expression in 'repeat'")
+        final var diag = diag(ParserError.EP0017)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException keywordOutsideLoop(Span span, String keyword) {
-        // default case
-        final var diag = new Diagnostic()
-                .note("'" + keyword + "' outside a loop")
+        final var diag = diag(ParserError.EP0018, keyword)
                 .highlight(span);
         return new ParseException(diag);
     }
 
     public ParseException keywordOutsideFunction(Span span, String keyword) {
-        // default case
-        final var diag = new Diagnostic()
-                .note("'" + keyword + "' outside a function")
+        final var diag = diag(ParserError.EP0019, keyword)
                 .highlight(span);
         return new ParseException(diag);
     }
 
     public ParseException expectedFieldOrFunctionInClassBody() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("expected a 'field' or 'function' declaration in the class body")
+        final var diag = diag(ParserError.EP0020)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException cannotAssignToThis(Token varName) {
-        // default case
-        final var diag = new Diagnostic()
-                .note("cannot assign to 'this' it always refers to the current object and can't be reassigned")
+        final var diag = diag(ParserError.EP0021)
                 .highlight(varName.span());
         return new ParseException(diag);
     }
 
     public ParseException keywordAsLoopVariable() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("'" + parser.currentToken().str() + "' is a keyword and cannot be used as a loop variable name")
+        final var diag = diag(ParserError.EP0022, parser.currentToken().str())
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
 
     public ParseException expectedConditionalAfterIf(Token ifToken) {
-        // default case
-        final var diag = new Diagnostic()
-                .note("expected a conditional expression after 'if'")
+        final var diag = diag(ParserError.EP0023)
                 .highlight(ifToken);
         return new ParseException(diag);
     }
 
     public ParseException expectedParenAfterPrint(Token printKeyword) {
-        // default case
-        final var diag = new Diagnostic()
-                .note("expected '(' after 'print'")
+        final var diag = diag(ParserError.EP0024)
                 .highlight(parser.currentToken());
         Token next = parser.currentToken();
         if (!next.type.equals("eoi") && next.startLine() == printKeyword.endLine()) {
@@ -254,9 +213,7 @@ public class ParserErrorHandler {
     }
 
     public ParseException expectedCloseParenForPrint() {
-        // default case
-        final var diag = new Diagnostic()
-                .note("expected ')' to close the print arguments")
+        final var diag = diag(ParserError.EP0025)
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }
