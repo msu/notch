@@ -120,10 +120,11 @@ public class ParserErrorHandler {
         if (expr instanceof NotchIdentifierExpression keywordCandidate && inputFollowsOnSameLine && next.type.equals("ident")) {
             Token afterNext = parser.peekNext();
             if (afterNext.type.equals("=") && afterNext.startLine() == next.endLine()) {
-                diag.note("'" + keywordCandidate.name() + "' is not a keyword in Notch");
-                diag.note("variables are declared by assigning to them");
-                diag.note("try: " + next.str() + " = ...");
-                return new ParseException(diag);
+                final var declarationDiag = diag(ParserError.EP0026, keywordCandidate.name())
+                        .note("variables are declared by assigning to them")
+                        .note("try: " + next.str() + " = ...")
+                        .highlight(expr);
+                return new ParseException(declarationDiag);
             }
         }
 
@@ -185,6 +186,7 @@ public class ParserErrorHandler {
 
     public ParseException cannotAssignToThis(Token varName) {
         final var diag = diag(ParserError.EP0021)
+                .note("'this' always refers to the current object and cannot be reassigned")
                 .highlight(varName.span());
         return new ParseException(diag);
     }

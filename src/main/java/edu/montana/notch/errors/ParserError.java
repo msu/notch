@@ -10,9 +10,9 @@ public enum ParserError implements DiagnosticCode {
     EP0004("'catch' is not allowed in a recover expression"),
     EP0005("expected expression after recover type"),
     EP0006("unexpected token after recover: expected 'recover' or end of line"),
-    EP0007("Expected ','"),
-    EP0008("Expected ')'"),
-    EP0009("Expected a closing parenthesis"),
+    EP0007("expected ',' between arguments"),
+    EP0008("expected ')' to close the argument list"),
+    EP0009("expected a closing parenthesis"),
     EP0010("'%s' is a keyword and cannot be used as a property name"),
     EP0011("expected a statement"),
     EP0012("cannot assign to this expression"),
@@ -24,11 +24,12 @@ public enum ParserError implements DiagnosticCode {
     EP0018("'%s' outside a loop"),
     EP0019("'%s' outside a function"),
     EP0020("expected a 'field' or 'function' declaration in the class body"),
-    EP0021("cannot assign to 'this' it always refers to the current object and can't be reassigned"),
+    EP0021("cannot assign to 'this'"),
     EP0022("'%s' is a keyword and cannot be used as a loop variable name"),
     EP0023("expected a conditional expression after 'if'"),
     EP0024("expected '(' after 'print'"),
     EP0025("expected ')' to close the print arguments"),
+    EP0026("'%s' is not a keyword in Notch"),
     ;
 
     private final String template;
