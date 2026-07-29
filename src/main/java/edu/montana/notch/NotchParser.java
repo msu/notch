@@ -4,7 +4,7 @@ import edu.montana.notch.chisel.*;
 import edu.montana.notch.expressions.*;
 import edu.montana.notch.statements.*;
 import edu.montana.notch.templates.ast.QualifiedIdent;
-import edu.montana.notch.util.NotchParseError;
+import edu.montana.notch.util.ParserErrorHandler;
 import edu.montana.notch.util.Text;
 
 import java.util.*;
@@ -13,7 +13,7 @@ import static edu.montana.notch.util.Exceptions.rethrow;
 import static edu.montana.notch.util.Text.repr;
 
 public class NotchParser extends BasicParser {
-    private final NotchParseError errorHandler = new NotchParseError(this);
+    private final ParserErrorHandler errorHandler = new ParserErrorHandler(this);
     private int loopDepth = 0;
     private int functionDepth = 0;
     private int closureBodyDepth = 0;

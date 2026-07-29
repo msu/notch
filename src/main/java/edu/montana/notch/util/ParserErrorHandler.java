@@ -9,16 +9,15 @@ import edu.montana.notch.expressions.NotchClosureExpression;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.expressions.NotchIdentifierExpression;
 
-public class NotchParseError {
+public class ParserErrorHandler {
 
     private final NotchParser parser;
 
-    public NotchParseError(NotchParser parser) {
+    public ParserErrorHandler(NotchParser parser) {
         this.parser = parser;
     }
 
     public ParseException expectedConditionAfterIfOperator() {
-        // default case
         final var diag = new Diagnostic()
                 .note("expected condition after 'if' operator")
                 .highlight(parser.currentToken());
