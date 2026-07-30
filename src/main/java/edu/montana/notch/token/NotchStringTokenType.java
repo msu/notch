@@ -21,7 +21,7 @@ public class NotchStringTokenType implements TokenType {
         var content = new StringBuilder();
         while (!t.atEnd()) {
             char c = t.peek();
-            if (c == quote || c == '\n') {
+            if (c == quote) {
                 break;
             }
 
