@@ -1,0 +1,314 @@
+# Source of truth for the Notch error index page and its search entries.
+#
+# Drift-checked against the Java error enums by ErrorIndexDocsDriftTest: every
+# ParserError constant must appear here exactly once, in declaration order, and
+# non-templated titles must match the enum verbatim.
+#
+# Entries must keep the two-line '- code:' / '  title:' shape the test parses.
+# ASCII only.
+#
+# Every example below was verified to actually produce its code, except EP0010 -
+# see the note in that entry.
+
+- code: "EP0001"
+  title: "expected condition after 'if' operator"
+  summary: >
+    The trailing `if` operator selects between values, so it needs a condition to
+    test. Notch reports this when the line ends before one appears.
+  example: |
+    x = 1 if
+  fix: >
+    Supply the condition after `if`, and a value after `else`, as in
+    `x = 1 if ready else 0`.
+
+- code: "EP0002"
+  title: "expected value after 'else' in 'if' expression"
+  summary: >
+    The trailing `if` operator always produces a value, so both branches must be
+    present. The condition was read but nothing followed `else`.
+  example: |
+    x = 1 if true else
+  fix: >
+    Give `else` a value, as in `x = 1 if true else 0`. Unlike the `if` statement,
+    the `if` operator cannot leave a branch empty.
+
+- code: "EP0003"
+  title: "expected expression after an operator"
+  summary: >
+    A binary operator needs a value on both sides. The left side and the operator
+    were read, then the input ended or an unusable token followed. The message
+    names the operator involved.
+  example: |
+    x = 1 +
+  fix: >
+    Complete the right side of the operator, or remove the operator if it was a
+    typo.
+
+- code: "EP0004"
+  title: "'catch' is not allowed in a recover expression"
+  summary: >
+    `recover` produces a replacement value when an expression fails. It is an
+    expression-level construct, so it has no body in which statements could run,
+    and `catch` therefore has nothing to attach to.
+  example: |
+    x = foo() catch 1
+  fix: >
+    Use `recover` to substitute a value - `x = foo() recover with 1` - or a block
+    `try` / `catch` when you need statements to run on failure.
+
+- code: "EP0005"
+  title: "expected expression after recover type"
+  summary: >
+    A typed recover names the failure it handles and then the value to use
+    instead. The type was read but no replacement value followed.
+  example: |
+    x = foo() recover from RuntimeException
+  fix: >
+    Add the replacement value after the type, as in
+    `x = foo() recover from RuntimeException 0`.
+
+- code: "EP0006"
+  title: "unexpected token after recover: expected 'recover' or end of line"
+  summary: >
+    A recover clause is complete, but more input followed on the same line that
+    is not another `recover`. Recover clauses chain only with `recover`.
+  example: |
+    x = foo() recover from A 1 bogus
+  fix: >
+    End the line after the recovery value, or start the next clause with
+    `recover`.
+
+- code: "EP0007"
+  title: "expected ',' between arguments"
+  summary: >
+    Call arguments are comma separated. One argument was read and another began
+    without a separator between them.
+  example: |
+    foo(1 2)
+  fix: >
+    Put a comma between the arguments, as in `foo(1, 2)`.
+
+- code: "EP0008"
+  title: "expected ')' to close the argument list"
+  summary: >
+    An argument list was opened but never closed - the input ended, or a token
+    appeared that cannot continue the list.
+  example: |
+    foo(
+  fix: >
+    Add the closing parenthesis. If the call spans lines, check that no earlier
+    argument is missing its comma.
+
+- code: "EP0009"
+  title: "expected a closing parenthesis"
+  summary: >
+    A parenthesised group was opened but never closed. If the offending token is
+    `=`, Notch adds a note - a common cause is writing assignment where a
+    comparison was meant.
+  example: |
+    (1 + 2
+  fix: >
+    Add the closing parenthesis. If you meant to compare two values, use `==`;
+    `=` assigns.
+
+- code: "EP0010"
+  title: "a keyword cannot be used as a property name"
+  summary: >
+    Notch keywords are reserved everywhere, including after a dot, so a member
+    whose name collides with one cannot be reached with member-access syntax.
+    The message names the keyword involved.
+  example: |
+    x.throw
+  fix: >
+    Rename the member if it is yours. A JVM member whose name collides with a
+    Notch keyword - `System.out.print`, for instance - is currently unreachable
+    through member access; there is no workaround short of wrapping it in Java.
+
+- code: "EP0011"
+  title: "expected a statement"
+  summary: >
+    The parser found a token that can neither begin a statement nor continue the
+    previous one. This is the general fallback when nothing more specific fits,
+    and often follows recovery from an earlier error.
+  example: |
+    end
+  fix: >
+    Check for a stray token, an unbalanced `end`, or a construct that was left
+    incomplete on an earlier line.
+
+- code: "EP0012"
+  title: "cannot assign to this expression"
+  summary: >
+    The left side of an assignment must name a place a value can be stored - a
+    variable, a property, or an indexed element. A computed expression is not one.
+  example: |
+    x + 1 = 5
+  fix: >
+    Assign to a variable, property, or index. If you meant to compare, use `==`.
+
+- code: "EP0013"
+  title: "this expression cannot be used as a statement"
+  summary: >
+    A statement must do something: call a function or method, or assign. An
+    expression that only produces a value and discards it is reported here.
+  example: |
+    foo
+    bar = 5
+  fix: >
+    Assign the value to a variable, pass it somewhere, or `return` it if you are
+    inside a function or closure.
+
+- code: "EP0014"
+  title: "expected an expression after 'throw' on the same line"
+  summary: >
+    `throw` needs the value to raise, and it must appear on the same line. A
+    value on the next line is a separate statement.
+  example: |
+    throw
+  fix: >
+    Put the value on the same line, as in `throw 'boom'` or
+    `throw RuntimeException('boom')`.
+
+- code: "EP0015"
+  title: "'rethrow' outside a catch"
+  summary: >
+    `rethrow` re-raises the exception a `catch` is currently handling, so it is
+    only meaningful inside one.
+  example: |
+    rethrow
+  fix: >
+    Move the `rethrow` inside a `catch` body, or use `throw` with an explicit
+    value.
+
+- code: "EP0016"
+  title: "catch body must start on a new line"
+  summary: >
+    The `catch` clause header - the type, and an optional `as` binding - occupies
+    its own line. The body begins on the line after.
+  example: |
+    try
+      print(1)
+    catch RuntimeException print(2)
+    end
+  fix: >
+    Move the body to the next line. To bind the exception, finish the header with
+    `as`, as in `catch RuntimeException as e`.
+
+- code: "EP0017"
+  title: "expected 'times' after count expression in 'repeat'"
+  summary: >
+    The counted form of `repeat` reads `repeat <count> times`. The count was read
+    but the `times` keyword did not follow.
+  example: |
+    repeat 3
+    end
+  fix: >
+    Add `times` after the count - `repeat 3 times` - or use `repeat while <cond>`
+    for a conditional loop.
+
+- code: "EP0018"
+  title: "'break' / 'continue' outside a loop"
+  summary: >
+    `break` and `continue` only mean something inside a loop body. Notch reports
+    this when one appears at the top level, inside a function body, or inside a
+    closure that is not itself within a loop.
+  example: |
+    print('start')
+    break
+  fix: >
+    Move the statement inside a loop body, or remove it. Note that a closure
+    defined inside a loop still cannot `break` the enclosing loop - the closure is
+    its own body, and the loop has already moved on by the time it runs.
+
+- code: "EP0019"
+  title: "'return' outside a function"
+  summary: >
+    `return` hands a value back to a caller, so it needs a function or closure to
+    return from. At the top level there is no caller.
+  example: |
+    return 1
+  fix: >
+    Move the `return` inside a `function` or a closure body. At the top level,
+    assign the value or print it instead.
+
+- code: "EP0020"
+  title: "expected a 'field' or 'function' declaration in the class body"
+  summary: >
+    A class body holds only field and method declarations. Statements do not run
+    directly in it, so anything that is not a `field` or `function` is reported
+    here.
+  example: |
+    class P
+      x = 1
+    end
+  fix: >
+    Declare the member with `field x`, and set its value in a method. Move any
+    executable code into a `function`.
+
+- code: "EP0021"
+  title: "cannot assign to 'this'"
+  summary: >
+    `this` is bound by the runtime to the object whose method is executing. It is
+    not a variable, so it cannot be reassigned.
+  example: |
+    class P
+      function f()
+        this = 1
+      end
+    end
+  fix: >
+    Assign to a field on the object instead, as in `this.x = 1`.
+
+- code: "EP0022"
+  title: "a keyword cannot be used as a loop variable name"
+  summary: >
+    The loop variable in a `for` is a new name bound on each iteration, so it
+    must be an identifier. Keywords are reserved and cannot be rebound.
+  example: |
+    for print in [1]
+    end
+  fix: >
+    Choose a name that is not a keyword, such as `item` or `value`.
+
+- code: "EP0023"
+  title: "expected a conditional expression after 'if'"
+  summary: >
+    An `if` statement tests a condition, which must follow the `if` on the same
+    line. Nothing usable was found.
+  example: |
+    if
+    end
+  fix: >
+    Supply the condition, as in `if x > 0`. For the value-selecting form, see
+    EP0001.
+
+- code: "EP0024"
+  title: "expected '(' after 'print'"
+  summary: >
+    `print` is a keyword and its arguments are always parenthesised. When an
+    argument follows on the same line without parentheses, Notch adds a note
+    showing the intended form.
+  example: |
+    print hello
+  fix: >
+    Wrap the arguments in parentheses, as in `print(hello)`.
+
+- code: "EP0025"
+  title: "expected ')' to close the print arguments"
+  summary: >
+    The argument list for `print` was opened but never closed.
+  example: |
+    print(1
+  fix: >
+    Add the closing parenthesis.
+
+- code: "EP0026"
+  title: "a declaration keyword from another language is not valid here"
+  summary: >
+    Notch has no `var`, `let`, `const`, or type-name declaration syntax. A
+    variable comes into existence when you assign to it. The message names the
+    word that was used.
+  example: |
+    var hello = 1
+  fix: >
+    Drop the keyword and assign directly, as in `hello = 1`.

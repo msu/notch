@@ -23,3 +23,5 @@ docs/vendor/
 docs/.bundle/
 docs/.sass-cache/
 docs/node_modules/
+
+/local

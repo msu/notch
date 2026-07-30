@@ -1,6 +1,6 @@
 package edu.montana.notch;
 
-import edu.montana.notch.chisel.NotchParseErrors;
+import edu.montana.notch.chisel.ParseErrors;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.TokenStream;
 import edu.montana.notch.chisel.Tokenizer;
@@ -83,7 +83,7 @@ public class Notch {
         NotchParser parser = new NotchParser(tokens);
         NotchElement element = parser.parse();
         if (parser.hasErrors()) {
-            throw new NotchParseErrors(parser.getDiagnostics());
+            throw new ParseErrors(parser.getDiagnostics());
         }
         if (element instanceof NotchStatement stmt) {
             runtime.execute(stmt);

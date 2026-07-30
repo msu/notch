@@ -7,11 +7,28 @@ layout: null
 {% assign sorted_templates = site.templates | sort: "order" %}
 {% assign sorted_repl = site.repl | sort: "order" %}
 {% assign all_docs = sorted_getting_started | concat: sorted_language | concat: sorted_templates | concat: sorted_repl %}
+{%- comment -%}
+The error index opts out of whole-page indexing: `truncate: 5000` below would cut it
+off partway, leaving most codes unsearchable. It is indexed one entry per code
+instead, in the loop after this one, so each code is its own deep-linked result.
+{%- endcomment -%}
+{% assign all_docs = all_docs | where_exp: "d", "d.exclude_from_search != true" %}
 {% for doc in all_docs %}
   {
     "title": {{ doc.title | jsonify }},
     "url": "{{ doc.url | relative_url }}",
     "content": {{ doc.content | strip_html | normalize_whitespace | truncate: 5000 | jsonify }}
   }{% unless forloop.last %},{% endunless %}
+{% endfor %}
+{%- comment -%}
+One entry per error code, deep-linked to its anchor. The leading comma is correct:
+the loop above emits none on its last iteration, and all_docs is never empty.
+{%- endcomment -%}
+{% for err in site.data.error_codes %},
+  {
+    "title": {{ err.code | append: ": " | append: err.title | jsonify }},
+    "url": "{{ '/errors/' | relative_url }}#{{ err.code }}",
+    "content": {{ err.summary | append: " " | append: err.fix | strip_html | normalize_whitespace | jsonify }}
+  }
 {% endfor %}
 ]

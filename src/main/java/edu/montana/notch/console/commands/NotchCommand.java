@@ -45,7 +45,7 @@ public final class NotchCommand {
                 System.out.println(result);
             }
             if (recordOnSuccess) appendIfRecording(reader, source);
-        } catch (NotchParseErrors e) {
+        } catch (ParseErrors e) {
             StringBuilder shellErrorMessage = new StringBuilder();
             for (Diagnostic diagnostic : e.diagnostics) {
                 if (!shellErrorMessage.isEmpty()) shellErrorMessage.append("\n");

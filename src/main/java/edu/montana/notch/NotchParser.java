@@ -1136,6 +1136,7 @@ public class NotchParser extends BasicParser {
         NotchExpression target = new NotchIdentifierExpression(take());
         while (peek(".") || peek("[")) {
             if (take(".")) {
+                if (peek("keyword")) throw errorHandler.keywordAsPropertyName();
                 Token property = requireIdent("expected a property name");
                 target = new NotchPropertyAccessExpression(target, property);
             } else {
