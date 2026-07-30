@@ -55,18 +55,14 @@ public abstract class Coercion {
     private static class BoxedToPrimitive extends Coercion {
         @Override
         protected boolean canCoerce(Class<?> from, Class<?> to) {
-            if (from.equals(Integer.class) && to.equals(Integer.TYPE)) {
-                return true;
-            }
-            if (from.equals(Long.class) && to.equals(Long.TYPE)) {
-                return true;
-            }
-            if (from.equals(Boolean.class) && to.equals(Boolean.TYPE)) {
-                return true;
-            }
-            if (from.equals(Double.class) && to.equals(Double.TYPE)) {
-                return true;
-            }
+            if (from.equals(Integer.class) && to.equals(Integer.TYPE)) return true;
+            if (from.equals(Long.class) && to.equals(Long.TYPE)) return true;
+            if (from.equals(Boolean.class) && to.equals(Boolean.TYPE)) return true;
+            if (from.equals(Double.class) && to.equals(Double.TYPE)) return true;
+            if (from.equals(Float.class) && to.equals(Float.TYPE)) return true;
+            if (from.equals(Short.class) && to.equals(Short.TYPE)) return true;
+            if (from.equals(Byte.class) && to.equals(Byte.TYPE)) return true;
+            if (from.equals(Character.class) && to.equals(Character.TYPE)) return true;
             return false;
         }
 
