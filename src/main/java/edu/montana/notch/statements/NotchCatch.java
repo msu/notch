@@ -43,6 +43,7 @@ public final class NotchCatch {
     }
 
     public static boolean isControlFlow(Throwable t) {
+        // TODO: double check the semantics of thrown signals
         if (t instanceof NotchBreak.BreakSignal) return true;
         if (t instanceof NotchContinue.ContinueSignal) return true;
         if (t instanceof NotchReturnStatement.ReturnSignal) return true;
