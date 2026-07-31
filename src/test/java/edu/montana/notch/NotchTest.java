@@ -1,7 +1,10 @@
 package edu.montana.notch;
 
+import edu.montana.notch.chisel.ParseException;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -115,5 +118,31 @@ public class NotchTest {
         Number result = Notch.eval("1", Number.class);
         assertInstanceOf(Integer.class, result);
         assertEquals(1, result.intValue());
+    }
+
+    //Dislike current imports (printstream and ByteArrayOutputStream) look at options for alternativess
+    //Like the idea of end to end testing
+    @Test
+    public void runExecutesMultiStatementProgram() {
+        PrintStream original = System.out;
+        ByteArrayOutputStream captured = new ByteArrayOutputStream();
+        try {
+            System.setOut(new PrintStream(captured));
+            Notch.run("x = 1\nprint(x + 1)");
+        } finally {
+            System.setOut(original);
+        }
+        assertTrue(captured.toString().contains("2"),
+                "expected program output to contain '2', got: " + captured);
+    }
+
+    @Test
+    public void runAcceptsSingleExpressionProgram() {
+        Notch.run("2 + 3");
+    }
+
+    @Test
+    public void runThrowsOnParseError() {
+        assertThrows(RuntimeException.class, () -> Notch.run("if"));
     }
 }

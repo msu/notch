@@ -92,7 +92,7 @@ public class TypeSystemTest {
     }
 
     @Test
-    public void resolveThrowableTypeCachesBareNameHit() {
+    public void resolveThrowableTypeIsStableAcrossCalls() {
         Class<?> first = TypeSystem.resolveThrowableType("IOException");
         Class<?> second = TypeSystem.resolveThrowableType("IOException");
         assertNotNull(first);
