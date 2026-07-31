@@ -1,13 +1,12 @@
 package edu.montana.notch;
 
-import edu.montana.notch.chisel.ParseException;
+import edu.montana.notch.chisel.ParseErrors;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -120,29 +119,32 @@ public class NotchTest {
         assertEquals(1, result.intValue());
     }
 
-    //Dislike current imports (printstream and ByteArrayOutputStream) look at options for alternativess
-    //Like the idea of end to end testing
+    /*Ensure run entry point works
+     See notch.cs.montana.edu/getting-started/maven/#run-notch-from-java
+     */
     @Test
     public void runExecutesMultiStatementProgram() {
-        PrintStream original = System.out;
-        ByteArrayOutputStream captured = new ByteArrayOutputStream();
-        try {
-            System.setOut(new PrintStream(captured));
-            Notch.run("x = 1\nprint(x + 1)");
-        } finally {
-            System.setOut(original);
-        }
-        assertTrue(captured.toString().contains("2"),
-                "expected program output to contain '2', got: " + captured);
+        assertEquals("2\n", NotchTestUtils.exec("""
+                x = 1
+                print(x + 1)
+                """));
+    }
+
+    @Test
+    public void runAcceptsStringProgramDirectly() {
+        assertDoesNotThrow(() -> Notch.run("""
+                x = 1
+                print(x + 1)
+                """));
     }
 
     @Test
     public void runAcceptsSingleExpressionProgram() {
-        Notch.run("2 + 3");
+        assertDoesNotThrow(() -> Notch.run("2 + 3"));
     }
 
     @Test
     public void runThrowsOnParseError() {
-        assertThrows(RuntimeException.class, () -> Notch.run("if"));
+        assertThrows(ParseErrors.class, () -> Notch.run("if"));
     }
 }

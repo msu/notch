@@ -11,7 +11,8 @@ import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 
-import java.util.Arrays;
+import edu.montana.notch.util.BetterList;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -90,48 +91,29 @@ public class NotchTestUtils {
         }
     }
 
-    public static final DiagnosticCode UNCODED = new DiagnosticCode() {
-        @Override
-        public String id() {
-            return "UNCODED";
-        }
+    public record TestDiagnosticCode(String id, String template) implements DiagnosticCode { }
 
-        @Override
-        public String template() {
-            return "(diagnostic with no code)";
-        }
-    };
+    public static final DiagnosticCode UNCODED = new TestDiagnosticCode("UNCODED", "(diagnostic with no code)");
 
-    /**
-     * Asserts these diagnostics carry exactly {@code expected}, in order - no more, no fewer.
-     *
-     * <p>Preferred over counting individual codes. Asserting the whole list makes every
-     * "and this other code must not fire" check automatic, so a test cannot silently pass
-     * while an extra diagnostic appears beside the one it names.
-     */
     public static void assertCodes(Collection<Diagnostic> diagnostics, DiagnosticCode... expected) {
-        var actualIds = diagnostics.stream()
-                .map(diagnostic -> diagnostic.getCode() == null ? UNCODED.id() : diagnostic.getCode().id())
-                .toList();
-        var expectedIds = Arrays.stream(expected).map(DiagnosticCode::id).toList();
+        var actualIds = BetterList.better(diagnostics)
+                .map(diagnostic -> diagnostic.getCode() == null
+                        ? UNCODED.id()
+                        : diagnostic.getCode().id());
+        var expectedIds = new BetterList<>(expected).map(DiagnosticCode::id);
         assertEquals(expectedIds, actualIds,
                 () -> "diagnostic codes differ. Diagnostics were:\n" + describe(diagnostics));
     }
 
-    /**
-     * Renders diagnostics for an assertion message. {@code Diagnostic} has no
-     * {@code toString}, so interpolating the list directly yields identity hashes.
-     */
     public static String describe(Collection<Diagnostic> diagnostics) {
         if (diagnostics.isEmpty()) return "(none)";
-        return diagnostics.stream()
+        return BetterList.better(diagnostics)
                 .map(diagnostic -> diagnostic.render(false))
-                .reduce((first, second) -> first + "\n" + second)
-                .orElseThrow();
+                .toString("\n\n");
     }
 
     public static long countCode(Collection<Diagnostic> diagnostics, DiagnosticCode code) {
-        return diagnostics.stream()
+        return BetterList.better(diagnostics)
                 .filter(diagnostic -> diagnostic.getCode() == code)
                 .count();
     }

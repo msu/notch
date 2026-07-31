@@ -110,7 +110,7 @@ public class ParserErrorHandler {
 
     public ParseException cannotBeUsedAsAStatement(NotchExpression expr) {
         final var diag = diag(ParserError.EP0013)
-                .note("expected a function or method call, or an assignment")
+                .note("expected a function, a method call, or an assignment")
                 .highlight(expr);
 
         // special cases
