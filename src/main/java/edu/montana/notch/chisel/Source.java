@@ -18,16 +18,11 @@ public final class Source {
         this.content = content;
 
         this.soi = new Token(new Span(this, Location.SOI, Location.SOI), "soi");
-
-        final var eoiStart = endOfInput(content);
-        final var eoiEnd = new Location(eoiStart.index + 1, eoiStart.line, eoiStart.column + 1);
-
-        this.eoi = new Token(new Span(this, eoiStart, eoiEnd), "eoi");
-
+        this.eoi = new Token(new Span(this, endOfInput(content)), "eoi");
         this.span = new Span(this, Location.SOI, Location.EOI);
     }
 
-    // The position past the last character as somewhere a caret can point.
+    //position past the last character is somewhere a caret can point.
     private static Location endOfInput(CharSequence content) {
         final var text = content.toString();
         var walked = new Location();
@@ -35,7 +30,7 @@ public final class Source {
         for (int i = 0; i < text.length(); i++) {
             final var character = text.charAt(i);
             walked = walked.next(character);
-            if (character != '\n') lastVisible = walked;
+            if (character != '\n' && character != '\r') lastVisible = walked;
         }
         return new Location(text.length(), lastVisible.line, lastVisible.column);
     }
