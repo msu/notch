@@ -95,7 +95,8 @@ public class Diagnostic {
             var endLine = highlight.span.end().line;
             var endCol = highlight.span.end().column;
 
-            sb.append(" ".repeat(paddingLen - 1)).append("--> ").append(highlight.span.sourceId()).append('\n');
+            sb.append(" ".repeat(paddingLen - 1)).append("--> ").append(highlight.span.sourceId())
+                    .append(':').append(startLine).append(':').append(startCol).append('\n');
             sb.append(padding).append("|\n");
 
             var lines = highlighting.get(highlight);
@@ -114,7 +115,7 @@ public class Diagnostic {
                 } else if (lineNo == startLine) {
                     sb.append(padding).append("| ")
                             .append(" ".repeat(startCol - 1))
-                            .append("^".repeat(line.length() - startCol)).append('\n');
+                            .append("^".repeat(line.length() - startCol + 1)).append('\n');
                 } else if (lineNo == endLine) {
                     sb.append(padding).append("| ").append("^".repeat(endCol - 1)).append('\n');
                 }
