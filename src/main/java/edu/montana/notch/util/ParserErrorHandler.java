@@ -74,8 +74,9 @@ public class ParserErrorHandler {
 
     public ParseException expectedCloseParenForGrouping(Token openParen) {
         final var diag = diag(ParserError.EP0009)
-                .highlight(openParen)
-                .highlight(parser.currentToken());
+                .highlight(parser.currentToken())
+                .note("the '(' at line %d, column %d is never closed"
+                        .formatted(openParen.start().line, openParen.start().column));
         // special case
         if (parser.currentToken().type.equals("=")) {
             diag.note("'=' is assignment, not comparison");
@@ -136,7 +137,6 @@ public class ParserErrorHandler {
         }
         if (inputFollowsOnSameLine) {
             diag.note("unexpected input after this expression");
-            diag.highlight(next);
         }
         return new ParseException(diag);
     }

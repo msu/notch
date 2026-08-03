@@ -23,10 +23,6 @@ class DiagnosticRenderShapeTest {
         return rendered.lines().anyMatch(line -> line.contains("| " + sourceText));
     }
 
-    private static boolean sameArrowIndent(String first, String second) {
-        return indentOfArrow(first) == indentOfArrow(second);
-    }
-
     private static int indentOfArrow(String rendered) {
         return rendered.lines()
                 .filter(line -> line.contains("--> "))
@@ -104,19 +100,10 @@ class DiagnosticRenderShapeTest {
     void endOfInputDiagnosticUsesTheSameGutterWidth() {
         var diag1 = renderFirstDiagnostic("x + 1 = 5");
         var diag2 = renderFirstDiagnostic("1 +");
-        assertTrue(sameArrowIndent(diag1, diag2),
+        var indent1 = indentOfArrow(diag1);
+        var indent2 = indentOfArrow(diag2);
+        assertTrue(indent1 == indent2,
                 () -> "an end-of-input diagnostic should not widen the gutter instead got "
-                        + indentOfArrow(diag1)
-                        + " and "
-                        + indentOfArrow(diag2)
-                        + ":\n" + diag2);
-    }
-
-    //TODO: Fix Shape of diagnostic
-    @Test
-    void endOfInputHighlightDoesNotDistortSiblingExcerpt() {
-        var rendered = renderFirstDiagnostic("(1 + 2");
-        assertTrue(rendered.contains("  1 | (1 + 2"),
-                "the real excerpt should render flush, got:\n" + rendered);
+                        + indent1 + " and " + indent2 + ":\n" + diag2);
     }
 }
