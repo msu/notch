@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static edu.montana.notch.NotchTestUtils.eval;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class IsEmptyExpressionTest {
+class NotchIsEmptyTest {
 
     @Test
     void emptyString() {
