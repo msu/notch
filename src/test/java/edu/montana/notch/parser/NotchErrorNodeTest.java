@@ -11,25 +11,25 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class NotchErrorNodeGuardTest {
+class NotchErrorNodeTest {
 
     private static final Source SOURCE = new Source("<test>", "");
 
     @Test
-    void notchErrorStatementThrows() {
+    void notchErrorStatementThrowsItsDiagnostic() {
         var diag = new Diagnostic().note("test error");
         var stmt = new NotchErrorStatement(SOURCE.span, diag);
         var runtime = new NotchRuntime(SOURCE);
-        var ex = assertThrows(NotchRuntimeException.class, () -> stmt.execute(runtime));
-        assertSame(diag, ex.diagnostic);
+        assertSame(diag, assertThrows(NotchRuntimeException.class,
+                () -> stmt.execute(runtime)).diagnostic);
     }
 
     @Test
-    void notchErrorExpressionThrows() {
+    void notchErrorExpressionThrowsItsDiagnostic() {
         var diag = new Diagnostic().note("test error");
         var expr = new NotchErrorExpression(SOURCE.span, diag);
         var runtime = new NotchRuntime(SOURCE);
-        var ex = assertThrows(NotchRuntimeException.class, () -> expr.evaluate(runtime));
-        assertSame(diag, ex.diagnostic);
+        assertSame(diag, assertThrows(NotchRuntimeException.class,
+                () -> expr.evaluate(runtime)).diagnostic);
     }
 }
