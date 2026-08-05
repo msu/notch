@@ -91,8 +91,28 @@ public class ParserErrorHandler {
         return new ParseException(diag);
     }
 
+    //This method handles EP0011 the default fallback for a failed
+    // parse if no other error threw in the parser thus special cases
+    // are called first to catch opaque msgs.
     public ParseException expectedStatement() {
+        // special cases
+        if (parser.peekKeyword("catch")) return orphanedCatch();
+        if (parser.peekKeyword("else")) return orphanedElse();
         final var diag = diag(ParserError.EP0011)
+                .highlight(parser.currentToken());
+        return new ParseException(diag);
+    }
+
+    private ParseException orphanedCatch() {
+        final var diag = diag(ParserError.EP0061)
+                .note("a 'catch' clause must follow the body of a 'try' block")
+                .highlight(parser.currentToken());
+        return new ParseException(diag);
+    }
+
+    private ParseException orphanedElse() {
+        final var diag = diag(ParserError.EP0062)
+                .note("an 'else' must be part of an 'if' statement")
                 .highlight(parser.currentToken());
         return new ParseException(diag);
     }

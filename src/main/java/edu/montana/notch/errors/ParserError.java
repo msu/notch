@@ -66,6 +66,8 @@ public enum ParserError implements DiagnosticCode {
     EP0058("expected '}' to close the closure body"),
     EP0059("expected '(' after the function name"),
     EP0060("expected ')' to close the %s"),
+    EP0061("'catch' without a matching 'try'"),
+    EP0062("'else' without a matching 'if'"),
     ;
 
     private final String template;

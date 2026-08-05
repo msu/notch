@@ -710,3 +710,29 @@
     function foo(
   fix: >
     Add the closing parenthesis, as in `function foo(a, b)` or `class Foo(name)`.
+
+- code: "EP0061"
+  title: "'catch' without a matching 'try'"
+  summary: >
+    A `catch` clause is part of a `try` statement - it is read as part of the `try`
+    that precedes it. Reaching `catch` on its own means no open `try` block was
+    found, usually because the `try` is missing or was already closed by an `end`.
+  example: |
+    catch e
+  fix: >
+    Put the `catch` after a `try` body and before its `end`, as in
+    `try` / `risky()` / `catch IOException as e` / `print(e)` / `end`. Check that an
+    earlier `end` did not close the `try` too soon.
+
+- code: "EP0062"
+  title: "'else' without a matching 'if'"
+  summary: >
+    An `else` branch belongs to an `if` statement and is read as part of it.
+    Reaching `else` on its own means no open `if` was found, usually because the
+    `if` is missing or was already closed by an `end`.
+  example: |
+    else
+  fix: >
+    Put the `else` inside an `if` statement, before its `end`, as in `if ready` /
+    `go()` / `else` / `wait()` / `end`. Note the trailing `if` operator
+    (`x = 1 if ready else 0`) is an expression and needs no `end`.
