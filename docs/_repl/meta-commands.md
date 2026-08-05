@@ -56,7 +56,7 @@ Parse and runtime errors are rendered with a source line and a caret underlining
 
 ```notch
 notch > [1, 2, 3].nope()
-   --> jackknife-cli
+   --> jackknife-cli:1:1
     |
   1 | [1, 2, 3].nope()
     | ^^^^^^^^^^^^^^

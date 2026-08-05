@@ -11,7 +11,7 @@ Every Notch diagnostic carries a code in its header line:
 
 ```plaintext
  ERROR[EP0018]: 'break' outside a loop
-   --> example.notch
+   --> example.notch:1:1
     |
   1 | break
     | ^^^^^
