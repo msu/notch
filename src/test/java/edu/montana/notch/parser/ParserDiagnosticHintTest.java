@@ -10,30 +10,23 @@ import static edu.montana.notch.NotchTestUtils.execDiagnostics;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Conditional hints attached to parser diagnostics.
- *
- * <p>ParserErrorHandler attaches 16 notes. Eleven of them sit behind an {@code if}, so the
- * same code is emitted with and without them - the note is a branch, not a property of the
- * code. Those branches are what this file covers, one positive and one negative case each.
- *
- * <p>The other five notes are unconditional links in a builder chain (EP0004:46, EP0012:101,
- * EP0013:113, EP0016:158, EP0021:189). Those the code already implies, so they are
- * deliberately not asserted anywhere.
- *
- * <p>Which code fires is asserted in NotchParserDiagnosticsTest via assertCodes; this file
- * never asserts codes. The one exception lives there rather than here: EP0026's condition
- * changes the code itself (EP0026 instead of EP0013), not just the notes, so its negative
- * case is a code assertion.
- */
 class ParserDiagnosticHintTest {
 
     private static boolean hasNote(List<Diagnostic> diagnostics, String note) {
-        return diagnostics.stream()
-                .anyMatch(d -> d.getNotes().stream().anyMatch(n -> n.contains(note)));
+        for (Diagnostic diagnostic : diagnostics) {
+            for (String candidate : diagnostic.getNotes()) {
+                if (candidate.contains(note)) return true;
+            }
+        }
+        return false;
     }
 
-    // --- EP0009, ParserErrorHandler:80-83 - fires when the offending token is '=' ---
+    @Test
+    void unclosedGroupNamesWhereTheParenWasOpened() {
+        var diagnostics = execDiagnostics("(1 +\n2\n3\n4\n5");
+        assertTrue(hasNote(diagnostics, "the '(' at line 1, column 1 is never closed"),
+                "expected the note to locate the unclosed paren:\n" + describe(diagnostics));
+    }
 
     @Test
     void unclosedGroupEndingInAssignmentSuggestsComparison() {
@@ -51,8 +44,6 @@ class ParserDiagnosticHintTest {
                 "the hint is only for a '=' token:\n" + describe(diagnostics));
     }
 
-    // --- EP0012, ParserErrorHandler:104-107 - fires when the target is a closure ---
-
     @Test
     void assigningToAnExpressionBodiedClosureExplainsWhy() {
         var diagnostics = execDiagnostics("\\ n -> n = 5");
@@ -69,8 +60,6 @@ class ParserDiagnosticHintTest {
                 "the hint is only for closure targets:\n" + describe(diagnostics));
     }
 
-    // --- EP0013, ParserErrorHandler:131-136 - inReturnableContext / inClosureBody ---
-
     @Test
     void bareExpressionInClosureBlockSuggestsReturnAndExpressionBody() {
         var diagnostics = execDiagnostics("\\ n -> { n + 1 }");
@@ -82,7 +71,6 @@ class ParserDiagnosticHintTest {
 
     @Test
     void bareExpressionInFunctionBodySuggestsReturnButNotBraces() {
-        // a function body is returnable but is not a closure body, so only one branch fires
         var diagnostics = execDiagnostics("function f(n) n + 1 end");
         assertTrue(hasNote(diagnostics, "use 'return'"),
                 "expected the return hint:\n" + describe(diagnostics));
@@ -99,13 +87,13 @@ class ParserDiagnosticHintTest {
 
     @Test
     void bareExpressionAtTopLevelHasNoReturnHint() {
-        // `return` is not valid at the top level, so no return hint there.
-        var diagnostics = execDiagnostics("x = 1\nx + 1");
+        var diagnostics = execDiagnostics("""
+                x = 1
+                x + 1
+                """);
         assertFalse(hasNote(diagnostics, "use 'return'"),
                 "top-level bare expression should not suggest return:\n" + describe(diagnostics));
     }
-
-    // --- EP0013, ParserErrorHandler:137-140 - input follows on the same line ---
 
     @Test
     void trailingInputOnTheSameLineIsCalledOut() {
@@ -116,13 +104,13 @@ class ParserDiagnosticHintTest {
 
     @Test
     void inputOnTheNextLineIsNotTrailingInput() {
-        // 'bar = 5' is its own statement, so nothing trails 'foo'
-        var diagnostics = execDiagnostics("foo\nbar = 5");
+        var diagnostics = execDiagnostics("""
+                foo
+                bar = 5
+                """);
         assertFalse(hasNote(diagnostics, "unexpected input after this expression"),
                 "a following line is not trailing input:\n" + describe(diagnostics));
     }
-
-    // --- EP0024, ParserErrorHandler:210-213 - a token follows 'print' on the same line ---
 
     @Test
     void printWithoutParensSuggestsWrappingTheArgument() {
@@ -142,14 +130,13 @@ class ParserDiagnosticHintTest {
 
     @Test
     void printWithItsArgumentOnTheNextLineOmitsTheSuggestion() {
-        // the argument candidate must be on the same line as 'print';
-        // 'hello' here is plausibly its own (broken) statement.
-        var diagnostics = execDiagnostics("print\nhello");
+        var diagnostics = execDiagnostics("""
+                print
+                hello
+                """);
         assertFalse(hasNote(diagnostics, "try: print("),
                 "no suggestion across lines:\n" + describe(diagnostics));
     }
-
-    // --- EP0026, ParserErrorHandler:123-126 - the note names the offending token ---
 
     @Test
     void declarationKeywordHintNamesTheIdentifier() {
