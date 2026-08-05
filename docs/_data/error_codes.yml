@@ -312,3 +312,401 @@
     var hello = 1
   fix: >
     Drop the keyword and assign directly, as in `hello = 1`.
+
+- code: "EP0027"
+  title: "expected an expression after 'recover'"
+  summary: >
+    An untyped recover handles any failure, so `recover with` must be followed by
+    the value to use when the guarded expression fails. Nothing followed it here.
+    This is the untyped counterpart of EP0005: no exception type was named, so the
+    parser was waiting on the replacement value alone.
+  example: |
+    x = foo() recover with
+  fix: >
+    Add the replacement value after `with`, as in `x = foo() recover with 0`. To
+    handle one specific failure instead, name the type: `recover from IOException
+    with 0`, which reports EP0005 when its value is missing.
+
+- code: "EP0028"
+  title: "expected an index expression"
+  summary: >
+    Indexing with `[` and `]` needs a value between the brackets saying which
+    element to reach. The brackets were found empty. Notch has no "whole slice"
+    meaning for `[]`.
+  example: |
+    arr[] = 5
+  fix: >
+    Put the index between the brackets, as in `arr[0] = 5`. To append to a list,
+    use its `add` method rather than an empty index.
+
+- code: "EP0029"
+  title: "expected an expression to throw"
+  summary: >
+    `throw` needs a value naming what to raise, and it must start on the same line
+    as the keyword. Something followed `throw` on that line, but it could not begin
+    an expression.
+  example: |
+    throw )
+  fix: >
+    Give `throw` an exception value, as in `throw RuntimeException("boom")`. If the
+    line after `throw` is empty instead, that is EP0014.
+
+- code: "EP0030"
+  title: "expected a condition after a repeat guard"
+  summary: >
+    `repeat while` and `repeat until` both test a condition before each pass, so
+    one has to follow the guard keyword. The message names which of the two was
+    used.
+  example: |
+    repeat while
+    end
+  fix: >
+    Supply the condition, as in `repeat while x < 10`. For a loop that runs a fixed
+    number of times, use `repeat n times` instead.
+
+- code: "EP0031"
+  title: "expected a count expression after 'repeat'"
+  summary: >
+    A bare `repeat` starts a counted loop, so it needs an expression saying how
+    many passes to make, followed by `times`. The loop body began before one
+    appeared.
+  example: |
+    repeat
+    end
+  fix: >
+    Give the count and keep `times`, as in `repeat 3 times`. For a condition-driven
+    loop, write `repeat while ...` or `repeat until ...` instead.
+
+- code: "EP0032"
+  title: "expected an initializer expression after '='"
+  summary: >
+    A field declaration may give a default value with `=`, but the value itself was
+    missing. This is the class-body form; an ordinary assignment reports EP0033.
+  example: |
+    class Foo()
+      field x =
+    end
+  fix: >
+    Give the field its default, as in `field x = 0`, or drop the `=` to leave the
+    field uninitialized.
+
+- code: "EP0033"
+  title: "expected an expression after '='"
+  summary: >
+    An assignment needs a value on the right of `=`. The target and the `=` were
+    read, then the line ended. This is the statement form; a class field default
+    reports EP0032.
+  example: |
+    x =
+  fix: >
+    Supply the value, as in `x = 1`.
+
+- code: "EP0034"
+  title: "expected an expression for the loop iterable"
+  summary: >
+    A `for` loop walks a collection, so `in` must be followed by the thing to walk.
+    The loop body began before one appeared.
+  example: |
+    for x in
+    end
+  fix: >
+    Give the loop something to iterate, as in `for x in [1, 2, 3]`. Any list, set,
+    or map works.
+
+- code: "EP0035"
+  title: "expected a property name"
+  summary: >
+    A `.` reaches into an object, so it must be followed by the name of the
+    property or method to reach. The dot was read but no name followed.
+  example: |
+    x = a.
+  fix: >
+    Name the property after the dot, as in `x = a.size`. A dot cannot end a line.
+
+- code: "EP0036"
+  title: "expected a class name after 'new'"
+  summary: >
+    `new` constructs an instance, so it needs the name of the class to build.
+    Nothing usable followed the keyword.
+  example: |
+    x = new
+  fix: >
+    Name the class and give it an argument list, as in `x = new Dog("Rex")`.
+
+- code: "EP0037"
+  title: "expected an alias after 'as'"
+  summary: >
+    In an import, `as` renames what was imported, so a name must follow it. The
+    line ended first.
+  example: |
+    import java.util.List as
+  fix: >
+    Give the alias, as in `import java.util.List as JList`, or drop the `as`
+    clause to keep the original name.
+
+- code: "EP0038"
+  title: "expected a binding name after 'as'"
+  summary: >
+    In a catch clause, `as` binds the caught exception to a variable, so it needs
+    a name. Nothing followed it.
+  example: |
+    try
+      print(1)
+    catch IOException as
+    end
+  fix: >
+    Name the variable, as in `catch IOException as e`, or drop the `as` clause if
+    the exception value is not needed.
+
+- code: "EP0039"
+  title: "expected a parameter name"
+  summary: >
+    Parameters are declared by name. Something that is not an identifier appeared
+    where a parameter name belongs - in a function declaration or a closure's
+    parameter list.
+  example: |
+    function foo(1)
+    end
+  fix: >
+    Use an identifier for each parameter, as in `function foo(count)`. Literals
+    and keywords cannot be parameter names.
+
+- code: "EP0040"
+  title: "expected a function name"
+  summary: >
+    A function declaration names the function before its parameter list. The
+    `function` keyword was read but no name followed. If a `(` followed directly,
+    the error adds a note - Notch functions are always named, and an anonymous
+    function is written as a closure instead.
+  example: |
+    function 1()
+    end
+  fix: >
+    Give the function a name, as in `function greet()`. For an anonymous function,
+    use a closure: `\ x -> x + 1`.
+
+- code: "EP0041"
+  title: "expected a class name"
+  summary: >
+    A class declaration names the class before its header. The `class` keyword was
+    read but no name followed.
+  example: |
+    class 1
+    end
+  fix: >
+    Give the class a name, as in `class Dog`.
+
+- code: "EP0042"
+  title: "expected a field name"
+  summary: >
+    A field declaration names the field after the `field` keyword. Something that
+    is not an identifier appeared instead.
+  example: |
+    class Foo
+      field 1
+    end
+  fix: >
+    Name the field, as in `field age`, optionally with a type and default:
+    `field age: Int = 0`.
+
+- code: "EP0043"
+  title: "expected a variable name for the loop item"
+  summary: >
+    A `for` loop binds each element to a variable, so a name must follow `for`.
+    Something that is not an identifier appeared instead.
+  example: |
+    for 1 in [1]
+    end
+  fix: >
+    Name the loop variable, as in `for item in [1, 2, 3]`.
+
+- code: "EP0044"
+  title: "expected a variable name for the loop index"
+  summary: >
+    The optional `index` clause of a `for` loop binds the position of each element
+    to a variable, so it needs a name.
+  example: |
+    for x in [1] index 1
+    end
+  fix: >
+    Name the index variable, as in `for x in [1, 2] index i`, or drop the `index`
+    clause.
+
+- code: "EP0045"
+  title: "expected 'with' after a string comparison keyword"
+  summary: >
+    The `starts` and `ends` operators are spelled as two words. The first word was
+    read but `with` did not follow. The message names which one was used.
+  example: |
+    x = "a" starts 1
+  fix: >
+    Add `with`, as in `x = "abc" starts with "a"` or `x = "abc" ends with "c"`.
+
+- code: "EP0046"
+  title: "expected 'end' to close a block"
+  summary: >
+    Every block form in Notch - `try`, `repeat`, `function`, `class`, `for` and the
+    `if` statement - runs until a matching `end`. The input finished while one was
+    still open. The message names which construct, and `try` and `if` add a note
+    about their own shape.
+  example: |
+    if true
+      print(1)
+  fix: >
+    Add `end` on its own line to close the block. For `try`, any `catch` clauses go
+    before the `end`; the trailing `if` operator (`x = 1 if ready else 0`) is an
+    expression and needs no `end` at all.
+
+- code: "EP0047"
+  title: "expected 'in' after the loop variable"
+  summary: >
+    A `for` loop is written `for <name> in <collection>`. The loop variable was
+    read but `in` did not follow.
+  example: |
+    for x [1]
+    end
+  fix: >
+    Add `in` between the variable and the collection, as in `for x in [1, 2, 3]`.
+
+- code: "EP0048"
+  title: "expected a type name after 'import'"
+  summary: >
+    An import names a Java type to bring into scope. The `import` keyword was read
+    but no name followed.
+  example: |
+    import
+  fix: >
+    Name the type, as in `import java.util.List`. Notch reaches Java only through
+    explicit imports or fully qualified names.
+
+- code: "EP0049"
+  title: "expected a type after ':'"
+  summary: >
+    A `:` introduces a type annotation - on a parameter, on a function's return, or
+    on a field - so a type name must follow it. The colon was read but nothing
+    usable came next. The message names which of the three positions it was.
+  example: |
+    function foo(x: )
+    end
+  fix: >
+    Name the type, as in `function foo(x: Int): Int` or `field age: Int`, or drop
+    the `:` to leave it untyped. A `:` introduces a type, never a value.
+
+- code: "EP0050"
+  title: "expected ']' to close the index expression"
+  summary: >
+    An index expression opens with `[` and must close with `]`. The index was read
+    but the closing bracket never appeared.
+  example: |
+    x = arr[1
+  fix: >
+    Add the closing bracket, as in `x = arr[1]`.
+
+- code: "EP0051"
+  title: "expected '(' after the class name"
+  summary: >
+    `new` requires an argument list even when the constructor takes nothing. The
+    class name was read but no `(` followed.
+  example: |
+    x = new Foo
+  fix: >
+    Add the argument list, as in `x = new Foo()`.
+
+- code: "EP0052"
+  title: "expected ',' between list elements"
+  summary: >
+    Elements of a list literal are separated by commas. Two elements appeared with
+    nothing between them.
+  example: |
+    x = [1 2]
+  fix: >
+    Separate the elements, as in `x = [1, 2]`.
+
+- code: "EP0053"
+  title: "expected ']' to close the list"
+  summary: >
+    A list literal opens with `[` and must close with `]`. The input finished
+    while the list was still open.
+  example: |
+    x = [
+  fix: >
+    Add the closing bracket, as in `x = [1, 2]` or `x = []` for an empty list.
+
+- code: "EP0054"
+  title: "expected '}' to close a brace literal"
+  summary: >
+    Sets and maps are written with braces and must be closed. The input finished
+    while one was still open. The message names which - map, set, or the empty set
+    - and the empty-set case adds a note, because `{,}` and `{}` mean different
+    things.
+  example: |
+    x = {1 -> 2
+  fix: >
+    Add the closing brace, as in `x = {1 -> 2}` for a map or `x = {1, 2}` for a
+    set. The empty set is `{,}`; `{}` on its own is the empty map.
+
+- code: "EP0055"
+  title: "expected '->' between a map key and value"
+  summary: >
+    Map entries are written `key -> value`. A key was read but no arrow followed,
+    so the literal could not be read as a map.
+  example: |
+    x = {1 -> 2, 3}
+  fix: >
+    Give every entry an arrow, as in `x = {1 -> 2, 3 -> 4}`. For a set, drop the
+    arrows entirely: `x = {1, 2}`.
+
+- code: "EP0056"
+  title: "expected ',' between parameters"
+  summary: >
+    Parameters are separated by commas, in both function declarations and closure
+    parameter lists. Two parameters appeared with nothing between them.
+  example: |
+    function foo(a b)
+    end
+  fix: >
+    Separate the parameters, as in `function foo(a, b)`.
+
+- code: "EP0057"
+  title: "expected '->' after the closure parameters"
+  summary: >
+    A closure is written `\ params -> body`. The parameter list was read but the
+    arrow never appeared.
+  example: |
+    x = \
+  fix: >
+    Add the arrow, as in `x = \ a -> a + 1`. A closure with no parameters is
+    written `\ -> ...`.
+
+- code: "EP0058"
+  title: "expected '}' to close the closure body"
+  summary: >
+    A block-bodied closure opens with `{` and must close with `}`. The input
+    finished while the body was still open.
+  example: |
+    x = \ -> { print(1)
+  fix: >
+    Add the closing brace, as in `x = \ -> { print(1) }`. For a single expression,
+    drop the braces: `x = \ -> 1`.
+
+- code: "EP0059"
+  title: "expected '(' after the function name"
+  summary: >
+    A function declaration always has a parameter list, even when empty. The name
+    was read but no `(` followed.
+  example: |
+    function foo
+    end
+  fix: >
+    Add the parameter list, as in `function foo()`.
+
+- code: "EP0060"
+  title: "expected ')' to close a declaration list"
+  summary: >
+    A function's parameter list and a class header's field list both open with `(`
+    and must close with `)`. The input finished while one was still open; the
+    message names which.
+  example: |
+    function foo(
+  fix: >
+    Add the closing parenthesis, as in `function foo(a, b)` or `class Foo(name)`.

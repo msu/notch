@@ -4,6 +4,8 @@ import edu.montana.notch.chisel.DiagnosticCode;
 
 public enum ParserError implements DiagnosticCode {
 
+    //List is long and can grow if needed but allows for specificity in otherwise
+    // opaque msgs
     EP0001("expected condition after 'if' operator"),
     EP0002("expected value after 'else' in 'if' expression"),
     EP0003("expected expression after '%s' operator"),
@@ -30,6 +32,40 @@ public enum ParserError implements DiagnosticCode {
     EP0024("expected '(' after 'print'"),
     EP0025("expected ')' to close the print arguments"),
     EP0026("'%s' is not a keyword in Notch"),
+    EP0027("expected an expression after 'recover'"),
+    EP0028("expected an index expression"),
+    EP0029("expected an expression to throw"),
+    EP0030("expected condition after '%s'"),
+    EP0031("expected a count expression after 'repeat'"),
+    EP0032("expected an initializer expression after '='"),
+    EP0033("expected an expression after '='"),
+    EP0034("expected an expression for the loop iterable"),
+    EP0035("expected a property name"),
+    EP0036("expected a class name after 'new'"),
+    EP0037("expected an alias after 'as'"),
+    EP0038("expected a binding name after 'as'"),
+    EP0039("expected a parameter name"),
+    EP0040("expected a function name"),
+    EP0041("expected a class name"),
+    EP0042("expected a field name"),
+    EP0043("expected a variable name for the loop item"),
+    EP0044("expected a variable name for the loop index"),
+    EP0045("expected 'with' after '%s'"),
+    EP0046("expected 'end' to close the %s"),
+    EP0047("expected 'in' after the loop variable"),
+    EP0048("expected a type name after 'import'"),
+    EP0049("expected a %s type after ':'"),
+    EP0050("expected ']' to close the index expression"),
+    EP0051("expected '(' after the class name"),
+    EP0052("expected ',' between list elements"),
+    EP0053("expected ']' to close the list"),
+    EP0054("expected '}' to close the %s"),
+    EP0055("expected '->' between a map key and value"),
+    EP0056("expected ',' between parameters"),
+    EP0057("expected '->' after the closure parameters"),
+    EP0058("expected '}' to close the closure body"),
+    EP0059("expected '(' after the function name"),
+    EP0060("expected ')' to close the %s"),
     ;
 
     private final String template;

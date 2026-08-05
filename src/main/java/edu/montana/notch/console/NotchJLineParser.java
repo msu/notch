@@ -4,6 +4,7 @@ import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.TokenizeException;
+import edu.montana.notch.errors.ParserError;
 import org.jline.reader.EOFError;
 import org.jline.reader.ParsedLine;
 import org.jline.reader.impl.DefaultParser;
@@ -33,8 +34,7 @@ public class NotchJLineParser extends DefaultParser {
         parser.parseAsStatement();
         if (!parser.atEnd()) return false;
         for (Diagnostic diag : parser.getDiagnostics()) {
-            var notes = diag.getNotes();
-            if (!notes.isEmpty() && notes.getFirst().toLowerCase().startsWith("unterminated")) {
+            if (diag.getCode() == ParserError.EP0046) {
                 return true;
             }
         }

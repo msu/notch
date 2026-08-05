@@ -5,9 +5,9 @@ import edu.montana.notch.expressions.*;
 import edu.montana.notch.statements.*;
 import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.util.ParserErrorHandler;
-import edu.montana.notch.util.Text;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 import static edu.montana.notch.util.Exceptions.rethrow;
 import static edu.montana.notch.util.Text.repr;
@@ -76,16 +76,6 @@ public class NotchParser extends BasicParser {
             throw new ParseException(diag);
         }
         return tokens.take();
-    }
-
-    public void requireIdent(String word, String contextMessage) {
-        if (!takeIdent(word)) {
-            var diag = new Diagnostic();
-            diag.note(contextMessage);
-            diag.note("expected the identifier %s here".formatted(Text.repr(word)));
-            diag.highlight(tokens.peek());
-            throw new ParseException(diag);
-        }
     }
 
     public boolean peekKeyword(String... words) {
@@ -167,7 +157,7 @@ public class NotchParser extends BasicParser {
                     lastEndLine = lastToken().endLine();
                 } else {
                     takeIdent("with");
-                    untypedRecover = requireExpression("expected an expression after 'recover'");
+                    untypedRecover = requireExpression(errorHandler::expectedExpressionAfterRecover);
                     break;
                 }
             } else {
@@ -177,7 +167,7 @@ public class NotchParser extends BasicParser {
         return new NotchRecoverExpression(tryExpr.span.through(lastToken()), tryExpr, typedRecovers, untypedRecover);
     }
 
-
+    //TODO: Currently gives uncoded errors where used in the parser
     public NotchExpression requireExpression(String errorMessage) {
         try {
             NotchExpression expr = parseExpression();
@@ -185,6 +175,21 @@ public class NotchParser extends BasicParser {
                 final var diag = new Diagnostic()
                         .note(errorMessage)
                         .highlight(tokens.peek());
+                parseErrors.add(diag);
+                return new NotchErrorExpression(tokens.peek().span(), diag);
+            }
+            return expr;
+        } catch (ParseException e) {
+            parseErrors.add(e.diagnostic);
+            return new NotchErrorExpression(tokens.peek().span(), e.diagnostic);
+        }
+    }
+
+    public NotchExpression requireExpression(Supplier<ParseException> error) {
+        try {
+            NotchExpression expr = parseExpression();
+            if (expr == null) {
+                final var diag = error.get().diagnostic;
                 parseErrors.add(diag);
                 return new NotchErrorExpression(tokens.peek().span(), diag);
             }
@@ -317,14 +322,14 @@ public class NotchParser extends BasicParser {
                 }
                 expr = new NotchComparisonExpression(op, expr, rhs);
             } else if (takeIdent("starts")) {
-                requireIdent("with", "expected 'with' after 'starts'");
+                if (!takeIdent("with")) throw errorHandler.expectedWithAfter("starts");
                 var rhs = parseAdditiveExpression();
                 if (rhs == null) {
                     throw errorHandler.expectedExpressionAfterOperator("starts with");
                 }
                 expr = new NotchStartsWithExpression(expr, rhs);
             } else if (takeIdent("ends")) {
-                requireIdent("with", "expected 'with' after 'ends'");
+                if (!takeIdent("with")) throw errorHandler.expectedWithAfter("ends");
                 var rhs = parseAdditiveExpression();
                 if (rhs == null) {
                     throw errorHandler.expectedExpressionAfterOperator("ends with");
@@ -462,8 +467,8 @@ public class NotchParser extends BasicParser {
 
     private NotchExpression parseIndexOperation(NotchExpression root) {
         if (take("[")) {
-            NotchExpression value = requireExpression("An expression is required");
-            require("]", "Index expressions must be closed with a ']'");
+            NotchExpression value = requireExpression(errorHandler::expectedIndexExpression);
+            if (!take("]")) throw errorHandler.expectedCloseBracketForIndex();
             NotchIndexExpression indexExpression = new NotchIndexExpression(root, value, lastToken().end());
             return indexExpression;
         }
@@ -499,7 +504,8 @@ public class NotchParser extends BasicParser {
             if (peek("keyword")) {
                 throw errorHandler.keywordAsPropertyName();
             }
-            Token propName = requireIdent("Expected a property name");
+            if (!peek("ident")) throw errorHandler.expectedPropertyName();
+            Token propName = take();
             NotchPropertyAccessExpression propAccess = new NotchPropertyAccessExpression(root, propName);
             return propAccess;
         }
@@ -573,10 +579,11 @@ public class NotchParser extends BasicParser {
     private NotchExpression parseInstantiation() {
         var start = tokens.location();
         if (!takeKeyword("new")) return null;
-        Token className = requireIdent("expected a class name after 'new'");
-        require("(", "expected '(' after class name");
+        if (!peek("ident")) throw errorHandler.expectedClassNameAfterNew();
+        Token className = take();
+        if (!take("(")) throw errorHandler.expectedOpenParenAfterClassName();
         List<NotchExpression> args = parseArgList();
-        require(")", "expected ')' to close the argument list");
+        if (!take(")")) throw errorHandler.expectedCloseParenForArguments();
         final var span = new Span(source(), start, lastToken().end());
         return new NotchInstantiationExpression(span, className, args);
     }
@@ -589,12 +596,12 @@ public class NotchParser extends BasicParser {
                 NotchExpression notchExpression = parseExpression();
                 listValues.add(notchExpression);
                 if (!peek("]")) {
-                    require(",", "Expected a comma to separate elements in the list");
+                    if (!take(",")) throw errorHandler.expectedCommaBetweenListElements();
                 } else {
                     take(","); // allow a trailing comma
                 }
             }
-            require("]", "Expected a ']' to close the list");
+            if (!take("]")) throw errorHandler.expectedCloseBracketForList();
             NotchListLiteralExpression notchListLiteral = new NotchListLiteralExpression(start.span.through(lastToken()), listValues);
             return notchListLiteral;
         }
@@ -608,7 +615,7 @@ public class NotchParser extends BasicParser {
             return new NotchMapLiteralExpression(start.through(lastToken()), new ArrayList<>(), new ArrayList<>());
         }
         if (take(",")) {
-            require("}", "expected '}' to close the empty set '{,}'");
+            if (!take("}")) throw errorHandler.expectedCloseBraceFor("empty set");
             return new NotchSetLiteralExpression(start.through(lastToken()), new ArrayList<>());
         }
         NotchExpression first = parseExpression();
@@ -620,10 +627,10 @@ public class NotchParser extends BasicParser {
             while (take(",")) {
                 if (peek("}")) break;
                 keys.add(parseExpression());
-                require("->", "expected '->' between a map key and value");
+                if (!take("->")) throw errorHandler.expectedArrowBetweenMapKeyAndValue();
                 values.add(parseExpression());
             }
-            require("}", "expected '}' to close the map");
+            if (!take("}")) throw errorHandler.expectedCloseBraceFor("map");
             return new NotchMapLiteralExpression(start.through(lastToken()), keys, values);
         } else {
             List<NotchExpression> values = new ArrayList<>();
@@ -632,7 +639,7 @@ public class NotchParser extends BasicParser {
                 if (peek("}")) break;
                 values.add(parseExpression());
             }
-            require("}", "expected '}' to close the set");
+            if (!take("}")) throw errorHandler.expectedCloseBraceFor("set");
             return new NotchSetLiteralExpression(start.through(lastToken()), values);
         }
     }
@@ -642,13 +649,14 @@ public class NotchParser extends BasicParser {
         Token startToken = lastToken();
         List<Token> params = new ArrayList<>();
         while (!atEnd() && !peek("->")) {
-            Token param = require("ident", "Expected a parameter name");
+            if (!peek("ident")) throw errorHandler.expectedParameterName();
+            Token param = take();
             params.add(param);
             if (!peek("->")) {
-                require(",", "Expected a comma to separate parameters");
+                if (!take(",")) throw errorHandler.expectedCommaBetweenParameters();
             }
         }
-        require("->", "Expected a '->' after the parameters");
+        if (!take("->")) throw errorHandler.expectedArrowAfterClosureParameters();
         List<NotchStatement> statements = null;
         NotchExpression expression = null;
         if (take("{")) {
@@ -667,7 +675,7 @@ public class NotchParser extends BasicParser {
                 closureBodyDepth--;
                 loopDepth = savedLoopDepth;
             }
-            require("}", "Require a '}' to close the body of the closure");
+            if (!take("}")) throw errorHandler.expectedCloseBraceForClosureBody();
         } else {
             expression = parseExpression();
         }
@@ -846,7 +854,7 @@ public class NotchParser extends BasicParser {
         if (atEnd() || currentToken().startLine() != throwToken.endLine()) {
             throw errorHandler.expectedExpressionAfterThrow();
         }
-        NotchExpression operand = requireExpression("expected an expression to throw");
+        NotchExpression operand = requireExpression(errorHandler::expectedExpressionToThrow);
         final var span = new Span(source(), start, lastToken().end());
         return new NotchThrowStatement(span, operand);
     }
@@ -855,11 +863,13 @@ public class NotchParser extends BasicParser {
         var start = tokens.location();
         if (!takeKeyword("import")) return null;
 
-        QualifiedIdent type = requireQualifiedIdent("expected a type name after 'import'");
+        QualifiedIdent type = parseQualifiedIdent();
+        if (type == null) throw errorHandler.expectedTypeNameAfterImport();
 
         Token alias = null;
         if (takeKeyword("as")) {
-            alias = requireIdent("expected an alias after 'as'");
+            if (!peek("ident")) throw errorHandler.expectedAliasAfterAs();
+            alias = take();
         }
 
         final var span = new Span(source(), start, lastToken().end());
@@ -896,7 +906,8 @@ public class NotchParser extends BasicParser {
             if (tokensFollow && peek("ident")) {
                 type = requireQualifiedIdent("expected exception type after 'catch' e.g. 'catch IOException'");
                 if (takeKeyword("as")) {
-                    exceptionName = requireIdent("expected a binding name after 'as' e.g. 'catch IOException as e'");
+                    if (!peek("ident")) throw errorHandler.expectedBindingNameAfterAs();
+                    exceptionName = take();
                 } else if (!atEnd() && currentToken().startLine() == catchTokenLine) {
                     throw errorHandler.catchBodyMustStartOnNewLine();
                 }
@@ -915,7 +926,7 @@ public class NotchParser extends BasicParser {
             clauses.add(new NotchCatch(type, name, catchBody));
         }
 
-        requireKeyword("end", "Unterminated 'try', expected 'end'");
+        if (!takeKeyword("end")) throw errorHandler.expectedEndOfBlock("try block");
         final var span = new Span(source(), start, lastToken().end());
         return new NotchTry(span, body, clauses);
     }
@@ -924,26 +935,26 @@ public class NotchParser extends BasicParser {
         var start = tokens.location();
         if (!takeKeyword("repeat")) return null;
         if (takeKeyword("while")) {
-            NotchExpression cond = requireExpression("expected condition after 'while'");
+            NotchExpression cond = requireExpression(() -> errorHandler.expectedConditionAfter("while"));
             List<NotchStatement> body = parseLoopBody();
-            requireKeyword("end", "Unterminated repeat statement");
+            if (!takeKeyword("end")) throw errorHandler.expectedEndOfBlock("repeat statement");
             final var span = new Span(source(), start, lastToken().end());
             return new NotchRepeatWhile(span, cond, body);
         }
         if (takeKeyword("until")) {
-            NotchExpression cond = requireExpression("expected condition after 'until'");
+            NotchExpression cond = requireExpression(() -> errorHandler.expectedConditionAfter("until"));
             List<NotchStatement> body = parseLoopBody();
-            requireKeyword("end", "Unterminated repeat statement");
+            if (!takeKeyword("end")) throw errorHandler.expectedEndOfBlock("repeat statement");
             final var span = new Span(source(), start, lastToken().end());
             return new NotchRepeatUntil(span, cond, body);
         }
 
-        NotchExpression count = requireExpression("expected count expression after 'repeat'");
+        NotchExpression count = requireExpression(errorHandler::expectedCountExpressionAfterRepeat);
         if (!takeKeyword("times")) {
             throw errorHandler.expectedTimesAfterRepeatCount();
         }
         List<NotchStatement> body = parseLoopBody();
-        requireKeyword("end", "Unterminated repeat statement");
+        if (!takeKeyword("end")) throw errorHandler.expectedEndOfBlock("repeat statement");
         final var span = new Span(source(), start, lastToken().end());
         return new NotchRepeatTimes(span, count, body);
     }
@@ -996,14 +1007,16 @@ public class NotchParser extends BasicParser {
     private List<NotchField> parseParamList() {
         List<NotchField> params = new ArrayList<>();
         while (!atEnd() && !peek(")")) {
-            Token name = requireIdent("expected a parameter name");
+            if (!peek("ident")) throw errorHandler.expectedParameterName();
+            Token name = take();
             QualifiedIdent type = null;
             if (take(":")) {
-                type = requireQualifiedIdent("expected a parameter type after ':'");
+                type = parseQualifiedIdent();
+                if (type == null) throw errorHandler.expectedTypeAfterColon("parameter");
             }
             params.add(new NotchField(name, type, null));
             if (!peek(")")) {
-                require(",", "expected ',' to separate parameters");
+                if (!take(",")) throw errorHandler.expectedCommaBetweenParameters();
             }
         }
         return params;
@@ -1014,7 +1027,7 @@ public class NotchParser extends BasicParser {
         while (!atEnd() && !peek(")")) {
             args.add(parseExpression());
             if (!peek(")")) {
-                require(",", "expected ',' to separate arguments");
+                if (!take(",")) throw errorHandler.expectedCommaBetweenArguments();
             }
         }
         return args;
@@ -1023,13 +1036,15 @@ public class NotchParser extends BasicParser {
     private NotchStatement parseFunctionDeclaration() {
         var start = tokens.location();
         if (!takeKeyword("function")) return null;
-        Token name = requireIdent("expected a function name");
-        require("(", "expected '(' after function name");
+        if (!peek("ident")) throw errorHandler.expectedFunctionName();
+        Token name = take();
+        if (!take("(")) throw errorHandler.expectedOpenParenAfterFunctionName();
         List<NotchField> params = parseParamList();
-        require(")", "expected ')' to close the parameter list");
+        if (!take(")")) throw errorHandler.expectedCloseParenFor("parameter list");
         QualifiedIdent returnType = null;
         if (take(":")) {
-            returnType = requireQualifiedIdent("expected a return type after ':'");
+            returnType = parseQualifiedIdent();
+            if (returnType == null) throw errorHandler.expectedTypeAfterColon("return");
         }
         int savedLoopDepth = loopDepth;
         loopDepth = 0;
@@ -1042,7 +1057,7 @@ public class NotchParser extends BasicParser {
         } finally {
             functionDepth--;
             loopDepth = savedLoopDepth;
-            requireKeyword("end", "Unterminated function, expected 'end'");
+            if (!takeKeyword("end")) throw errorHandler.expectedEndOfBlock("function");
         }
         final var span = new Span(source(), start, lastToken().end());
         return new NotchFunctionDeclaration(span, name, params, returnType, body);
@@ -1072,11 +1087,12 @@ public class NotchParser extends BasicParser {
     private NotchStatement parseClassDeclaration() {
         var start = tokens.location();
         if (!takeKeyword("class")) return null;
-        Token name = requireIdent("expected a class name");
+        if (!peek("ident")) throw errorHandler.expectedClassName();
+        Token name = take();
         List<NotchField> headerFields = new ArrayList<>();
         if (take("(")) {
             headerFields = parseParamList();
-            require(")", "expected ')' to close the class header");
+            if (!take(")")) throw errorHandler.expectedCloseParenFor("class header");
         }
         List<NotchField> bodyFields = new ArrayList<>();
         List<NotchFunctionDeclaration> methods = new ArrayList<>();
@@ -1097,21 +1113,23 @@ public class NotchParser extends BasicParser {
                 }
             }
         }
-        requireKeyword("end", "Unterminated class, expected 'end'");
+        if (!takeKeyword("end")) throw errorHandler.expectedEndOfBlock("class");
         final var span = new Span(source(), start, lastToken().end());
         return new NotchClassDeclaration(span, name, headerFields, bodyFields, methods);
     }
 
     private NotchField parseFieldDeclaration() {
         if (!takeKeyword("field")) return null;
-        Token name = requireIdent("expected a field name");
+        if (!peek("ident")) throw errorHandler.expectedFieldName();
+        Token name = take();
         QualifiedIdent type = null;
         if (take(":")) {
-            type = requireQualifiedIdent("expected a field type after ':'");
+            type = parseQualifiedIdent();
+            if (type == null) throw errorHandler.expectedTypeAfterColon("field");
         }
         NotchExpression initializer = null;
         if (take("=")) {
-            initializer = requireExpression("expected an initializer expression after '='");
+            initializer = requireExpression(errorHandler::expectedInitializerExpressionAfterEquals);
         }
         return new NotchField(name, type, initializer);
     }
@@ -1127,7 +1145,7 @@ public class NotchParser extends BasicParser {
             rollbackTo(mark);
             return null;
         }
-        NotchExpression value = requireExpression("expected an expression after '='");
+        NotchExpression value = requireExpression(errorHandler::expectedExpressionAfterEquals);
         final var span = new Span(source(), start, lastToken().end());
         return buildAssignmentStatement(span, target, value);
     }
@@ -1137,12 +1155,13 @@ public class NotchParser extends BasicParser {
         while (peek(".") || peek("[")) {
             if (take(".")) {
                 if (peek("keyword")) throw errorHandler.keywordAsPropertyName();
-                Token property = requireIdent("expected a property name");
+                if (!peek("ident")) throw errorHandler.expectedPropertyName();
+                Token property = take();
                 target = new NotchPropertyAccessExpression(target, property);
             } else {
                 take("[");
-                NotchExpression index = requireExpression("expected an index expression");
-                require("]", "Index expressions must be closed with a ']'");
+                NotchExpression index = requireExpression(errorHandler::expectedIndexExpression);
+                if (!take("]")) throw errorHandler.expectedCloseBracketForIndex();
                 target = new NotchIndexExpression(target, index, lastToken().end());
             }
         }
@@ -1169,19 +1188,21 @@ public class NotchParser extends BasicParser {
             if (peek("keyword")) {
                 throw errorHandler.keywordAsLoopVariable();
             }
-            Token loopIdentifier = requireIdent("expected a variable name for the loop item");
-            requireKeyword("in", "expected 'in'");
+            if (!peek("ident")) throw errorHandler.expectedLoopItemName();
+            Token loopIdentifier = take();
+            if (!takeKeyword("in")) throw errorHandler.expectedInAfterLoopVariable();
 
-            NotchExpression loopExpression = requireExpression("expected expression for the loop iterable");
+            NotchExpression loopExpression = requireExpression(errorHandler::expectedExpressionForLoopIterable);
 
             Token indexIdentifier = null;
             if (takeIdent("index")) {
-                indexIdentifier = requireIdent("expected a variable name for the loop index");
+                if (!peek("ident")) throw errorHandler.expectedLoopIndexName();
+                indexIdentifier = take();
             }
 
             List<NotchStatement> loopBodyStatements = parseLoopBody();
 
-            requireKeyword("end", "Unterminated for statement");
+            if (!takeKeyword("end")) throw errorHandler.expectedEndOfBlock("for statement");
 
             final var span = new Span(source(), start, lastToken().end());
             NotchForLoop notchForLoop = new NotchForLoop(span, loopIdentifier, loopExpression, indexIdentifier, loopBodyStatements);
@@ -1213,7 +1234,7 @@ public class NotchParser extends BasicParser {
                 }
             }
 
-            requireKeyword("end", "Unterminated if statement");
+            if (!takeKeyword("end")) throw errorHandler.expectedEndOfBlock("if statement");
 
             final var span = new Span(source(), start, lastToken().end());
             NotchIf notchIf = new NotchIf(span, conditional, ifTrue, ifFalse);
