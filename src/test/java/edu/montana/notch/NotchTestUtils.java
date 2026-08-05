@@ -12,7 +12,6 @@ import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 
 import edu.montana.notch.util.BetterList;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -122,10 +121,6 @@ public class NotchTestUtils {
         return failure instanceof ParseErrors parseErrors
                 ? countCode(parseErrors.diagnostics, code)
                 : 0;
-    }
-
-    public static boolean hasCode(Throwable failure, DiagnosticCode code) {
-        return countCode(failure, code) > 0;
     }
 
     public static Map<String, Object> map(Object[] vars) {

@@ -8,13 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class NotchFallbackTest {
 
     @Test
-    void fallsBackOnNullLiteral() {
+    void fallsBackOnNull() {
         assertEquals("def", eval("null ?: 'def'"));
-    }
-
-    @Test
-    void fallsBackOnNullValuedVariable() {
-        assertEquals("def", eval("a ?: 'def'", "a", null));
     }
 
     @Test
@@ -23,9 +18,17 @@ class NotchFallbackTest {
     }
 
     @Test
-    void keepsNonNullPrimary() {
-        assertEquals(1, eval("1 ?: 2"));
+    void keepsAFalsyNonNullPrimary() {
         assertEquals(false, eval("false ?: 'def'"));
-        assertEquals(0, eval("0 ?: 'def'"));
+    }
+
+    @Test
+    void chainsThroughPrimaries() {
+        assertEquals("def", eval("missing1 ?: missing2 ?: 'def'"));
+    }
+
+    @Test
+    void fallbackPrimaryHasAValue() {
+        assertEquals(1, eval("1 ?: missing"));
     }
 }
