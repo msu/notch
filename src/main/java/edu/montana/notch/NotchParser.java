@@ -37,7 +37,7 @@ public class NotchParser extends BasicParser {
     }
 
     private static final Set<String> SYNC_KEYWORDS = Set.of(
-            "if", "for", "repeat", "function", "print",
+            "if", "for", "repeat", "function",
             "try", "throw", "return", "rethrow", "class",
             "break", "continue",
             "end", "catch", "else"
@@ -1075,7 +1075,18 @@ public class NotchParser extends BasicParser {
         NotchExpression value = null;
         if (returnValueFollows(returnToken)) {
             value = parseExpression();
+        } else if (peekNext().startLine() == lastToken().endLine()) {
+            if (takeIdent("unless")) {
+                var condition = requireExpression("expected condition after 'unless'");
+                final var span = new Span(source(), start, lastToken().end());
+                return new NotchReturnUnlessStatement(span, condition);
+            } else if (peekNext().startLine() == lastToken().endLine() && takeIdent("if")) {
+                var condition = requireExpression("expected condition after 'if'");
+                final var span = new Span(source(), start, lastToken().end());
+                return new NotchReturnIfStatement(span, condition);
+            }
         }
+
         final var span = new Span(source(), start, lastToken().end());
         return new NotchReturnStatement(span, value);
     }
