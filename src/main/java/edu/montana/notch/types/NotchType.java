@@ -1,5 +1,7 @@
 package edu.montana.notch.types;
 
+import edu.montana.notch.runtime.NotchRuntime;
+
 import java.util.List;
 
 public interface NotchType {
@@ -27,7 +29,7 @@ public interface NotchType {
 
     Class getBackingClass();
 
-    Object newInstance(Object[] args);
+    Object newInstance(NotchRuntime runtime, Object[] args);
 
     NotchField getField(String name);
 }

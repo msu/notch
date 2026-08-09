@@ -1,6 +1,7 @@
 package edu.montana.notch.types;
 
 
+import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.Text;
 
@@ -157,7 +158,7 @@ public class NotchJavaType implements NotchType {
     }
 
     @Override
-    public Object newInstance(Object[] args) {
+    public Object newInstance(NotchRuntime runtime, Object[] args) {
         Constructor bestMatch = NotchJavaMethod.getBestMatch(Arrays.asList(args), constructors);
         if (bestMatch != null) {
             return safelyEval(() -> bestMatch.newInstance(args));

@@ -32,7 +32,7 @@ public class NotchInstantiationExpression extends NotchExpression {
         if (value instanceof NotchType importedType) {
             Object[] argValues = evaluateArgs(runtime).toArray();
             try {
-                return importedType.newInstance(argValues);
+                return importedType.newInstance(runtime, argValues);
             } catch (IllegalArgumentException noMatchingConstructor) {
                 throw noConstructor(runtime, importedType.getDisplayName());
             }
@@ -40,7 +40,7 @@ public class NotchInstantiationExpression extends NotchExpression {
         if (value == NotchRuntime.UNDEFINED) {
             List<Object> argValues = evaluateArgs(runtime);
             try {
-                Object thrown = tryConstructThrowable(className.str(), argValues);
+                Object thrown = tryConstructThrowable(runtime, className.str(), argValues);
                 if (thrown != null) return thrown;
             } catch (IllegalArgumentException noMatchingConstructor) {
                 throw noConstructor(runtime, className.str());
@@ -87,12 +87,11 @@ public class NotchInstantiationExpression extends NotchExpression {
         return argValues;
     }
 
-    public static Object tryConstructThrowable(String name, List<Object> argValues) {
-        Class<?> type = TypeSystem.resolveThrowableType(name);
+    public static Object tryConstructThrowable(NotchRuntime runtime, String name, List<Object> argValues) {
         Class<?> type = TypeRegistry.resolveThrowableType(name);
         if (type == null || !Throwable.class.isAssignableFrom(type)) return null;
         NotchType notchType = TypeRegistry.getType(type);
         Object[] args = argValues.toArray();
-        return notchType.newInstance(args);
+        return notchType.newInstance(runtime, args);
     }
 }

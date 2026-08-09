@@ -1,12 +1,13 @@
 package edu.montana.notch.types;
 
+import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.util.Pair;
 
 import java.util.List;
 
 public interface NotchMethod {
-    Object invoke(NotchRuntime runtime, Object rootVal, List<Object> args);
+    Object invoke(NotchRuntime runtime, Object rootVal, List<Object> args, List<Span> argSpan);
 
     String getName();
 

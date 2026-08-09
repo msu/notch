@@ -1,5 +1,6 @@
 package edu.montana.notch.types;
 
+import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.types.coercions.Coercion;
 import edu.montana.notch.util.BetterList;
@@ -43,7 +44,7 @@ public class NotchJavaMethod implements NotchMethod {
     }
 
     @Override
-    public Object invoke(NotchRuntime runtime, Object rootVal, List<Object> args) {
+    public Object invoke(NotchRuntime runtime, Object rootVal, List<Object> args, List<Span> argSpan) {
         try {
             if (javaMethods.isEmpty()) {
                 throw new NoSuchMethodException("No methods named " + this.name + " were found on " + backingClass.getName());

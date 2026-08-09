@@ -2,6 +2,7 @@ package edu.montana.notch.expressions;
 
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Location;
+import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.*;
 import edu.montana.notch.types.NotchJavaMethod;
 import edu.montana.notch.types.NotchType;
@@ -46,13 +47,15 @@ public class NotchMethodInvocationExpression extends NotchExpression {
         }
 
         var argValues = new ArrayList<>(args.size());
+        var argSpan = new ArrayList<Span>(args.size());
         for (NotchExpression arg : args) {
             argValues.add(runtime.evaluate(arg));
+            argSpan.add(arg.span);
         }
 
         if (functionObj instanceof NotchBoundMethod bm) {
             try (var ignoredTrace = runtime.trace(span(), bm.method().getQualifiedName())) {
-                return bm.invoke(argValues);
+                return bm.invoke(runtime, argValues, argSpan);
             }
         } else if (functionObj instanceof NotchClosure nc) {
             try (var ignoredTrace = runtime.trace(span(), nc.getQualifiedName())) {
@@ -60,11 +63,11 @@ public class NotchMethodInvocationExpression extends NotchExpression {
             }
         } else if (functionObj instanceof NotchJavaMethod jm) {
             try (var ignoredTrace = runtime.trace(span(), jm.getQualifiedName())) {
-                return jm.invoke(runtime, null, argValues);
+                return jm.invoke(runtime, null, argValues, argSpan);
             }
         } else if (functionObj instanceof NotchType type) {
             try (var ignoredTrace = runtime.trace(span(), "<constructor:" + type.getSimpleName() + ">")) {
-                return type.newInstance(argValues.toArray());
+                return type.newInstance(runtime, argValues.toArray());
             } catch (IllegalArgumentException e) {
                 var diag = new Diagnostic();
                 diag.setTitle("no constructor for '" + type.getDisplayName() + "' accepts these argument types");

@@ -83,7 +83,7 @@ public interface NotchTemplateHelper {
             }
 
             if (method.getName().equals(name)) {
-                return new NotchBoundMethod(runtime, this, method);
+                return new NotchBoundMethod(this, method);
             }
         }
 

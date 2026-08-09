@@ -72,7 +72,7 @@ public class NotchPropertyAccessExpression extends NotchExpression implements Do
 
         NotchType runtimeType = TypeRegistry.getRuntimeType(rootValue);
         if (favorMethods) {
-            NotchBoundMethod method = resolveBoundMethod(runtime, rootValue, runtimeType);
+            NotchBoundMethod method = resolveBoundMethod(rootValue, runtimeType);
             if (method != null) {
                 return method;
             }
@@ -102,7 +102,7 @@ public class NotchPropertyAccessExpression extends NotchExpression implements Do
         }
 
         if (!favorMethods) {
-            NotchBoundMethod method = resolveBoundMethod(runtime, rootValue, runtimeType);
+            NotchBoundMethod method = resolveBoundMethod(rootValue, runtimeType);
             if (method != null) {
                 return method;
             }
@@ -162,17 +162,17 @@ public class NotchPropertyAccessExpression extends NotchExpression implements Do
         return "";
     }
 
-    private NotchBoundMethod resolveBoundMethod(NotchRuntime runtime, Object rootValue, NotchType runtimeType) {
+    private NotchBoundMethod resolveBoundMethod(Object rootValue, NotchType runtimeType) {
         if (rootValue instanceof NotchType notchType) {
             NotchMethod staticMethod = notchType.getStaticMethod(property.str());
             if (staticMethod != null) {
-                return new NotchBoundMethod(runtime, null, staticMethod);
+                return new NotchBoundMethod(null, staticMethod);
             }
         }
 
         NotchMethod method = runtimeType.getMethod(property.str());
         if (method != null) {
-            return new NotchBoundMethod(runtime, rootValue, method);
+            return new NotchBoundMethod(rootValue, method);
         }
         return null;
     }

@@ -48,7 +48,7 @@ public class HelperCommand extends NotchTemplateCommand {
             } catch (NoSuchMethodException | SecurityException e) {}
 
             if (helper == null) {
-                helper = type.newInstance(new Object[0]);
+                helper = type.newInstance(runtime, new Object[0]);
             }
         } catch (Exception e) {
             final var diag = new Diagnostic();

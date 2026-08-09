@@ -36,7 +36,7 @@ public class NotchThrowStatement extends NotchStatement {
         for (NotchExpression arg : call.args) argValues.add(runtime.evaluate(arg));
         //exception name not in scope (i.e called as throw example('msg'), attempt construction
         try {
-            Object constructed = NotchInstantiationExpression.tryConstructThrowable(name, argValues);
+            Object constructed = NotchInstantiationExpression.tryConstructThrowable(runtime, name, argValues);
             if (constructed != null) return constructed;
         } catch (IllegalArgumentException e) {
             var diag = new Diagnostic();
