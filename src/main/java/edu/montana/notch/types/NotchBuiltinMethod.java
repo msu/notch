@@ -27,7 +27,7 @@ public class NotchBuiltinMethod implements NotchMethod {
         this.javaMethods = new BetterList<>();
         for (Method m : backingClass.getMethods()) {
             if (!m.getName().equals(methodName)) continue;
-            if (!Modifier.isStatic(m.getModifiers())) continue;
+            if (Modifier.isStatic(m.getModifiers())) continue;
             if (m.getDeclaringClass() == Object.class) continue;
             try {
                 m.setAccessible(true);
@@ -35,6 +35,9 @@ public class NotchBuiltinMethod implements NotchMethod {
             } catch (SecurityException e) {
                 log.error("Cannot access method {}.{}()", backingClass.getName(), methodName);
             }
+        }
+        if (javaMethods.isEmpty()) {
+            throw new IllegalStateException();
         }
     }
 
