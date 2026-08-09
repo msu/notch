@@ -200,7 +200,7 @@ public class NotchJavaType implements NotchType {
 
     @Override
     public Object newInstance(NotchRuntime runtime, Object[] args) {
-        Constructor bestMatch = NotchJavaMethod.getBestMatch(runtime, Arrays.asList(args), constructors);
+        Constructor bestMatch = MethodResolver.getBestMatch(runtime, Arrays.asList(args), constructors);
         if (bestMatch != null) {
             return safelyEval(() -> bestMatch.newInstance(args));
         } else {

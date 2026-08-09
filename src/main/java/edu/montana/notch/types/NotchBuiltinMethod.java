@@ -2,7 +2,6 @@ package edu.montana.notch.types;
 
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.types.coercions.CoercionPath;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.Exceptions;
 import edu.montana.notch.util.Pair;
@@ -15,13 +14,7 @@ import java.util.List;
 
 import static edu.montana.notch.util.Exceptions.rethrow;
 import static edu.montana.notch.util.Pair.pair;
-import static java.lang.Integer.MAX_VALUE;
 
-/**
- * A method on a builtin root object. Unlike {@link NotchJavaMethod}, a builtin may declare a
- * leading {@link NotchRuntime} parameter: it is supplied by {@link #invoke} rather than by the
- * script, so it takes no part in overload matching and is hidden from {@link #getVariants()}.
- */
 public class NotchBuiltinMethod implements NotchMethod {
     private static final Logger log = LoggerFactory.getLogger(NotchBuiltinMethod.class);
     private final BetterList<Method> javaMethods;
@@ -33,17 +26,22 @@ public class NotchBuiltinMethod implements NotchMethod {
         this.backingClass = backingClass;
         this.javaMethods = new BetterList<>();
         for (Method m : backingClass.getMethods()) {
-            if (m.getName().equals(methodName) && !Modifier.isStatic(m.getModifiers())) {
-                try {
-                    m.setAccessible(true);
-                    javaMethods.add(m);
-                } catch (SecurityException e) {
-                    log.error("Cannot access method {}.{}()", backingClass.getName(), methodName);
-                }
+            if (!m.getName().equals(methodName)) continue;
+            if (!Modifier.isStatic(m.getModifiers())) continue;
+            if (m.getDeclaringClass() == Object.class) continue;
+            try {
+                m.setAccessible(true);
+                javaMethods.add(m);
+            } catch (SecurityException e) {
+                log.error("Cannot access method {}.{}()", backingClass.getName(), methodName);
             }
         }
     }
 
+    /**
+     * Builtins may declare a leading {@link NotchRuntime} parameter; it is supplied implicitly by
+     * {@link #invoke} and hidden from both overload matching and {@link #getVariants()}.
+     */
     private static boolean hasImplicitRuntime(Executable executable) {
         Class<?>[] parameterTypes = executable.getParameterTypes();
         return parameterTypes.length > 0 && NotchRuntime.class.isAssignableFrom(parameterTypes[0]);
@@ -62,17 +60,7 @@ public class NotchBuiltinMethod implements NotchMethod {
                 throw new IllegalArgumentException("Could not find compatible method with args (" + argTypes + ")");
             }
             int skip = implicitParamCount(method);
-            for (int i = 0; i < args.size(); i++) {
-                Object arg = args.get(i);
-                if (arg != null) {
-                    Class<?> parameterType = method.getParameterTypes()[i + skip];
-                    Class<?> runtimeType = arg.getClass();
-                    if (!parameterType.isAssignableFrom(runtimeType)) {
-                        var value = runtime.coerce(parameterType, arg, argSpan.get(i));
-                        args.set(i, value);
-                    }
-                }
-            }
+            MethodResolver.coerceArguments(runtime, method, args, argSpan, skip);
             List<Object> callArgs;
             if (skip > 0) {
                 callArgs = new ArrayList<>(args.size() + 1);
@@ -101,66 +89,7 @@ public class NotchBuiltinMethod implements NotchMethod {
         // a builtin declaring a runtime subtype (e.g. NotchTemplateRuntime) only applies when the
         // active runtime actually is one
         var candidates = javaMethods.filter((m) -> !hasImplicitRuntime(m) || m.getParameterTypes()[0].isInstance(runtime));
-        int closestDistance = MAX_VALUE;
-        Method bestMatch = null;
-        for (Method javaMethod : candidates) {
-            int distance = distanceFromValues(runtime, javaMethod, argValues);
-            if (distance == MAX_VALUE) {
-                continue;
-            } else if (distance < closestDistance) {
-                closestDistance = distance;
-                bestMatch = javaMethod;
-            } else if (distance == closestDistance) {
-                // stable resolution by using string comparison
-                String str1 = signature(bestMatch);
-                String str2 = signature(javaMethod);
-                if (str1.compareTo(str2) < 0) {
-                    bestMatch = javaMethod;
-                }
-            }
-        }
-        return bestMatch;
-    }
-
-    private static String signature(Executable executable) {
-        return new BetterList<>(executable.getParameterTypes())
-                .skip(implicitParamCount(executable))
-                .map(Class::getName)
-                .toString("-");
-    }
-
-    private static int distanceFromValues(NotchRuntime runtime, Executable executable, List<Object> runtimeValues) {
-        Class<?>[] parameterTypes = executable.getParameterTypes();
-        int skip = implicitParamCount(executable);
-        if (runtimeValues.size() != parameterTypes.length - skip) {
-            return MAX_VALUE;
-        }
-        int distance = 0;
-        for (int i = 0; i < runtimeValues.size(); i++) {
-            Class<?> parameterType = parameterTypes[i + skip];
-            Object o = runtimeValues.get(i);
-            if (o != null) {
-                int paramDistance = distanceTo(runtime, o.getClass(), parameterType);
-                if (paramDistance == MAX_VALUE) {
-                    return MAX_VALUE;
-                }
-                distance += paramDistance;
-            }
-        }
-        return distance;
-    }
-
-    private static int distanceTo(NotchRuntime runtime, Class<?> from, Class<?> to) {
-        if (from == null) {
-            return MAX_VALUE;
-        }
-        if (from.equals(to)) {
-            return 0;
-        }
-        // the coercion graph walks the supertypes of `from` itself, so this
-        // covers plain assignability as well as any conversion chain
-        CoercionPath path = runtime.getCoercion(from, to);
-        return path == null ? MAX_VALUE : path.cost();
+        return MethodResolver.getBestMatch(runtime, argValues, candidates, NotchBuiltinMethod::implicitParamCount);
     }
 
     @Override
