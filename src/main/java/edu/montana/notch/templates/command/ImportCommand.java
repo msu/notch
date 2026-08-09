@@ -5,7 +5,6 @@ import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchExpression;
-import edu.montana.notch.expressions.NotchStringExpression;
 import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;

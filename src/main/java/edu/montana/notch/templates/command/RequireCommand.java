@@ -5,14 +5,12 @@ import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
-import edu.montana.notch.templates.NotchTemplateParser;
 import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.types.NotchType;
 import edu.montana.notch.types.TypeRegistry;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.Text;
-import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.chisel.Token;
 
 public class RequireCommand extends NotchTemplateCommand {
