@@ -6,12 +6,11 @@ import edu.montana.notch.chisel.Tokenizer;
 import edu.montana.notch.chisel.type.LiteralTokenType;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.Drain;
+import edu.montana.notch.runtime.NotchBuiltins;
 import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.runtime.builtins.*;
 import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.types.coercions.Coercion;
 import edu.montana.notch.util.BetterFS;
-import edu.montana.notch.util.BetterMap;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -99,13 +98,6 @@ public class Notch {
     }
 
     public static Map<String, Object> builtins() {
-        var out = new BetterMap<String, Object>();
-        out.put("structure", NotchStructureFunction.getInstance());
-        out.put("ask", NotchAskFunction.getInstance());
-        out.put("println", NotchPrintlnFunction.getInstance());
-        out.put("print", NotchPrintFunction.getInstance());
-        out.put("debug", NotchDebugFunction.getInstance());
-        out.put("random", NotchRandomFunction.getInstance());
-        return out;
+        return NotchBuiltins.builtins();
     }
 }

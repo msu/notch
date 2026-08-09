@@ -9,6 +9,7 @@ import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.statements.NotchStatement;
+import edu.montana.notch.util.BetterMap;
 
 import java.util.Map;
 
@@ -80,7 +81,7 @@ public class NotchTestUtils {
             }
             StringBuilder out = new StringBuilder();
             NotchRuntime runtime = new NotchRuntime(source, map(vars));
-            runtime.setOut(obj -> out.append(obj).append("\n"));
+            runtime.setOut(out::append);
             runtime.execute(stmt);
             return out.toString();
         } catch (TokenizeException e) {
@@ -91,7 +92,8 @@ public class NotchTestUtils {
     }
 
     public static Map<String, Object> map(Object[] vars) {
-        Map<String, Object> map = Notch.builtins();
+        Map<String, Object> map = new BetterMap<>();
+        map.putAll(Notch.builtins());
         for (int i = 0; i < vars.length; i++) {
             Object key = vars[i];
             Object val = null;

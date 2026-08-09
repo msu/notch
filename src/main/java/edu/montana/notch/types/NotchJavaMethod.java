@@ -154,6 +154,11 @@ public class NotchJavaMethod implements NotchMethod {
     }
 
     @Override
+    public NotchType getDeclaringType() {
+        return TypeRegistry.getType(this.backingClass);
+    }
+
+    @Override
     public boolean canInvokeWith(NotchRuntime runtime, List<Object> args) {
         Method method = bestMatch(runtime, args);
         return method != null;
@@ -173,18 +178,18 @@ public class NotchJavaMethod implements NotchMethod {
     }
 
     @Override
-    public List<Pair<List<Pair<String, NotchType>>, NotchType>> getMethodVariants() {
-        var out = new BetterList<Pair<List<Pair<String, NotchType>>, NotchType>>();
+    public List<NotchFunctionDescription> getVariants() {
+        var out = new BetterList<NotchFunctionDescription>();
         for (var method : javaMethods) {
-            List<Pair<String, NotchType>> params = new BetterList<>();
+            var params = new BetterList<Pair<NotchType, String>>();
             Parameter[] parameters = method.getParameters();
             for (Parameter param : parameters) {
                 var name = param.getName();
-                var ty = TypeSystem.getType(param.getType());
-                params.add(pair(name, ty));
+                var ty = TypeRegistry.getType(param.getType());
+                params.add(pair(ty, name));
             }
-            final var rt = TypeSystem.getType(method.getReturnType());
-            out.add(pair(params, rt));
+            final var rt = TypeRegistry.getType(method.getReturnType());
+            out.add(new NotchFunctionDescription(rt, params));
         }
         return out;
     }

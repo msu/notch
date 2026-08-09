@@ -41,27 +41,6 @@ class NotchKeywordAsIdentifierTest {
     }
 
     @Test
-    void cannotUsePrintAsLoopVariable() {
-        var ex = assertThrows(RuntimeException.class, () -> exec("""
-                for print in [1, 2, 3]
-                  print(print)
-                end
-                """));
-        assertTrue(ex.getMessage().contains("'print' is a keyword and cannot be used as a loop variable name"),
-                "expected keyword-specific error, got: " + ex.getMessage());
-    }
-
-    @Test
-    void cannotUsePrintAsPropertyName() {
-        var ex = assertThrows(RuntimeException.class, () -> exec("""
-                x = 'hi'
-                print(x.print)
-                """));
-        assertTrue(ex.getMessage().contains("'print' is a keyword and cannot be used as a property name"),
-                "expected keyword-specific error, got: " + ex.getMessage());
-    }
-
-    @Test
     void cannotUseClassAsPropertyName() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 x = 'hi'

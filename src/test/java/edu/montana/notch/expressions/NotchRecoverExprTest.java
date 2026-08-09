@@ -52,7 +52,7 @@ class NotchRecoverExprTest {
     void catchAfterExprGivesClearError() {
         // TODO: make 3 diagnostics one here (you can highlight multiple things so highlight & note both catch & recover)
         var ex = assertThrows(RuntimeException.class, () -> exec(BOOM + """
-                x = boom() catch print("logged") recover 0
+                x = boom() catch println("logged") recover 0
                 """));
         System.out.println(ex.getMessage());
         assertTrue(ex.getMessage().contains("try/catch block"),
