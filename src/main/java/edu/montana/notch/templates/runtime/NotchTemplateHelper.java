@@ -5,7 +5,7 @@ import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.types.NotchMethod;
 import edu.montana.notch.types.NotchProperty;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 
 import java.util.List;
 
@@ -67,7 +67,7 @@ public interface NotchTemplateHelper {
 
     default Object resolveSymbol(NotchRuntime runtime, String name) {
         var clazz = getClass();
-        NotchType type = TypeSystem.getType(clazz);
+        NotchType type = TypeRegistry.getType(clazz);
         List<NotchProperty> properties = type.getProperties();
         for (var field : properties) {
             if (field.getName().equals(name) || field.getAlternateName().equals(name)) {

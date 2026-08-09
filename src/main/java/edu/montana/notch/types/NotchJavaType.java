@@ -115,7 +115,7 @@ public class NotchJavaType implements NotchType {
             return "class " + backingClass.getName();
         }
         if (backingClass.isArray()) {
-            var ty = TypeSystem.getType(backingClass.getComponentType());
+            var ty = TypeRegistry.getType(backingClass.getComponentType());
             return ty.getDisplayName() + "[]";
         }
         return backingClass.getName();

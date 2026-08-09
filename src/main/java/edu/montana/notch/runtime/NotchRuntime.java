@@ -9,6 +9,7 @@ import edu.montana.notch.statements.NotchStatement;
 import edu.montana.notch.templates.runtime.RenderException;
 import edu.montana.notch.types.NotchJavaType;
 import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 import edu.montana.notch.util.*;
 
 import java.util.*;
@@ -194,6 +195,13 @@ public class NotchRuntime {
         return handledExceptions.peek();
     }
 
+    public NotchType typeOf(Class<?> clazz) {
+        return TypeRegistry.getType(clazz);
+    }
+
+    public NotchType typeOf(Object value) {
+        return TypeRegistry.getRuntimeType(value);
+    }
     public <T> T coerce(Class<T> clazz, Object value, Spanned item) {
         if (clazz == Iterable.class) return clazz.cast(coerceIterable(value, item));
         return cast(clazz, value, item);
@@ -206,8 +214,8 @@ public class NotchRuntime {
             String valueType;
             if (value == null) valueType = "null";
             else if (isUndefined(value)) valueType = "undefined";
-            else valueType = TypeSystem.getRuntimeType(value).getDisplayName();
-            var targetType = TypeSystem.getType(clazz).getDisplayName();
+            else valueType = TypeRegistry.getRuntimeType(value).getDisplayName();
+            var targetType = TypeRegistry.getType(clazz).getDisplayName();
 
             var diag = new Diagnostic();
             diag.setTitle("value cast failed");

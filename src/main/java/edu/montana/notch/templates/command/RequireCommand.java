@@ -9,7 +9,7 @@ import edu.montana.notch.templates.NotchTemplateParser;
 import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.Text;
 import edu.montana.notch.chisel.ParseException;
@@ -44,7 +44,7 @@ public class RequireCommand extends NotchTemplateCommand {
     @Override
     public void preRender(NotchTemplateRuntime runtime) {
         for (var req : requirements) {
-            NotchType declaredType = TypeSystem.getType(req.type.qualifiedName());
+            NotchType declaredType = TypeRegistry.getType(req.type.qualifiedName());
             if (declaredType == null) {
                 throw diagnose(runtime, req.name,
                         "unknown type " + Text.repr(req.type.qualifiedName()));

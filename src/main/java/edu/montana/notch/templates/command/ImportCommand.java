@@ -13,7 +13,7 @@ import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
 import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.templates.runtime.NotchTemplateImportable;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 import edu.montana.notch.util.BetterMap;
 import edu.montana.notch.util.Text;
 
@@ -56,7 +56,7 @@ public class ImportCommand extends NotchTemplateCommand {
     public void preRender(NotchTemplateRuntime runtime) {
         if (type != null) {
             var qname = type.qualifiedName();
-            var notchType = TypeSystem.getType(qname);
+            var notchType = TypeRegistry.getType(qname);
             if (notchType == null) {
                 var diag = new Diagnostic();
                 diag.highlight(type.span());

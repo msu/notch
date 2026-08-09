@@ -2,23 +2,14 @@ package edu.montana.notch.types;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TypeSystem {
-    public static final NotchJavaType BOOLEAN = new NotchJavaType(Boolean.TYPE);
-    public static final NotchJavaType BYTE = new NotchJavaType(Byte.TYPE);
-    public static final NotchJavaType CHAR = new NotchJavaType(Character.TYPE);
-    public static final NotchJavaType SHORT = new NotchJavaType(Short.TYPE);
-    public static final NotchJavaType INT = new NotchJavaType(Integer.TYPE);
-    public static final NotchJavaType LONG = new NotchJavaType(Long.TYPE);
-    public static final NotchJavaType FLOAT = new NotchJavaType(Float.TYPE);
-    public static final NotchJavaType DOUBLE = new NotchJavaType(Double.TYPE);
-
+public class TypeRegistry {
     private static final ConcurrentHashMap<String, NotchType> TYPESYSTEM_CACHE = new ConcurrentHashMap<>();
     private static ClassLoader contextClassLoader;
 
     static {
         synchronized (TYPESYSTEM_CACHE) {
             init();
-            contextClassLoader = TypeSystem.class.getClassLoader();
+            contextClassLoader = TypeRegistry.class.getClassLoader();
         }
     }
 
@@ -30,14 +21,14 @@ public class TypeSystem {
     private static void init() {
         // put primitives into type system by name because they do not resolve normally
         TYPESYSTEM_CACHE.clear();
-        TYPESYSTEM_CACHE.put("boolean", BOOLEAN);
-        TYPESYSTEM_CACHE.put("byte", BYTE);
-        TYPESYSTEM_CACHE.put("char", CHAR);
-        TYPESYSTEM_CACHE.put("short", SHORT);
-        TYPESYSTEM_CACHE.put("int", INT);
-        TYPESYSTEM_CACHE.put("long", LONG);
-        TYPESYSTEM_CACHE.put("float", FLOAT);
-        TYPESYSTEM_CACHE.put("double", DOUBLE);
+        TYPESYSTEM_CACHE.put("boolean", new NotchJavaType(Boolean.TYPE));
+        TYPESYSTEM_CACHE.put("byte", new NotchJavaType(Byte.TYPE));
+        TYPESYSTEM_CACHE.put("char", new NotchJavaType(Character.TYPE));
+        TYPESYSTEM_CACHE.put("short", new NotchJavaType(Short.TYPE));
+        TYPESYSTEM_CACHE.put("int", new NotchJavaType(Integer.TYPE));
+        TYPESYSTEM_CACHE.put("long", new NotchJavaType(Long.TYPE));
+        TYPESYSTEM_CACHE.put("float", new NotchJavaType(Float.TYPE));
+        TYPESYSTEM_CACHE.put("double", new NotchJavaType(Double.TYPE));
     }
 
     public static NotchType getRuntimeType(Object rootVal) {

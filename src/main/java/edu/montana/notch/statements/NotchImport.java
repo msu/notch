@@ -6,7 +6,7 @@ import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.ast.QualifiedIdent;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 import edu.montana.notch.util.Text;
 
 public class NotchImport extends NotchStatement {
@@ -22,7 +22,7 @@ public class NotchImport extends NotchStatement {
     @Override
     public void execute(NotchRuntime runtime) {
         var name = type.qualifiedName();
-        var notchType = TypeSystem.getType(name);
+        var notchType = TypeRegistry.getType(name);
         if (notchType == null) {
             var diag = new Diagnostic();
             diag.highlight(type.span());

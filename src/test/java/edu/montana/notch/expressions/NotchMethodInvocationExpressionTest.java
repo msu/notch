@@ -1,7 +1,6 @@
 package edu.montana.notch.expressions;
 
-import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 import org.junit.jupiter.api.Test;
 
 import static edu.montana.notch.NotchTestUtils.eval;
@@ -20,7 +19,7 @@ public class NotchMethodInvocationExpressionTest {
 
     @Test
     public void testStaticMethodInvocationWorks() {
-        var type = TypeSystem.getType(SampleClass.class);
+        var type = TypeRegistry.getType(SampleClass.class);
         Object result = eval("SampleClass.staticMethod()", type.getSimpleName(), type);
         assertEquals("staticMethod", result);
     }

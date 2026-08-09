@@ -1,10 +1,9 @@
 package edu.montana.notch;
 
 import edu.montana.notch.runtime.NotchClosure;
-import edu.montana.notch.templates.runtime.RenderException;
 import edu.montana.notch.types.NotchMethod;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.BetterMap;
 import org.junit.jupiter.api.Test;
@@ -87,7 +86,7 @@ public class BootstrapTest {
 
     @Test
     public void bootstrapTopLevelMethodInvocation() {
-        NotchType testType = TypeSystem.getType(BootstrapTest.class);
+        NotchType testType = TypeRegistry.getType(BootstrapTest.class);
         NotchMethod method = testType.getStaticMethod("foo");
         Object result = eval("foo(10)", "foo", method);
         assertEquals(10, result);

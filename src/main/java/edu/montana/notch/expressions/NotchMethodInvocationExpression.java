@@ -5,7 +5,7 @@ import edu.montana.notch.chisel.Location;
 import edu.montana.notch.runtime.*;
 import edu.montana.notch.types.NotchJavaMethod;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,7 +89,7 @@ public class NotchMethodInvocationExpression extends NotchExpression {
     }
 
     private static void addJavaTypeHints(Diagnostic diag, String name) {
-        Class<?> resolvedType = TypeSystem.resolveThrowableType(name);
+        Class<?> resolvedType = TypeRegistry.resolveThrowableType(name);
         if (resolvedType == null) return;
         diag.note("'%s' is a Java type, import it to use it as a value: 'import %s'"
                 .formatted(name, resolvedType.getName()));

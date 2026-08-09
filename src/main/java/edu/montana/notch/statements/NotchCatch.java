@@ -4,7 +4,7 @@ import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.ast.QualifiedIdent;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public final class NotchCatch {
         if (typeName.equals("NotchError")) {
             wanted = NotchRuntimeException.class;
         } else {
-            wanted = TypeSystem.resolveThrowableType(typeName);
+            wanted = TypeRegistry.resolveThrowableType(typeName);
         }
         if (wanted == null) {
             Diagnostic diag = new Diagnostic();

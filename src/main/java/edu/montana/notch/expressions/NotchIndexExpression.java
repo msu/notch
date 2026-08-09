@@ -4,7 +4,7 @@ import edu.montana.notch.chisel.Location;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.types.NotchProperty;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class NotchIndexExpression extends NotchExpression {
         } else if (rootValue instanceof String s) {
             return String.valueOf(s.charAt(toInteger(indexValue)));
         } else {
-            NotchType runtimeType = TypeSystem.getRuntimeType(rootValue);
+            NotchType runtimeType = TypeRegistry.getRuntimeType(rootValue);
             NotchProperty property = runtimeType.getProperty(String.valueOf(indexValue));
             if (property != null) {
                 return property.get(rootValue);

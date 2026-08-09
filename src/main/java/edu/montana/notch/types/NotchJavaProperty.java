@@ -39,7 +39,7 @@ public class NotchJavaProperty implements NotchProperty {
 
     @Override
     public NotchType getType() {
-        return TypeSystem.getType(getter.getType());
+        return TypeRegistry.getType(getter.getType());
     }
 
     public NotchJavaProperty(Class aClass, String propName, boolean staticProperty) {

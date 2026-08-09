@@ -9,7 +9,7 @@ import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 
 import java.lang.reflect.Constructor;
 
@@ -39,7 +39,7 @@ public class HelperCommand extends NotchTemplateCommand {
 
     @Override
     public void preRender(NotchTemplateRuntime runtime) {
-        NotchType type = TypeSystem.getType(path.qualifiedClass().getName());
+        NotchType type = TypeRegistry.getType(path.qualifiedClass().getName());
         Object helper = null;
         try {
             try {

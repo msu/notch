@@ -7,7 +7,7 @@ import edu.montana.notch.runtime.NotchClass;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.TypeRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +61,7 @@ public class NotchInstantiationExpression extends NotchExpression {
         var diag = new Diagnostic()
                 .setTitle("no class named '" + className.str() + "'")
                 .highlight(span());
-        Class<?> resolvedType = TypeSystem.resolveThrowableType(className.str());
+        Class<?> resolvedType = TypeRegistry.resolveThrowableType(className.str());
         if (resolvedType != null && !resolvedType.isPrimitive()) {
             diag.note("'%s' is a Java type, import it to use it: 'import %s'"
                     .formatted(className.str(), resolvedType.getName()));
@@ -89,8 +89,9 @@ public class NotchInstantiationExpression extends NotchExpression {
 
     public static Object tryConstructThrowable(String name, List<Object> argValues) {
         Class<?> type = TypeSystem.resolveThrowableType(name);
+        Class<?> type = TypeRegistry.resolveThrowableType(name);
         if (type == null || !Throwable.class.isAssignableFrom(type)) return null;
-        NotchType notchType = TypeSystem.getType(type);
+        NotchType notchType = TypeRegistry.getType(type);
         Object[] args = argValues.toArray();
         return notchType.newInstance(args);
     }

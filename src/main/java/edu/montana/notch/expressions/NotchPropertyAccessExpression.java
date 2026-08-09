@@ -38,7 +38,7 @@ public class NotchPropertyAccessExpression extends NotchExpression implements Do
     @Override
     public Object evaluate(NotchRuntime runtime) {
         if (dotPath != null) {
-            NotchType qualifiedType = TypeSystem.getType(dotPath);
+            NotchType qualifiedType = TypeRegistry.getType(dotPath);
             if (qualifiedType != null) {
                 return qualifiedType;
             }
@@ -47,7 +47,7 @@ public class NotchPropertyAccessExpression extends NotchExpression implements Do
         Object rootValue = runtime.evaluate(root);
         if (rootValue == null || runtime.isUndefined(rootValue)) {
             if (dotPath != null) {
-                var type = TypeSystem.getType(dotPath);
+                var type = TypeRegistry.getType(dotPath);
                 if (type != null) {
                     return type;
                 }
@@ -70,7 +70,7 @@ public class NotchPropertyAccessExpression extends NotchExpression implements Do
             return UNDEFINED;
         }
 
-        NotchType runtimeType = TypeSystem.getRuntimeType(rootValue);
+        NotchType runtimeType = TypeRegistry.getRuntimeType(rootValue);
         if (favorMethods) {
             NotchBoundMethod method = resolveBoundMethod(runtime, rootValue, runtimeType);
             if (method != null) {
@@ -111,7 +111,7 @@ public class NotchPropertyAccessExpression extends NotchExpression implements Do
         // check if this dot path is an inner class
         if (rootValue instanceof NotchType notchType && isADotPathComponent()) {
             // TODO - move into runtime to support imports
-            NotchType type = TypeSystem.getType(notchType.getDisplayName() + "$" + property.str());
+            NotchType type = TypeRegistry.getType(notchType.getDisplayName() + "$" + property.str());
             if (type != null) {
                 return type;
             }
