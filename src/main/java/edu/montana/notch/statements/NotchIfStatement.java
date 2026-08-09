@@ -7,13 +7,13 @@ import edu.montana.notch.runtime.NotchRuntime;
 import java.util.List;
 import java.util.Objects;
 
-public class NotchIf extends NotchStatement {
+public class NotchIfStatement extends NotchStatement {
 
     public final NotchExpression expr;
     public final List<NotchStatement> ifTrue;
     public final List<NotchStatement> ifFalse;
 
-    public NotchIf(Span span, NotchExpression expr, List<NotchStatement> ifTrue, List<NotchStatement> ifFalse) {
+    public NotchIfStatement(Span span, NotchExpression expr, List<NotchStatement> ifTrue, List<NotchStatement> ifFalse) {
         super(span);
         this.expr = Objects.requireNonNull(expr);
         this.ifTrue = List.copyOf(ifTrue);

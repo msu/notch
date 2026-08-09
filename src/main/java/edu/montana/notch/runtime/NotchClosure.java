@@ -46,7 +46,7 @@ public record NotchClosure(NotchRuntime closure, List<Token> parameters, NotchEx
         if (name != null) {
             return "<function:%s>".formatted(name);
         }
-        var ste = closure.stackTraceElements.getLast();
+        var ste = closure.stackTrace.getLast();
         final var span = ste.span();
         return "<closure:%s:%d:%d>".formatted(span.sourceId(), span.start().line, span.start().column);
     }

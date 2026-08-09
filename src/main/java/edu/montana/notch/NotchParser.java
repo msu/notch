@@ -1216,7 +1216,7 @@ public class NotchParser extends BasicParser {
         return null;
     }
 
-    private NotchIf parseIfStatement() {
+    private NotchIfStatement parseIfStatement() {
         var start = tokens.location();
         if (takeKeyword("if")) {
 
@@ -1242,7 +1242,7 @@ public class NotchParser extends BasicParser {
             requireKeyword("end", "Unterminated if statement");
 
             final var span = new Span(source(), start, lastToken().end());
-            NotchIf notchIf = new NotchIf(span, conditional, ifTrue, ifFalse);
+            NotchIfStatement notchIf = new NotchIfStatement(span, conditional, ifTrue, ifFalse);
             return notchIf;
         }
         return null;

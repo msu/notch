@@ -6,7 +6,6 @@ import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.statements.NotchStatement;
-import edu.montana.notch.templates.runtime.RenderException;
 import edu.montana.notch.types.NotchType;
 import edu.montana.notch.types.TypeRegistry;
 import edu.montana.notch.types.coercions.Coercion;
@@ -16,6 +15,7 @@ import edu.montana.notch.util.*;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class NotchRuntime {
     public static final Object UNDEFINED = new Object() {
@@ -27,8 +27,9 @@ public class NotchRuntime {
 
     public final Source source;
     private LinkedList<Scope> values = new LinkedList<>();
-    protected BetterList<NotchStackTraceElement> stackTraceElements = new BetterList<>();
+    protected BetterList<NotchStackTraceElement> stackTrace = new BetterList<>();
     protected CoercionGraph coercions = new CoercionGraph();
+    // TODO: convert out to be in storage
     private Consumer<Object> out = System.out::print;
     private BetterMap<Key, Object> storage = new BetterMap<>();
     private final Deque<Throwable> handledExceptions = new ArrayDeque<>();
@@ -46,9 +47,10 @@ public class NotchRuntime {
 
         coercions.addAll(Notch.coercions());
 
+
         final var currentStackTrace = Thread.currentThread().getStackTrace();
         final var frame = currentStackTrace[1];
-        stackTraceElements.add(new NotchStackTraceElement(
+        stackTrace.add(new NotchStackTraceElement(
                 source.span,
                 "<render@%s.%s:%d>".formatted(frame.getClassName(), frame.getMethodName(), frame.getLineNumber())
         ));
@@ -58,7 +60,7 @@ public class NotchRuntime {
         this.source = source;
         out = parent.out;
         values = new LinkedList<>(parent.values);
-        stackTraceElements.addAll(parent.stackTraceElements);
+        stackTrace.addAll(parent.stackTrace);
         coercions = new CoercionGraph(parent.coercions);
     }
 
@@ -155,7 +157,7 @@ public class NotchRuntime {
     }
 
     public NotchStackTrace currentStackTrace() {
-        var trace = stackTraceElements.toArray(NotchStackTraceElement[]::new);
+        var trace = stackTrace.toArray(NotchStackTraceElement[]::new);
         return new NotchStackTrace(trace);
     }
 
@@ -178,6 +180,7 @@ public class NotchRuntime {
     public NotchType typeOf(Object value) {
         return TypeRegistry.getRuntimeType(value);
     }
+
     @SuppressWarnings("unchecked")
     public <T> T coerce(Class<T> clazz, Object value, Spanned item) {
         if (value == null || isUndefined(value) || clazz.isInstance(value)) {
@@ -266,9 +269,20 @@ public class NotchRuntime {
         }
     }
 
+    public boolean inStorage(Key<?> key) {
+        return storage.containsKey(key);
+    }
+
     public <T> T storage(Key<T> key) {
         if (!storage.containsKey(key)) {
-            throw new RenderException("key " + key + " not found in storage for " + source.id);
+            throw new IllegalStateException("key " + key + " not found in storage for " + source.id);
+        }
+        return (T) storage.get(key);
+    }
+
+    public <T> T storage(Key<T> key, Supplier<T> supplier) {
+        if (!storage.containsKey(key)) {
+            return supplier.get();
         }
         return (T) storage.get(key);
     }
@@ -295,12 +309,12 @@ public class NotchRuntime {
 
         public TraceGuard(NotchStackTraceElement element) {
             this.element = Objects.requireNonNull(element);
-            stackTraceElements.add(this.element);
+            stackTrace.add(this.element);
         }
 
         @Override
         public void close() {
-            var removed = stackTraceElements.removeLast();
+            var removed = stackTrace.removeLast();
             assert element == removed;
         }
     }
