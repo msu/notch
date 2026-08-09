@@ -17,7 +17,7 @@ public class BetterList<T> extends AbstractList<T> implements BetterIterable<T> 
     }
 
     public BetterList(Collection<? extends T> c) {
-        if (c instanceof List l) {
+        if (c instanceof List l && !(c instanceof BetterList)) {
             delegate = l;
         } else {
             delegate = new ArrayList<>(c);
@@ -44,6 +44,7 @@ public class BetterList<T> extends AbstractList<T> implements BetterIterable<T> 
     @Override
     public T get(int index) {
         final int size = size();
+        if (size == 0 || index >= size) throw new IndexOutOfBoundsException(index);
         return delegate.get((size + index) % size);
     }
 
