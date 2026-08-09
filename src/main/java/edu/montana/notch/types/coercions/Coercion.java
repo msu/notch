@@ -1,74 +1,67 @@
 package edu.montana.notch.types.coercions;
 
-import java.math.BigDecimal;
-import java.util.LinkedList;
+import edu.montana.notch.types.NotchType;
+import edu.montana.notch.util.BetterList;
 
-public abstract class Coercion {
+import java.util.Collection;
+import java.util.Objects;
+import java.util.function.Function;
 
-    // TODO - priority, thread safe?
-    private static final LinkedList<Coercion> COERCIONS = new LinkedList<>();
+import static edu.montana.notch.types.TypeRegistry.getType;
 
-    static {
-        registerDefaultCoercions();
-    }
+/**
+ * A single directed edge in the {@link CoercionGraph}: a way to turn a value of
+ * type {@code from} into a value of type {@code to}, weighted by {@code rank}.
+ * Cheaper edges are preferred when more than one chain reaches the target, so
+ * the rank doubles as the overload-resolution penalty in
+ * {@code NotchJavaMethod.distanceTo}.
+ */
+public record Coercion(NotchType from, NotchType to, int rank, Function<Object, Object> coerce) {
 
-    private static void registerDefaultCoercions() {
-        COERCIONS.add(new BoxedToPrimitive());
-        COERCIONS.add(new BigDecimalToInt());
-    }
+    /** A re-labelling that does not change the value — boxing and unboxing. */
+    public static final int FREE = 0;
+    /** Weight of a coercion that actually converts the value. */
+    public static final int DEFAULT_RANK = 3;
 
-    public static Coercion resolve(Class<?> from, Class<?> to) {
-        for (Coercion coercion : COERCIONS) {
-            if (coercion.canCoerce(from, to)) {
-                return coercion;
-            }
-        }
-        return null;
-    }
-
-    protected abstract boolean canCoerce(Class<?> from, Class<?> to);
-
-    public abstract Object coerce(Object arg);
-
-    public int getRank() {
-        return 3;
-    }
-
-
-    private static class BigDecimalToInt extends Coercion {
-        @Override
-        protected boolean canCoerce(Class<?> from, Class<?> to) {
-            if (from.equals(BigDecimal.class)) {
-                if (to.equals(Integer.class) || to.equals(Integer.TYPE)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public Object coerce(Object arg) {
-            return ((BigDecimal) arg).intValue();
+    public Coercion {
+        Objects.requireNonNull(from, "from");
+        Objects.requireNonNull(to, "to");
+        Objects.requireNonNull(coerce, "coerce");
+        // Dijkstra only settles a node once, which needs non-negative weights.
+        if (rank < 0) {
+            throw new IllegalArgumentException("coercion rank must be non-negative, got " + rank);
         }
     }
 
-    private static class BoxedToPrimitive extends Coercion {
-        @Override
-        protected boolean canCoerce(Class<?> from, Class<?> to) {
-            if (from.equals(Integer.class) && to.equals(Integer.TYPE)) return true;
-            if (from.equals(Long.class) && to.equals(Long.TYPE)) return true;
-            if (from.equals(Boolean.class) && to.equals(Boolean.TYPE)) return true;
-            if (from.equals(Double.class) && to.equals(Double.TYPE)) return true;
-            if (from.equals(Float.class) && to.equals(Float.TYPE)) return true;
-            if (from.equals(Short.class) && to.equals(Short.TYPE)) return true;
-            if (from.equals(Byte.class) && to.equals(Byte.TYPE)) return true;
-            if (from.equals(Character.class) && to.equals(Character.TYPE)) return true;
-            return false;
-        }
+    public Coercion(NotchType from, NotchType to, Function<Object, Object> coerce) {
+        this(from, to, DEFAULT_RANK, coerce);
+    }
 
-        @Override
-        public Object coerce(Object arg) {
-            return arg;
-        }
+    public Coercion(Class<?> from, Class<?> to, Function<Object, Object> coerce) {
+        this(getType(from), getType(to), DEFAULT_RANK, coerce);
+    }
+
+    public Coercion(Class<?> from, Class<?> to, int rank, Function<Object, Object> coerce) {
+        this(getType(from), getType(to), rank, coerce);
+    }
+
+    public Object apply(Object value) {
+        return coerce.apply(value);
+    }
+
+    /**
+     * Every coercion Notch installs into a fresh runtime.
+     */
+    public static Collection<Coercion> defaults() {
+        var out = new BetterList<Coercion>();
+        out.addAll(BoxedToPrimitive.edges());
+        out.addAll(NumberToBoxedPrimitive.edges());
+        out.addAll(CoerceIterable.edges());
+        return out;
+    }
+
+    @Override
+    public String toString() {
+        return from.getDisplayName() + " -> " + to.getDisplayName() + " (" + rank + ")";
     }
 }

@@ -7,9 +7,11 @@ import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.statements.NotchStatement;
 import edu.montana.notch.templates.runtime.RenderException;
-import edu.montana.notch.types.NotchJavaType;
-import edu.montana.notch.types.TypeSystem;
+import edu.montana.notch.types.NotchType;
 import edu.montana.notch.types.TypeRegistry;
+import edu.montana.notch.types.coercions.Coercion;
+import edu.montana.notch.types.coercions.CoercionGraph;
+import edu.montana.notch.types.coercions.CoercionPath;
 import edu.montana.notch.util.*;
 
 import java.util.*;
@@ -26,6 +28,7 @@ public class NotchRuntime {
     public final Source source;
     private LinkedList<Scope> values = new LinkedList<>();
     protected BetterList<NotchStackTraceElement> stackTraceElements = new BetterList<>();
+    protected CoercionGraph coercions = new CoercionGraph();
     private Consumer<Object> out = System.out::print;
     private BetterMap<Key, Object> storage = new BetterMap<>();
     private final Deque<Throwable> handledExceptions = new ArrayDeque<>();
@@ -41,6 +44,8 @@ public class NotchRuntime {
         var scope = new Scope(entryBlock);
         values.push(scope);
 
+        coercions.addAll(Notch.coercions());
+
         final var currentStackTrace = Thread.currentThread().getStackTrace();
         final var frame = currentStackTrace[1];
         stackTraceElements.add(new NotchStackTraceElement(
@@ -54,6 +59,7 @@ public class NotchRuntime {
         out = parent.out;
         values = new LinkedList<>(parent.values);
         stackTraceElements.addAll(parent.stackTraceElements);
+        coercions = new CoercionGraph(parent.coercions);
     }
 
     public static String className(Object obj) {
@@ -148,36 +154,6 @@ public class NotchRuntime {
         return !isTruthy(value);
     }
 
-    public Iterable<?> coerceIterable(Object iterableValue, Spanned span) {
-        if (iterableValue == null) {
-            return Collections.emptyList();
-        }
-
-        if (iterableValue instanceof Object[] oa) {
-            return List.of(oa);
-        }
-
-        if (iterableValue instanceof Iterable<?> it) {
-            return it;
-        }
-
-        // convert notch java types to classes so enums are iterable
-        if (iterableValue instanceof NotchJavaType t) {
-            iterableValue = t.getBackingClass();
-        }
-
-        if (iterableValue instanceof Class<?> c && c.isEnum()) {
-            return Arrays.asList(c.getEnumConstants());
-        }
-
-        var st = currentStackTrace();
-        var diag = new Diagnostic();
-        diag.setTitle("failed to coerce iterable from value");
-        diag.highlight(span);
-        diag.note("target class was " + className(iterableValue));
-        throw new NotchRuntimeException(st, diag);
-    }
-
     public NotchStackTrace currentStackTrace() {
         var trace = stackTraceElements.toArray(NotchStackTraceElement[]::new);
         return new NotchStackTrace(trace);
@@ -202,9 +178,26 @@ public class NotchRuntime {
     public NotchType typeOf(Object value) {
         return TypeRegistry.getRuntimeType(value);
     }
+    @SuppressWarnings("unchecked")
     public <T> T coerce(Class<T> clazz, Object value, Spanned item) {
-        if (clazz == Iterable.class) return clazz.cast(coerceIterable(value, item));
-        return cast(clazz, value, item);
+        if (value == null || isUndefined(value) || clazz.isInstance(value)) {
+            return cast(clazz, value, item);
+        }
+        var path = getCoercion(typeOf(value), clazz);
+        if (path == null) return cast(clazz, value, item);
+        return (T) path.apply(value);
+    }
+
+    public void addCoercion(Coercion coercion) {
+        coercions.add(coercion);
+    }
+
+    public CoercionPath getCoercion(Class<?> from, Class<?> to) {
+        return coercions.find(typeOf(from), to);
+    }
+
+    public CoercionPath getCoercion(NotchType from, Class<?> to) {
+        return coercions.find(from, to);
     }
 
     public <T> T cast(Class<T> clazz, Object value, Spanned item) {

@@ -27,7 +27,7 @@ public class NotchMultiplicationExpression extends NotchExpression {
         } else {
             if (rhsVal instanceof Number n) {
                 try {
-                    var iterable = runtime.coerceIterable(lhsVal, lhs);
+                    var iterable = runtime.coerce(Iterable.class, lhsVal, lhs);
                     final var list = new BetterList<>();
                     for (int i = 0; i < n.intValue(); i++) {
                         for (Object o : iterable) {

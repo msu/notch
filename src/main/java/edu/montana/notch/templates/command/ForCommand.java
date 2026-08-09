@@ -36,7 +36,7 @@ public class ForCommand extends NotchTemplateCommand {
     @Override
     public void render(NotchTemplateRuntime runtime, Drain out) {
         var iterableValue = iterable.evaluate(runtime);
-        var iterable = runtime.coerceIterable(iterableValue, this.iterable);
+        var iterable = runtime.coerce(Iterable.class, iterableValue, this.iterable);
 
         try (var scope = runtime.pushScope()) {
             int i = 0;

@@ -2,7 +2,7 @@ package edu.montana.notch.types;
 
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.types.coercions.Coercion;
+import edu.montana.notch.types.coercions.CoercionPath;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.Exceptions;
 import edu.montana.notch.util.Pair;
@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
-import java.util.Arrays;
 import java.util.List;
 
 import static edu.montana.notch.util.Exceptions.rethrow;
@@ -49,23 +48,19 @@ public class NotchJavaMethod implements NotchMethod {
             if (javaMethods.isEmpty()) {
                 throw new NoSuchMethodException("No methods named " + this.name + " were found on " + backingClass.getName());
             }
-            Method method = bestMatch(args);
+            Method method = bestMatch(runtime, args);
             if (method == null) {
                 String argTypes = BetterList.better(args).map(NotchRuntime::className).toString(",");
                 throw new IllegalArgumentException("Could not find compatible method with args (" + argTypes + ")");
             }
             for (int i = 0; i < args.size(); i++) {
                 Object arg = args.get(i);
-                Class<?> parameterType = method.getParameterTypes()[i];
                 if (arg != null) {
+                    Class<?> parameterType = method.getParameterTypes()[i];
                     Class<?> runtimeType = arg.getClass();
                     if (!parameterType.isAssignableFrom(runtimeType)) {
-                        Coercion coercer = Coercion.resolve(runtimeType, parameterType);
-                        if (coercer == null) {
-                            throw new IllegalArgumentException("Could not figure out how to convert argument " + i + " of type " + runtimeType.getName() + " to " + parameterType.getName());
-                        } else {
-                            args.set(i, coercer.coerce(arg));
-                        }
+                        var value = runtime.coerce(parameterType, arg, argSpan.get(i));
+                        args.set(i, value);
                     }
                 }
             }
@@ -85,15 +80,15 @@ public class NotchJavaMethod implements NotchMethod {
         }
     }
 
-    private Method bestMatch(List<Object> argValues) {
-        return getBestMatch(argValues, javaMethods);
+    private Method bestMatch(NotchRuntime runtime, List<Object> argValues) {
+        return getBestMatch(runtime, argValues, javaMethods);
     }
 
-    public static <T extends Executable> T getBestMatch(List<Object> argValues, List<T> executables) {
+    public static <T extends Executable> T getBestMatch(NotchRuntime runtime, List<Object> argValues, List<T> executables) {
         int closestDistance = MAX_VALUE;
         T bestMatch = null;
         for (T javaMethod : executables) {
-            int distance = distanceFromValues(javaMethod, argValues);
+            int distance = distanceFromValues(runtime, javaMethod, argValues);
             if (distance == MAX_VALUE) {
                 continue;
             } else if (distance < closestDistance) {
@@ -111,7 +106,7 @@ public class NotchJavaMethod implements NotchMethod {
         return bestMatch;
     }
 
-    public static int distanceFromValues(Executable executable, List<Object> runtimeValues) {
+    public static int distanceFromValues(NotchRuntime runtime, Executable executable, List<Object> runtimeValues) {
         Class<?>[] parameterTypes = executable.getParameterTypes();
         if (runtimeValues.size() == parameterTypes.length) {
             int distance = 0;
@@ -120,7 +115,7 @@ public class NotchJavaMethod implements NotchMethod {
                 Object o = runtimeValues.get(i);
                 if (o != null) {
                     Class<?> runtimeClass = o.getClass();
-                    int paramDistance = distanceTo(runtimeClass, parameterType);
+                    int paramDistance = distanceTo(runtime, runtimeClass, parameterType);
                     if (paramDistance == MAX_VALUE) {
                         return MAX_VALUE;
                     }
@@ -160,30 +155,21 @@ public class NotchJavaMethod implements NotchMethod {
 
     @Override
     public boolean canInvokeWith(NotchRuntime runtime, List<Object> args) {
-        Method method = bestMatch(args);
+        Method method = bestMatch(runtime, args);
         return method != null;
     }
 
-    private static int distanceTo(Class<?> from, Class<?> to) {
+    private static int distanceTo(NotchRuntime runtime, Class<?> from, Class<?> to) {
         if (from == null) {
             return MAX_VALUE;
         }
         if (from.equals(to)) {
             return 0;
         }
-        if (Arrays.asList(from.getInterfaces()).contains(to)) {
-            return 1;
-        }
-        Coercion coercion = Coercion.resolve(from, to);
-        if (coercion != null) {
-            return coercion.getRank();
-        }
-        int distanceToSuperclass = distanceTo(from.getSuperclass(), to);
-        if (distanceToSuperclass == MAX_VALUE) {
-            return MAX_VALUE;
-        } else {
-            return 2 + distanceToSuperclass;
-        }
+        // the coercion graph walks the supertypes of `from` itself, so this
+        // covers plain assignability as well as any conversion chain
+        CoercionPath path = runtime.getCoercion(from, to);
+        return path == null ? MAX_VALUE : path.cost();
     }
 
     @Override

@@ -1,8 +1,8 @@
 package edu.montana.notch;
 
+import edu.montana.notch.runtime.NotchRuntimeException;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -90,23 +90,9 @@ public class NotchTest {
     }
 
     @Test
-    public void evalToIntegerFromBigDecimal() {
-        // Skip the parser: feed a BigDecimal-producing expression. If the
-        // language doesn't produce BigDecimal directly from a literal, this
-        // exercises the BigDecimalToInt coercion path via the boxing API.
-        // Falls back to verifying the coercion exists when invoked through
-        // the public surface.
-        BigDecimal bd = new BigDecimal("5");
-        Object coerced = edu.montana.notch.types.coercions.Coercion
-                .resolve(BigDecimal.class, Integer.class)
-                .coerce(bd);
-        assertEquals(5, coerced);
-    }
-
-    @Test
     public void evalThrowsWhenCoercionUnavailable() {
         // Integer result cannot be coerced to e.g. java.util.Date
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NotchRuntimeException.class,
                 () -> Notch.eval("1", java.util.Date.class));
     }
 

@@ -5,8 +5,6 @@ import edu.montana.notch.chisel.Token;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchRuntime;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,30 +26,14 @@ public class NotchForLoop extends NotchLoop {
         Object result = runtime.evaluate(expr);
         int index = 0;
         try (var scope = runtime.pushScope()) {
-            result = tryCoerceIterable(result);
-            if (result instanceof Iterable<?> i) {
-                for (Object o : i) {
-                    runtime.defineOrUpdate(((String) loopVariable.data), o);
-                    if (indexVariable != null) {
-                        runtime.defineOrUpdate(((String) indexVariable.data), index++);
-                    }
-                    if (runBody(runtime) == Control.BREAK) return;
+            Iterable i = runtime.coerce(Iterable.class, result, expr);
+            for (Object o : i) {
+                runtime.defineOrUpdate(((String) loopVariable.data), o);
+                if (indexVariable != null) {
+                    runtime.defineOrUpdate(indexVariable.str(), index++);
                 }
+                if (runBody(runtime) == Control.BREAK) return;
             }
         }
-    }
-
-    private static Object tryCoerceIterable(Object result) {
-        if (result instanceof String s) {
-            char[] charArray = s.toCharArray();
-            ArrayList<String> charList = new ArrayList<>(charArray.length);
-            for (char c : charArray) {
-                charList.add(String.valueOf(c));
-            }
-            result = charList;
-        } else if (result instanceof Object[] arr) {
-            result = Arrays.asList(arr);
-        }
-        return result;
     }
 }

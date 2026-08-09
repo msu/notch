@@ -3,11 +3,13 @@ package edu.montana.notch.types;
 
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.util.BetterList;
+import edu.montana.notch.util.BetterSet;
 import edu.montana.notch.util.Text;
 
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static edu.montana.notch.types.NotchJavaProperty.isPropertyMethod;
@@ -23,6 +25,7 @@ public class NotchJavaType implements NotchType {
     private final ConcurrentHashMap<String, NotchJavaProperty> staticProperties = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, NotchMethod> methods = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, NotchMethod> staticMethods = new ConcurrentHashMap<>();
+    private List<NotchType> supertypes;
     private BetterList<Constructor> constructors;
 
     public NotchJavaType(Class backingClass) {
@@ -158,8 +161,46 @@ public class NotchJavaType implements NotchType {
     }
 
     @Override
+    public List<NotchType> getDirectSupertypes() {
+        if (supertypes != null) return supertypes;
+        var out = new BetterList<NotchType>();
+        // getSuperclass() is null for Object, interfaces and primitives. Only
+        // primitives really have nowhere to go — interfaces are still
+        // assignable to Object, so put it back for them.
+        Class<?> superclass = backingClass.getSuperclass();
+        if (superclass != null) {
+            out.add(TypeRegistry.getType(superclass));
+        } else if (backingClass.isInterface()) {
+            out.add(TypeRegistry.getType(Object.class));
+        }
+        // Array covariance is not reported by getSuperclass(): String[] says
+        // Object, not Object[].
+        if (backingClass.isArray()
+                && !backingClass.getComponentType().isPrimitive()
+                && backingClass != Object[].class) {
+            out.add(TypeRegistry.getType(Object[].class));
+        }
+        for (var iface : backingClass.getInterfaces()) {
+            out.add(TypeRegistry.getType(iface));
+        }
+        supertypes = out;
+        return supertypes;
+    }
+
+    @Override
+    public Set<NotchType> getAllSupertypes() {
+        var out = new BetterSet<NotchType>();
+        var supertypes = getDirectSupertypes();
+        out.addAll(supertypes);
+        for (var ty : supertypes) {
+            out.addAll(ty.getAllSupertypes());
+        }
+        return out;
+    }
+
+    @Override
     public Object newInstance(NotchRuntime runtime, Object[] args) {
-        Constructor bestMatch = NotchJavaMethod.getBestMatch(Arrays.asList(args), constructors);
+        Constructor bestMatch = NotchJavaMethod.getBestMatch(runtime, Arrays.asList(args), constructors);
         if (bestMatch != null) {
             return safelyEval(() -> bestMatch.newInstance(args));
         } else {

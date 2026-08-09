@@ -3,6 +3,7 @@ package edu.montana.notch.types;
 import edu.montana.notch.runtime.NotchRuntime;
 
 import java.util.List;
+import java.util.Set;
 
 public interface NotchType {
     NotchMethod getMethod(String propName);
@@ -28,6 +29,10 @@ public interface NotchType {
     List<NotchProperty> getStaticProperties();
 
     Class getBackingClass();
+
+    List<NotchType> getDirectSupertypes();
+
+    Set<NotchType> getAllSupertypes();
 
     Object newInstance(NotchRuntime runtime, Object[] args);
 

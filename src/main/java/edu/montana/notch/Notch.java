@@ -13,6 +13,7 @@ import edu.montana.notch.types.coercions.Coercion;
 import edu.montana.notch.util.BetterFS;
 import edu.montana.notch.util.BetterMap;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -46,14 +47,10 @@ public class Notch {
         TokenStream tokens = Notch.TOKENIZER.tokenize(new Source("<eval>", code));
         NotchParser notchParser = new NotchParser(tokens);
         NotchExpression notchExpression = notchParser.parseExpression();
-        Object result = notchExpression.evaluate();
+        var runtime = new NotchRuntime(notchExpression.source());
+        Object result = runtime.evaluate(notchExpression);
         if (!targetType.isInstance(result)) {
-            Coercion coercer = Coercion.resolve(result.getClass(), targetType);
-            if (coercer != null) {
-                result = coercer.coerce(result);
-            } else {
-                throw new IllegalArgumentException("Result of type " + result.getClass() + " could not be coerced to " + targetType);
-            }
+            return runtime.coerce(targetType, result, notchExpression);
         }
         return (T) result;
     }
@@ -95,6 +92,10 @@ public class Notch {
         String content = BetterFS.read(file);
         Notch.run(content);
 //        NotchShell.start(true);
+    }
+
+    public static Collection<? extends Coercion> coercions() {
+        return Coercion.defaults();
     }
 
     public static Map<String, Object> builtins() {
