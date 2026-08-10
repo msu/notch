@@ -26,7 +26,7 @@ class NotchExpressionErrorRecoveryTest {
 
     @Test
     void missingForLoopIterableDoesNotCascade() {
-        assertEquals(List.of("expected expression for the loop iterable"), errorsIn("""
+        assertEquals(List.of("EP0034"), errorsIn("""
                 for x in
                 end
                 """));
@@ -34,7 +34,7 @@ class NotchExpressionErrorRecoveryTest {
 
     @Test
     void missingRepeatWhileConditionDoesNotCascade() {
-        assertEquals(List.of("expected condition after 'while'"), errorsIn("""
+        assertEquals(List.of("EP0030"), errorsIn("""
                 repeat while
                 end
                 """));
@@ -42,7 +42,7 @@ class NotchExpressionErrorRecoveryTest {
 
     @Test
     void missingRepeatUntilConditionDoesNotCascade() {
-        assertEquals(List.of("expected condition after 'until'"), errorsIn("""
+        assertEquals(List.of("EP0030"), errorsIn("""
                 repeat until
                 end
                 """));
@@ -50,7 +50,7 @@ class NotchExpressionErrorRecoveryTest {
 
     @Test
     void forBodyParsedAfterMissingIterable() {
-        assertEquals(List.of("expected expression for the loop iterable"), errorsIn("""
+        assertEquals(List.of("EP0034"), errorsIn("""
                 for x in
                   for y in [1, 2]
                   end
@@ -60,7 +60,7 @@ class NotchExpressionErrorRecoveryTest {
 
     @Test
     void missingRepeatCountDoesNotCascade() {
-        assertEquals(List.of("expected count expression after 'repeat'"), errorsIn("""
+        assertEquals(List.of("EP0031"), errorsIn("""
                 repeat times
                 end
                 """));
@@ -86,7 +86,7 @@ class NotchExpressionErrorRecoveryTest {
 
     @Test
     void missingAssignmentRhsDoesNotCascade() {
-        assertEquals(List.of("expected an expression after '='"), errorsIn("""
+        assertEquals(List.of("EP0033"), errorsIn("""
                 x =
                 print(1)
                 """));
@@ -94,7 +94,7 @@ class NotchExpressionErrorRecoveryTest {
 
     @Test
     void missingIndexExpressionDoesNotCascade() {
-        assertEquals(List.of("An expression is required"), errorsIn("""
+        assertEquals(List.of("EP0028"), errorsIn("""
                 x = arr[]
                 print(1)
                 """));
@@ -102,7 +102,7 @@ class NotchExpressionErrorRecoveryTest {
 
     @Test
     void missingRecoverExpressionDoesNotCascade() {
-        assertEquals(List.of("expected an expression after 'recover'"), errorsIn("""
+        assertEquals(List.of("EP0027"), errorsIn("""
                 x = someVal recover with
                 print(1)
                 """));
@@ -110,7 +110,7 @@ class NotchExpressionErrorRecoveryTest {
 
     @Test
     void missingFieldInitializerDoesNotCascade() {
-        assertEquals(List.of("expected an initializer expression after '='"), errorsIn("""
+        assertEquals(List.of("EP0032"), errorsIn("""
                 class Dog
                   field age =
                   field name

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import static edu.montana.notch.NotchTestUtils.UNCODED;
 import static edu.montana.notch.NotchTestUtils.assertCodes;
 import static edu.montana.notch.NotchTestUtils.execDiagnostics;
 
@@ -189,7 +188,7 @@ class ParserErrorSynchronizationTest {
                 x + 1 = 5
                 else
                 """);
-        assertCodes(diagnostics, ParserError.EP0012, ParserError.EP0011);
+        assertCodes(diagnostics, ParserError.EP0012, ParserError.EP0062);
     }
 
     @Test
@@ -198,7 +197,7 @@ class ParserErrorSynchronizationTest {
                 x + 1 = 5
                 catch e
                 """);
-        assertCodes(diagnostics, ParserError.EP0012, ParserError.EP0011);
+        assertCodes(diagnostics, ParserError.EP0012, ParserError.EP0061);
     }
 
     @Test
@@ -312,7 +311,7 @@ class ParserErrorSynchronizationTest {
                   return 1
                 end
                 """);
-        assertCodes(diagnostics, UNCODED);
+        assertCodes(diagnostics, ParserError.EP0040);
     }
 
     @Test

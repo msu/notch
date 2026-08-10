@@ -34,7 +34,7 @@ class NotchParserDiagnosticsTest {
 
     @Test
     void expressionPathCollectsSingleDiagnostic() {
-        assertEquals(List.of("An expression is required"), errorsIn("arr[]"));
+        assertEquals(List.of(ParserError.EP0028.template()), errorsIn("arr[]"));
     }
 
     @Test
@@ -49,7 +49,7 @@ class NotchParserDiagnosticsTest {
 
     @Test
     void invalidAssignmentTargetCommitsAbsorbedExpressionDiagnostics() {
-        assertEquals(List.of("An expression is required", ParserError.EP0012.template()),
+        assertEquals(List.of(ParserError.EP0028.template(), ParserError.EP0012.template()),
                 errorsIn("foo()[] = 5"));
     }
 
@@ -57,7 +57,7 @@ class NotchParserDiagnosticsTest {
     void abandonedAssignmentAttemptRollsBackAbsorbedDiagnostics() {
         var parser = parserFor("arr[].size()");
         parser.parseAsStatement();
-        assertEquals(List.of("An expression is required"), keysOf(parser.getDiagnostics()));
+        assertEquals(List.of(ParserError.EP0028.template()), keysOf(parser.getDiagnostics()));
     }
 
     @Test
@@ -156,7 +156,7 @@ class NotchParserDiagnosticsTest {
 
     @Test
     void absorbedDiagnosticSurvivesTrailingTokens() {
-        assertEquals(List.of("An expression is required", ParserError.EP0013.template()),
+        assertEquals(List.of(ParserError.EP0028.template(), ParserError.EP0013.template()),
                 errorsIn("arr[] 5"));
     }
 }
