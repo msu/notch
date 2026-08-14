@@ -1729,40 +1729,130 @@ body.home-layout > main > section.feature-showcase {
 }
 
 /* Each feature is a self-contained "windowed" code block: a title tab (the    */
-/* example.notch look) above a dark code panel. Two across on wide screens,    */
-/* stacking to one column only when there is no longer room for both.          */
+/* example.notch look) above a dark code panel. Three across in a single row,  */
+/* stacking straight to one column - a two-across state would strand the third */
+/* card on a half-empty row.                                                   */
+/*                                                                             */
+/* The row reads as even because of two rules working together: the grid's     */
+/* default `align-items: stretch` makes every card as tall as the tallest, and */
+/* `flex: 1 1 auto` on the code panel below hands that slack to the navy       */
+/* background instead of leaving it as a ragged gap under a short sample.      */
+/* Without both, a 6-line sample sits visibly higher than a 8-line one.        */
 .feature-showcase {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem;
   margin: 0 0 3rem;
-  align-items: start;
 
-  @media (max-width: 820px) {
+  /* Stack below 1120px. A third of the content width there is ~319px; minus  */
+  /* the 2rem side padding that leaves room for 29 characters, and the        */
+  /* longest sample line is 28. Any narrower and the panels start scrolling.  */
+  @media (max-width: 1120px) {
     grid-template-columns: 1fr;
   }
 }
 
+/* One continuous navy surface per card. The title used to be a light filename */
+/* tab, which put a third value (beige) between the cream page and the navy    */
+/* panel inside a ~330px box; carrying the panel colour on the block itself    */
+/* and letting the title sit on it in the comment grey makes the label read as */
+/* part of the code rather than as chrome above it. */
 .feature-block {
-  border: 1px solid var(--border-muted);
-  border-radius: var(--radius);
+  /* Column flex so the .highlight below can grow into a stretched card. */
+  display: flex;
+  flex-direction: column;
+  /* Must track the .highlight background at the top of this file. */
+  background: #011628;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  /* No border. Ruby's gold hairline is load-bearing because its cards are     */
+  /* near-black on a near-black page and need an edge; a navy panel on cream   */
+  /* already has all the edge it needs, and the old cream 1px border only ate  */
+  /* a pixel of the silhouette. What dark-on-light wants instead is lift.      */
+  box-shadow:
+    0 2px 4px rgba(1, 22, 40, 0.10),
+    0 12px 28px -12px rgba(1, 22, 40, 0.22);
 }
 
-/* The "example.notch"-style filename tab, reused as each block's title. */
+/* Each block's title, styled as if it were the sample's first comment line -  */
+/* same mono face, same 0.875rem size, same 1.75 pitch and same grey as the .c */
+/* comment token, so it lands exactly one code line above line 1 rather than   */
+/* hovering over the panel as smaller chrome. (Notch has no comment syntax, so */
+/* it cannot literally be one: see EP0074.) The <pre> below drops its own top  */
+/* padding and this supplies it, keeping both on one vertical rhythm. */
 .feature-title {
-  background: linear-gradient(to bottom, #F3EFE9, #E4DFD6);
-  padding: 6px 12px;
+  padding: 2rem 2rem 0;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border-muted);
+  font-size: 0.875rem;
+  line-height: 1.75;
+  font-style: italic;
+  color: #878580;
 }
 
 .feature-block .highlight {
   margin: 0;
   border-radius: 0;
+  /* Grows from its content height to fill whatever the stretched card gives */
+  /* it, so all three panels end on the same baseline. `auto` basis (not 0)  */
+  /* keeps the sample's own height as the card's intrinsic contribution.     */
+  flex: 1 1 auto;
+}
+
+/* No line-number gutter on the home page. At a third of the content width the */
+/* 52px gutter costs six characters of every line, and the numbers are a docs  */
+/* navigation aid a teaser has no use for. The per-line hover stays.           */
+.feature-block .highlight .with-linenos .code-line::before {
+  content: none;
+}
+
+/* Roomier than the docs' 1rem: the samples are short and the extra air is what */
+/* separates a designed panel from a pasted-in screenshot. The top padding      */
+/* lives on .feature-title above, so the code starts one line pitch under the   */
+/* label. Bottom padding is split off onto the <code> for the same reason the   */
+/* global rules below split theirs (the <pre> stays the scroller, so its own    */
+/* bottom padding would scroll away).                                           */
+/*                                                                              */
+/* The 1.75 leading is the one thing holding the cards' proportion: 29 chars    */
+/* plus 4rem of side padding floors the card at ~308px wide, so height is the   */
+/* only axis left to move these away from a letterbox strip.                    */
+.feature-block .highlight pre {
+  padding: 0 2rem;
+}
+
+.feature-block .highlight pre code {
+  line-height: 1.75;
+}
+
+/* The card's foot. The .highlight above grows into the stretched card, so     */
+/* this lands on the bottom edge and the slack a short sample leaves is        */
+/* terminated rather than dead - and it gives a reader sold by the title       */
+/* somewhere to go. (`margin-top: auto` is belt-and-braces: it would still     */
+/* bottom-pin the link if that flex-grow were ever dropped.) Mirrors           */
+/* .feature-title exactly (same mono, size, pitch, grey) at the other end of   */
+/* the card. It also supplies the code's bottom padding, which is why the      */
+/* <code> rule above no longer carries one. */
+/* Selector carries `.home-layout main a.feature-more` rather than the bare    */
+/* class because `.home-layout main a` (above) paints every home-page link     */
+/* MSU navy - which is invisible on the navy panel. This out-specifies it      */
+/* outright instead of relying on source order. */
+.home-layout main a.feature-more {
+  margin-top: auto;
+  padding: 1.75rem 2rem 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.75;
+  /* The panel's base text colour, not .feature-title's #878580 grey. Matching */
+  /* the title exactly made the card's only interactive element its dimmest    */
+  /* text, indistinguishable at rest from a caption. Face, size and pitch still */
+  /* mirror the title; only the value steps up. */
+  color: #cecdc3;
+  text-decoration: none;
+  transition: color var(--transition);
+
+  &:hover {
+    color: #da702c;
+    text-decoration: underline;
+  }
 }
 
 .docs-grid {

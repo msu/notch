@@ -24,50 +24,43 @@ title: Notch
 import java.time.LocalDate
 
 today = LocalDate.now()
+print('Today is ' + today)
 
-for name in ['Alice', 'Bob', 'Carol']
-  print('Hello, ' + name + '! Today is ' + today)
+for name in ['Ada', 'Bob']
+  print('Hello, ' + name)
 end
 {% endhighlight %}
+    <a class="feature-more" href="{{ '/language/java-interop/' | relative_url }}">Java interop &rarr;</a>
   </div>
 
   <div class="feature-block">
     <div class="feature-title">Null that won't surprise you</div>
 {% highlight notch %}
 name = null
-greeting = name ?: 'anonymous'
-print(greeting)
+user = name ?: 'anonymous'
+print(user)
 
-setting = config? ?: 'default'
-print(setting)
+mode = config? ?: 'default'
+print(mode)
+
+print(name is empty)
 {% endhighlight %}
+    <a class="feature-more" href="{{ '/language/values/' | relative_url }}">Null &amp; values &rarr;</a>
   </div>
 
   <div class="feature-block">
     <div class="feature-title">Reads like you'd say it</div>
 {% highlight notch %}
-print('notch' starts with 'no')
-print('notch' contains 'otc')
-print([1, 2] is not empty)
-lengths = ['a', 'ab', 'abc'].map(\ s -> s.length)
-print(lengths)
-{% endhighlight %}
-  </div>
+word = 'notch'
+print(word starts with 'no')
+print(word contains 'otc')
 
-  <div class="feature-block">
-    <div class="feature-title">Objects when you want them</div>
-{% highlight notch %}
-class Greeter
-  field name
-  function hello()
-    return 'Hi, ' + this.name
-  end
-end
-
-g = new Greeter()
-g.name = 'Ada'
-print(g.hello())
+double = \ n -> n * 2
+nums = [1, 2]
+print(nums is not empty)
+print(nums.map(double))
 {% endhighlight %}
+    <a class="feature-more" href="{{ '/language/operators/' | relative_url }}">Operators &rarr;</a>
   </div>
 </section>
 
