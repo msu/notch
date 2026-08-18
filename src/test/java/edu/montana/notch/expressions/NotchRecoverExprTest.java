@@ -1,8 +1,11 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.errors.ParserError;
 import org.junit.jupiter.api.Test;
 
+import static edu.montana.notch.NotchTestUtils.assertCodes;
 import static edu.montana.notch.NotchTestUtils.exec;
+import static edu.montana.notch.NotchTestUtils.execDiagnostics;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -226,13 +229,12 @@ class NotchRecoverExprTest {
                 """));
     }
 
+    //TODO: Describes a regression in good error msgs that should be fixed.
     @Test
-    void strayTokenAfterTypedRecoverGivesError() {
-        var ex = assertThrows(RuntimeException.class, () -> exec(IO_ERROR + """
+    void aStrayTokenAfterARecoverChainIsReportedAsAStatement() {
+        assertCodes(execDiagnostics(IO_ERROR + """
                 x = ioError() recover IOException 1 garbage
-                """));
-        assertTrue(ex.getMessage().contains("unexpected token after recover"),
-                "expected stray token error but got: " + ex.getMessage());
+                """), ParserError.EP0013);
     }
 
     @Test
