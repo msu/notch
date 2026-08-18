@@ -1650,21 +1650,47 @@ section {
   50%      { filter: drop-shadow(0 0 8px rgba(216, 130, 100, 0.40)); }
 }
 
+/* Top padding replaces the 40px the glyph's negative margin pulls off its top
+   gutter - without it the mark sits 32px under the fixed toolbar and reads
+   cramped. (This was briefly 2rem, tightened to buy fold-budget clearance for a
+   call to action that has since been removed; R6 now has ~280px of slack at
+   1440x800, so the space is affordable again.) */
 .hero {
-  padding: 2.5rem 0 0;
-  margin-bottom: 0;
+  padding: 5rem 0 0;
+  /* Carries the gap to the code cards - there is no longer a .home-intro
+     section between them. */
+  margin-bottom: 3rem;
 
   .hero-banner {
     display: flex;
-    align-items: center;
+    /* Bottom-aligned, not centred: with the glyph's transparent gutter pulled
+       off below, the tagline's last baseline and the SVG's own "Notch" wordmark
+       baseline land within 0.11px of each other (measured 361.05 vs 361.16 at
+       1440). The two read as one lockup sharing a baseline, instead of the
+       tagline floating at the square's vertical midpoint.
+
+       This survives the font fallback. `flex-end` aligns line-box bottoms, not
+       baselines, so the match is metric-independent - it holds under Atkinson,
+       Inter, system-ui and Helvetica alike, which matters because Atkinson has
+       no @font-face here and most visitors never see it. */
+    align-items: flex-end;
     gap: 2rem;
-    margin-bottom: 2rem;
+    /* Replaces the 40px of transparent gutter the negative margin removes. */
+    margin-bottom: 2.5rem;
   }
 
   .hero-glyph {
     display: block;
     flex: 0 0 auto;
-    width: clamp(187px, 32vw, 323px);
+    --glyph-w: clamp(187px, 32vw, 400px);
+    width: var(--glyph-w);
+    /* notch.svg's viewBox is 24 units and the mark's path spans 3..21 on both
+       axes, so one eighth of the rendered box is transparent on every side -
+       40px at the 323px desktop size. Layout was aligning to that empty box,
+       which put the strongest vertical edge on the page (the orange square's
+       left side) 40px out of register with the lead paragraph beneath it.
+       Pulling the gutter off makes the visible square the thing that aligns. */
+    margin: calc(var(--glyph-w) / -8);
     height: auto;
     animation: hero-glow 4s ease-in-out infinite;
 
@@ -1674,95 +1700,302 @@ section {
     }
   }
 
-  .tagline {
+  /* The lockup's right column: tagline over lead. The lead used to be its own
+     full-width section below the banner, where it was the only element on the
+     page whose right edge related to nothing - its box ended at x=750 between a
+     tagline reaching 1024 and cards reaching 1270, stranding 520px of cream
+     beside a correctly-measured paragraph. Inside the column the same 29em
+     measure sits against a 522px tagline instead of an 1100px band, so the
+     narrow measure now reads as deliberate. */
+  .hero-copy {
     flex: 1 1 auto;
-    margin: 0;
-    color: var(--accent);
-    font-weight: 500;
-    font-size: clamp(1.5rem, calc(1.25vw + 1.125rem), 2.375rem);
-    line-height: 1.2;
-    /* "Scripting" sits on its own line (via <br>) with "For Java & Minecraft" */
-    /* centered beneath it. */
-    text-align: center;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
   }
 
-  /* Mobile: stack logo + tagline, both centered. Logo allowed to */
-  /* expand wider since it now anchors the hero alone. */
+  .tagline {
+    margin: 0;
+    color: var(--accent);
+    /* Heavier and tighter than body copy, tracking borrowed from the wordmark
+       embedded in notch.svg (Inter 800 at letter-spacing -0.15 of a 5.25 size,
+       i.e. -0.029em). At 500 this read as body text scaled to 36px - 12px of
+       navy stroke asked to hold its own against 242px of solid orange. */
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    /* Display scale, sized to the 1100px column rather than the 746px one the
+       section used to be capped at. At the old 2.375rem ceiling the lockup's
+       ink stopped at x=775 of a band running to 1265, leaving 490px of cream
+       beside a row of cards below that fills the full width - the content had
+       not grown into the container the shared-left-edge change gave it. */
+    font-size: clamp(1.5rem, calc(2.75vw + 1rem), 3.75rem);
+    line-height: 1.15;
+    /* Left-aligned so "Scripting" and "For Java & Minecraft" (split by a <br>)
+       share an axis with each other and with the lead paragraph below. Centred,
+       the tagline centred itself in whatever space was left over, so its
+       optical axis corresponded to nothing on the page. */
+    text-align: left;
+  }
+
+  /* Mobile: the mark and the copy block are each centred, but the text inside
+     the copy block stays left-aligned on one edge, exactly as on desktop.
+     The defect this replaces was centred display type sitting above
+     left-aligned body copy - left edges 122px apart at 720px, 58px at 390px,
+     sharing only a centre axis. That is a text-to-text mismatch. A centred
+     graphic above a left-aligned text block is not: the mark is an object, not
+     a line of type, and it shares a centre axis with the block beneath it.
+     Centring the paragraph itself is not an option at six lines. */
   @media (max-width: 768px) {
-    padding: 1.5rem 0 0;
+    /* 3rem, not the 1.5rem this inherited: at 24px the gap between the nav rule
+       and the mark's ink was exactly equal to the lockup's own binding gap (24)
+       and to the stacked card gap (24), so the outermost boundary on the page
+       tied with the tightest internal one. Desktop measures the same pair at
+       80/32. 48px puts mobile back on the two-value system it uses everywhere
+       else - 24 within a group, 48 between groups. */
+    padding: 3rem 0 0;
 
     .hero-banner {
       flex-direction: column;
+      /* Centres the mark and the copy block as two objects on one centre axis.
+         Both shrink to their content, so this does not stretch either. */
       align-items: center;
-      gap: 1.25rem;
-      margin-bottom: 1rem;
+      /* Larger than it looks: the glyph's negative margin has already eaten
+         its own gutter, so this is the real gap rather than gutter + gap. */
+      /* Stacked, these two are the lockup's binding gap and its separating gap,
+         and they have to differ by more than the box model suggests. At
+         2.25rem/2.25rem the boxes were exactly equal but the optical gaps were
+         45px inside the lockup against 51px below it - a 0.88 ratio, so the
+         tagline read as a third free-floating block rather than as part of the
+         mark. Desktop's working ratio is 0.49; 1.5/3 puts mobile at 0.52.
+         The margin must also clear the lead's own 31px leading, which 3rem does
+         with room - at 1rem the paragraph's first line sat 16px under the
+         tagline and 31px above its own second line. */
+      gap: 1.5rem;
+      margin-bottom: 3rem;
     }
 
     .hero-glyph {
-      width: clamp(240px, 55vw, 380px);
+      /* Redefine the custom property, never `width` directly: the negative
+         margin above is calc'd from --glyph-w, so overriding only the width
+         desyncs the two and leaves part of the gutter behind on mobile. */
+      --glyph-w: clamp(240px, 55vw, 380px);
+    }
+
+    .hero-copy {
+      align-items: flex-start;
     }
 
     .tagline {
-      text-align: center;
       max-width: 32rem;
     }
   }
 }
 
-/* Home "what is Notch" intro lead paragraph (indexable, with an MSU link). */
-.home-intro {
-  margin: 0 0 2rem;
-
+/* The "what is Notch" lead paragraph (indexable, with an MSU link). Lives in
+   .hero-copy's column beside the mark; .hero-copy carries the gap above it and
+   .hero's margin-bottom carries the gap to the code cards below. */
+.hero-copy {
   .lead {
     margin: 0;
-    font-size: 1.125rem;
-    line-height: 1.6;
+    /* The section inherits --content-max-width: 72ch, but `ch` resolves against
+       the 16px root while this paragraph renders at 18px, so the longest line
+       ran 93 characters - well past the 45-75 band, on the one element that has
+       to explain Notch to someone who has never heard of it. `em` is a poor
+       proxy for measure here: Atkinson Hyperlegible averages 0.434em of advance
+       for this text, not the ~0.5em the unit implies, so 29em lands at ~68
+       characters where 34em still left 79. */
+    max-width: 29em;
+    /* Deck size, not body size. This sentence has to explain Notch to someone
+       who has never heard of it, and at 1.125rem it was the fourth voice on the
+       page. The scale is now 36 -> 20 -> 14 rather than 36 -> 18 -> 14. The
+       measure is em-based, so the character count per line is unchanged. */
+    font-size: 1.25rem;
+    line-height: 1.55;
     color: var(--text);
+  }
+
+  /* The MSU link was the highest-contrast, most saturated thing in the intro -
+     full navy plus a tight default underline - which made the paragraph's focal
+     point a link that leaves the site. The affiliation is a credibility signal
+     meant to be read, not clicked. Tinted underline keeps it discoverable.
+     Selector out-specifies `.home-layout main a`. */
+  .lead a {
+    color: var(--text);
+    text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    /* "Montana State University" is one semantic unit and an underlined link;
+       letting the narrower measure break it mid-phrase puts a visually
+       emphasised split through a proper noun. */
+    white-space: nowrap;
+
+    /* Needed explicitly: `.home-layout main a`'s nested &:hover compiles to
+       (0,2,2) and outranks this rule's (0,2,1), so without it the link snapped
+       back to full navy the moment the cursor crossed it - undoing the
+       demotion exactly when the eye is already there. */
+    &:hover {
+      color: var(--accent);
+      text-decoration-color: var(--accent);
+    }
   }
 }
 
-/* Feature showcase: "show, don't tell" rows - a short description beside a live */
-/* code sample. Side by side on wide screens, stacked on narrow. It is widened   */
-/* past the 72ch prose column (the override below) so code fits next to copy.    */
-body.home-layout > main > section.feature-showcase {
+/* Every home-page section shares one left edge. `body.home-layout > main >
+   section` caps sections at --content-max-width (72ch = 746px) and the showcase
+   alone used to override to 100%, which put the hero and the code cards on two
+   authored left edges 177px apart - the strongest vertical edge in the top half
+   of the fold inboard of the strongest edge in the bottom half. The home page
+   carries no long-form prose to protect: .lead sets its own 29em measure, so
+   the section cap here was doing positioning, not typography. */
+body.home-layout > main > section.hero,
+body.home-layout > main > section.feature-showcase,
+body.home-layout > main > section.docs-grid {
   max-width: 100%;
 }
 
 /* Each feature is a self-contained "windowed" code block: a title tab (the    */
-/* example.notch look) above a dark code panel. Two across on wide screens,    */
-/* stacking to one column only when there is no longer room for both.          */
+/* example.notch look) above a dark code panel. Three across in a single row,  */
+/* stacking straight to one column - a two-across state would strand the third */
+/* card on a half-empty row.                                                   */
+/*                                                                             */
+/* The row reads as even because of two rules working together: the grid's     */
+/* default `align-items: stretch` makes every card as tall as the tallest, and */
+/* `flex: 1 1 auto` on the code panel below hands that slack to the navy       */
+/* background instead of leaving it as a ragged gap under a short sample.      */
+/* Without both, a 6-line sample sits visibly higher than a 8-line one.        */
 .feature-showcase {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem;
   margin: 0 0 3rem;
-  align-items: start;
 
-  @media (max-width: 820px) {
+  /* Stack below 1120px. A third of the content width there is ~319px; minus  */
+  /* the 2rem side padding that leaves room for 29 characters, and the        */
+  /* longest sample line is 28. Any narrower and the panels start scrolling.  */
+  @media (max-width: 1120px) {
     grid-template-columns: 1fr;
+    /* Half the 3rem used between sections. Stacked, a 3rem row gap made the
+       space between two cards identical to the space around the whole group
+       (intro->showcase and showcase->docs are both 48px), so three equal gaps
+       in a row left the set with no boundary - card 2 belonged to card 1
+       exactly as much as the set belonged to "Documentation". */
+    gap: 1.5rem;
   }
 }
 
+/* One continuous navy surface per card. The title used to be a light filename */
+/* tab, which put a third value (beige) between the cream page and the navy    */
+/* panel inside a ~330px box; carrying the panel colour on the block itself    */
+/* and letting the title sit on it in the comment grey makes the label read as */
+/* part of the code rather than as chrome above it. */
 .feature-block {
-  border: 1px solid var(--border-muted);
-  border-radius: var(--radius);
+  /* Column flex so the .highlight below can grow into a stretched card. */
+  display: flex;
+  flex-direction: column;
+  /* Must track the .highlight background at the top of this file. */
+  background: #011628;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  /* No border. Ruby's gold hairline is load-bearing because its cards are     */
+  /* near-black on a near-black page and need an edge; a navy panel on cream   */
+  /* already has all the edge it needs, and the old cream 1px border only ate  */
+  /* a pixel of the silhouette. What dark-on-light wants instead is lift.      */
+  box-shadow:
+    0 2px 4px rgba(1, 22, 40, 0.10),
+    0 12px 28px -12px rgba(1, 22, 40, 0.22);
 }
 
-/* The "example.notch"-style filename tab, reused as each block's title. */
+/* Each block's title, styled as if it were the sample's first comment line -  */
+/* same mono face, same 0.875rem size, same 1.75 pitch and same grey as the .c */
+/* comment token, so it lands exactly one code line above line 1 rather than   */
+/* hovering over the panel as smaller chrome. (Notch has no comment syntax, so */
+/* it cannot literally be one: see EP0074.) The <pre> below drops its own top  */
+/* padding and this supplies it, keeping both on one vertical rhythm. */
 .feature-title {
-  background: linear-gradient(to bottom, #F3EFE9, #E4DFD6);
-  padding: 6px 12px;
+  padding: 2rem 2rem 0;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border-muted);
+  font-size: 0.875rem;
+  line-height: 1.75;
+  font-style: italic;
+  color: #878580;
 }
 
 .feature-block .highlight {
   margin: 0;
   border-radius: 0;
+  /* Grows from its content height to fill whatever the stretched card gives */
+  /* it, so all three panels end on the same baseline. `auto` basis (not 0)  */
+  /* keeps the sample's own height as the card's intrinsic contribution.     */
+  flex: 1 1 auto;
+}
+
+/* No line-number gutter on the home page. At a third of the content width the */
+/* 52px gutter costs six characters of every line, and the numbers are a docs  */
+/* navigation aid a teaser has no use for. The per-line hover stays.           */
+.feature-block .highlight .with-linenos .code-line::before {
+  content: none;
+}
+
+/* Roomier than the docs' 1rem: the samples are short and the extra air is what */
+/* separates a designed panel from a pasted-in screenshot. The top padding      */
+/* lives on .feature-title above, so the code starts one line pitch under the   */
+/* label. Bottom padding is split off onto the <code> for the same reason the   */
+/* global rules below split theirs (the <pre> stays the scroller, so its own    */
+/* bottom padding would scroll away).                                           */
+/*                                                                              */
+/* The 1.75 leading is the one thing holding the cards' proportion: 29 chars    */
+/* plus 4rem of side padding floors the card at ~308px wide, so height is the   */
+/* only axis left to move these away from a letterbox strip.                    */
+.feature-block .highlight pre {
+  padding: 0 2rem;
+}
+
+.feature-block .highlight pre code {
+  line-height: 1.75;
+}
+
+/* The card's foot. The .highlight above grows into the stretched card, so     */
+/* this lands on the bottom edge and the slack a short sample leaves is        */
+/* terminated rather than dead - and it gives a reader sold by the title       */
+/* somewhere to go. (`margin-top: auto` is belt-and-braces: it would still     */
+/* bottom-pin the link if that flex-grow were ever dropped.) Mirrors           */
+/* .feature-title exactly (same mono, size, pitch, grey) at the other end of   */
+/* the card.                                                                   */
+/*                                                                             */
+/* padding-top is 0.25rem where the other three edges use 2rem, because the     */
+/* global `.highlight pre code` rule further down still lays 1.25rem under the  */
+/* last code line and the two stack. At 1.75rem the code-to-link gap measured   */
+/* 52px against 36px at the card's top and bottom edges - the largest gap on    */
+/* the home page was inside a single 355px card.                                */
+/*                                                                             */
+/* Tune this in ink, not in the box model: the 24.5px line box adds ~9px of     */
+/* descender space under the last code line and ~6px of half-leading above the  */
+/* link, and neither is in the box sum. 0.75rem summed to 32 but measured 45    */
+/* against a 38/37 frame. 0.25rem measures 35-39 across all three cards at both */
+/* viewports, which is the equality this rule is actually aiming at. */
+/* Selector carries `.home-layout main a.feature-more` rather than the bare    */
+/* class because `.home-layout main a` (above) paints every home-page link     */
+/* MSU navy - which is invisible on the navy panel. This out-specifies it      */
+/* outright instead of relying on source order. */
+.home-layout main a.feature-more {
+  margin-top: auto;
+  padding: 0.25rem 2rem 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.75;
+  /* The panel's base text colour, not .feature-title's #878580 grey. Matching */
+  /* the title exactly made the card's only interactive element its dimmest    */
+  /* text, indistinguishable at rest from a caption. Face, size and pitch still */
+  /* mirror the title; only the value steps up. */
+  color: #cecdc3;
+  text-decoration: none;
+  transition: color var(--transition);
+
+  &:hover {
+    color: #da702c;
+    text-decoration: underline;
+  }
 }
 
 .docs-grid {
@@ -1775,9 +2008,32 @@ body.home-layout > main > section.feature-showcase {
   .docs-cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    /* Same 1.5rem the stacked code cards use. The page previously ran two card
+       systems - 16px gap / 4px radius / 20px padding here against 48px / 12px /
+       32px above - which is what made this row read as a different component
+       family rather than the same kit at a smaller size. 1.5rem rather than the
+       code cards' 3rem because four tiles across 1100px cannot afford 48px. */
+    gap: 1.5rem;
 
-    @media (max-width: 900px) {
+    /* 1160, not 900. Four across needs ~1142px of viewport before the widest
+       description fits on one line; between 900 and 1141 only some tiles wrapped,
+       so the row went ragged - three tiles carrying 21px of dead bottom space at
+       1140, and at 1024 three of four wrapped with Docs the odd one out. That is
+       the same uneven-bottoms defect the emoji removal fixed, reappearing by
+       width instead of by glyph. Hits 1024 and 1112 - iPad landscape and every
+       windowed 13" laptop.
+
+       Known and deliberately unfixed: the same raggedness exists on the
+       text-size axis. rem type scales with the browser's default font size but
+       main's cap is a fixed 1100px, so at an 18px default Install and Docs wrap
+       while REPL and Reference Sheet do not - two tiles with ~21px of dead
+       bottom space, at every width above 1160. It self-corrects by 20px. The
+       clean fix is `main { max-width: 68.75rem }`, which moves the hero, the
+       code cards and every docs page; the in-scope alternatives are all worse
+       (shrinking the description punishes the reader who enlarged it, a
+       min-height adds dead space at 16px, trimming copy just moves the
+       threshold). */
+    @media (max-width: 1160px) {
       grid-template-columns: repeat(2, 1fr);
     }
 
@@ -1786,27 +2042,87 @@ body.home-layout > main > section.feature-showcase {
     }
   }
 
-  /* Flat grey cards (Pika-style): panel background, accent title. Icons are */
-  /* optional — only some tiles carry a leading emoji glyph. */
+  /* Flat grey cards (Pika-style): panel background, accent title. No icons:
+     two of the four tiles used to carry a leading emoji, which put their
+     titles 36px lower than the other two and left bottom whitespace at
+     36/21/21/57 across a row that is otherwise exactly aligned. They were also
+     the only OS-rendered colour raster glyphs on a page built from navy, cream
+     and one orange, and they render differently per platform. The labels
+     already carry the meaning. */
   .docs-card {
     display: block;
-    padding: 1.25rem 1.5rem;
+    /* Side padding is 1.5rem, not the code cards' 2rem. At 2rem a four-across
+       tile leaves 191px of text width, and "macOS, Linux, and Windows" measures
+       187px in Atkinson and 179px in Inter but 195-197px in system-ui, Arial and
+       Helvetica. Both webfonts do load (head.html links Google Fonts), but
+       `display=swap` means the fallback paints first, and a blocked or slow
+       request leaves it there - so at 2rem that tile wraps for anyone who does
+       not get the webfont. 1.5rem gives 207px and clears every fallback. These
+       tiles are 23% narrower than the code cards, so proportionally this is the same
+       inset, not a departure from them. */
+    padding: 1.5rem;
     background: var(--nav-bg);
-    border: 1px solid var(--nav-border);
-    border-radius: var(--radius);
+    /* Not --nav-border: that token gives 1.08:1 against this tile's own fill,
+       which is no edge at all. These four tiles are the page's only navigation
+       and they sat as its lowest-contrast elements, directly under three
+       high-contrast navy panels that are not links - the loud things inert, the
+       interactive ones invisible. Scoped rather than changing the token, which
+       the nav also uses.
+
+       --text-muted gives 4.37:1 against the fill, clearing WCAG 1.4.11's 3:1
+       floor for a component boundary. The tile fill is 1.08:1 against the page
+       and these tiles carry no underline, so the box *is* the affordance - an
+       earlier pass took this to 1.71:1 and stopped short of the threshold. */
+    border: 1px solid var(--text-muted);
+    /* A softer form of .feature-block's lift. This replaces a trailing arrow on
+       each title: an arrow was already the signifier on the three code cards'
+       feet, and repeating it here put seven identical arrows in one screen -
+       at which point the glyph stops distinguishing anything and becomes
+       texture. The arrow earns its place up there because it marks one
+       interactive line inside eight non-interactive ones; here the whole tile
+       is the link, so there is nothing to distinguish it from. A shadow reads
+       as "card", not as a duplicated mark. */
+    box-shadow:
+      0 1px 2px rgba(1, 22, 40, 0.06),
+      0 6px 16px -8px rgba(1, 22, 40, 0.12);
+    /* 12px, matching .feature-block, not the global 4px --radius. Radius is
+       what most makes two card sets read as one family. */
+    border-radius: 12px;
     color: inherit;
     text-decoration: none;
-    transition: border-color var(--transition), background var(--transition);
+    transition: border-color var(--transition), background var(--transition),
+      box-shadow var(--transition), transform var(--transition);
 
+    /* Hover fires on four channels so it reads on both fills. The secondaries
+       get a 2.98:1 border change and a fill change; the Install tile can get
+       neither, because every dark value in the palette is within 1.2:1 of
+       #011628.
+
+       An earlier version of this comment claimed the shadow alone covered that.
+       It does not - screenshot-diffed over an identical crop at 2x, the shadow
+       moves 1001 pixels on the Install tile against 5050 on a secondary, a peak
+       channel delta of 24 against 114. The tile the section steers people to was
+       still the least responsive of the four. The translate takes it to 4279
+       pixels and a peak of 245, which is the largest delta available anywhere on
+       the page precisely because a navy edge stepping onto cream is the
+       strongest boundary this palette has. Geometry is the only channel left
+       once colour is pinned. Matches Pika's .docs-card:hover, which this
+       component and Pika's cross-credit each other for. */
     &:hover {
       border-color: var(--accent);
       background: var(--primary);
+      box-shadow:
+        0 2px 4px rgba(1, 22, 40, 0.10),
+        0 12px 28px -12px rgba(1, 22, 40, 0.22);
+      transform: translateY(-1px);
     }
 
-    .docs-card-icon {
-      font-size: 1.75rem;
-      line-height: 1;
-      margin-bottom: 0.5rem;
+    /* Scoped rather than global - the file has no global guard, and the two
+       logo animations carry their own (see .hero-glyph and the brand mark). */
+    @media (prefers-reduced-motion: reduce) {
+      &:hover {
+        transform: none;
+      }
     }
 
     & h3 {
@@ -1817,9 +2133,63 @@ body.home-layout > main > section.feature-showcase {
 
     & p {
       margin: 0;
-      color: var(--text-muted);
+      /* --text, not --text-muted. Muted on this tile's --nav-bg fill measures
+         4.37:1 at 15.2px/400 - under 1.4.3 AA's 4.5:1 for normal text, and it
+         gets worse on hover, where the fill lightens to --primary and the ratio
+         falls to 4.03:1: the tile becomes less readable at the moment of
+         interaction. The same pair is fine as the *border* (1.4.11 asks 3:1)
+         and fine in the footer (4.73:1 on cream), which is why this is scoped
+         here rather than changed on the token. Also evens the set: Install's
+         description sits at 11.36:1 and its three siblings read visibly fainter
+         at 4.37. Demotion from the title still reads without it - 18px/700 navy
+         against 15.2px/400 near-black.
+
+         Must stay in this block. `.docs-card--primary p` below is equal
+         specificity and wins on source order; a rule appended after it would
+         paint Install's description near-black on navy. */
+      color: var(--text);
       font-size: 0.95rem;
       line-height: 1.4;
+    }
+  }
+
+  /* Install is the primary tile. Four identical tiles gave the row no
+     hierarchy, so nothing said where a first-time visitor should go; size is
+     the usual lever but five tracks across 1100px starve the other three to
+     201px and wrap their descriptions to three lines, so this uses value
+     instead. Filling one tile in a set of four is emphasis within a group, not
+     a floating call to action - but it does put a prominent install target back
+     on the page, which was removed from the hero deliberately. Delete this rule
+     and the --primary class in index.html to revert. */
+  .docs-card--primary {
+    /* The code panels' surface, not --accent. --accent is MSU's saturated
+       institutional blue and it appears everywhere on this page as *text* -
+       tagline, links, tile titles. Used as a large fill it became a second dark
+       value sitting a few hundred pixels from the code cards' #011628: two
+       navies close enough to look like a mismatch rather than a pair. Reusing
+       #011628 leaves the page with exactly two surfaces, cream and this one. */
+    background: #011628;
+    border-color: #011628;
+
+    & h3 {
+      color: var(--bg);
+    }
+
+    & p {
+      color: rgba(246, 244, 241, 0.82);
+    }
+
+    /* Holds the dark fill through hover. This override cannot be dropped: the
+       shared `.docs-card:hover` is (0,3,0) against this rule's (0,2,0), so
+       without it the tile repaints --primary beige under cream text - tested,
+       and the title and description stay cream, which is unreadable. The old
+       version of this block changed the fill to #01203a, which was off-palette
+       and a 1.11:1 change, i.e. no feedback at all. Feedback now comes entirely
+       from the shared box-shadow lift, which is the one mechanism that reads on
+       a dark fill and a light one alike. */
+    &:hover {
+      background: #011628;
+      border-color: #011628;
     }
   }
 }

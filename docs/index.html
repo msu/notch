@@ -7,14 +7,14 @@ title: Notch
   <h1 class="visually-hidden">Notch &mdash; a scripting and programming language for the JVM, from Montana State University (MSU)</h1>
   <div class="hero-banner">
     <img class="hero-glyph" src="{{ '/assets/images/notch.svg' | relative_url }}" alt="Notch">
-    <p class="tagline">Scripting<br>For Java &amp; Minecraft</p>
+    <div class="hero-copy">
+      <p class="tagline">Scripting<br>For Java &amp; Minecraft</p>
+      <p class="lead">Notch is a scripting and programming language for the JVM, built at
+      <a href="https://www.cs.montana.edu">Montana State University</a>. Made for developers who
+      already work in Java, it runs anywhere Java runs, calls directly into Java libraries, and
+      stays small enough to learn in an afternoon.</p>
+    </div>
   </div>
-</section>
-
-<section class="home-intro">
-  <p class="lead">Notch is a scripting and programming language for the JVM, built at
-  <a href="https://www.cs.montana.edu">Montana State University</a>. It runs anywhere Java runs,
-  calls directly into Java libraries, and stays small enough to learn in an afternoon.</p>
 </section>
 
 <section class="feature-showcase">
@@ -24,73 +24,64 @@ title: Notch
 import java.time.LocalDate
 
 today = LocalDate.now()
+print('Today is ' + today)
 
-for name in ['Alice', 'Bob', 'Carol']
-  print('Hello, ' + name + '! Today is ' + today)
+for name in ['Ada', 'Bob']
+  print('Hello, ' + name)
 end
 {% endhighlight %}
+    <a class="feature-more" href="{{ '/language/java-interop/' | relative_url }}">Java interop &rarr;</a>
   </div>
 
   <div class="feature-block">
     <div class="feature-title">Null that won't surprise you</div>
 {% highlight notch %}
 name = null
-greeting = name ?: 'anonymous'
-print(greeting)
+user = name ?: 'anonymous'
+print(user)
 
-setting = config? ?: 'default'
-print(setting)
+mode = config? ?: 'default'
+print(mode)
+
+print(name is empty)
 {% endhighlight %}
+    <a class="feature-more" href="{{ '/language/values/' | relative_url }}">Null &amp; values &rarr;</a>
   </div>
 
   <div class="feature-block">
     <div class="feature-title">Reads like you'd say it</div>
 {% highlight notch %}
-print('notch' starts with 'no')
-print('notch' contains 'otc')
-print([1, 2] is not empty)
-lengths = ['a', 'ab', 'abc'].map(\ s -> s.length)
-print(lengths)
-{% endhighlight %}
-  </div>
+word = 'notch'
+print(word starts with 'no')
+print(word contains 'otc')
 
-  <div class="feature-block">
-    <div class="feature-title">Objects when you want them</div>
-{% highlight notch %}
-class Greeter
-  field name
-  function hello()
-    return 'Hi, ' + this.name
-  end
-end
-
-g = new Greeter()
-g.name = 'Ada'
-print(g.hello())
+double = \ n -> n * 2
+nums = [1, 2]
+print(nums is not empty)
+print(nums.map(double))
 {% endhighlight %}
+    <a class="feature-more" href="{{ '/language/operators/' | relative_url }}">Operators &rarr;</a>
   </div>
 </section>
 
 <section class="docs-grid">
-  <h2>Documentation</h2>
+  <h2>Start here</h2>
   <div class="docs-cards">
-    <a class="docs-card" href="{{ '/getting-started/install/' | relative_url }}">
+    <a class="docs-card docs-card--primary" href="{{ '/getting-started/install/' | relative_url }}">
       <h3>Install</h3>
-      <p>For macOS, Linux, and Windows.</p>
+      <p>macOS, Linux, and Windows</p>
     </a>
     <a class="docs-card" href="{{ '/language/values/' | relative_url }}">
-      <div class="docs-card-icon" aria-hidden="true">📝</div>
       <h3>Docs</h3>
-      <p>Language reference</p>
+      <p>Values, control flow, classes</p>
     </a>
     <a class="docs-card" href="{{ '/repl/getting-started/' | relative_url }}">
-      <div class="docs-card-icon" aria-hidden="true">💻</div>
       <h3>REPL</h3>
-      <p>Interactive shell for notch</p>
+      <p>Interactive shell for Notch</p>
     </a>
     <a class="docs-card" href="{{ '/getting-started/cheat-sheet/' | relative_url }}">
       <h3>Reference Sheet</h3>
-      <p>The language at a glance.</p>
+      <p>The language at a glance</p>
     </a>
   </div>
 </section>

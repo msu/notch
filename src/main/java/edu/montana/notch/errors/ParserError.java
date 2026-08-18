@@ -68,6 +68,19 @@ public enum ParserError implements DiagnosticCode {
     EP0060("expected ')' to close the %s"),
     EP0061("'catch' without a matching 'try'"),
     EP0062("'else' without a matching 'if'"),
+    EP0063("expected an argument"),
+    EP0064("expected a %s element"),
+    EP0065("expected a map key"),
+    EP0066("expected a map value"),
+    EP0067("expected an expression inside the parentheses"),
+    EP0068("expected an expression to print"),
+    EP0069("expected an expression or a block for the closure body"),
+    EP0070("'%s' without a matching '%s'"),
+    EP0071("'end' with no block to close"),
+    EP0072("'field' outside a class body"),
+    EP0073("'%s' is not a statement on its own"),
+    EP0074("Notch has no comment syntax"),
+    EP0075("'%s' is never closed"),
     ;
 
     private final String template;

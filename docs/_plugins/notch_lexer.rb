@@ -31,7 +31,7 @@ module Rouge
 
       KEYWORDS_CONSTANT = %w[true false null].freeze
 
-      OPERATORS_WORD = %w[and or not].freeze
+      OPERATORS_WORD = %w[and or not is starts ends with contains empty].freeze
 
       BUILTINS = %w[print].freeze
 
@@ -54,6 +54,7 @@ module Rouge
         rule %r/[+\-*\/%]=?/, Operator
         rule %r/[=!<>]=?/,    Operator
         rule %r/&&|\|\||!|&|\|/, Operator
+        rule %r/\\/, Operator
         rule %r/[.,;:?]/,     Punctuation
         rule %r/[\[\]{}()]/,  Punctuation
 
