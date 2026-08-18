@@ -178,6 +178,30 @@ class NotchRecoverExprTest {
     }
 
     @Test
+    void aTypedRecoverCanBeACallArgument() {
+        assertEquals("1\n", exec(BOOM + """
+                print(boom() recover Exception 1)
+                """));
+    }
+
+    @Test
+    void aRecoverFallbackCanBeAPlainVariable() {
+        assertEquals("7\n", exec(BOOM + """
+                fallback = 7
+                x = boom() recover fallback
+                print(x)
+                """));
+    }
+
+    @Test
+    void aRecoverFallbackCanEndTheFile() {
+        assertEquals("1\n", exec(BOOM + """
+                fallback = 7
+                print(1)
+                x = boom() recover fallback"""));
+    }
+
+    @Test
     void untypedRecoverTreatedAsExpr() {
         assertEquals("7\n", exec("""
                 function fallback()

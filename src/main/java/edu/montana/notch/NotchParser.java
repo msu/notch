@@ -130,41 +130,34 @@ public class NotchParser extends BasicParser {
 
         List<NotchRecoverExpression.TypedRecover> typedRecovers = new ArrayList<>();
         NotchExpression untypedRecover = null;
-        int lastEndLine = tryExpr.endLine();
-        while (!atEnd()) {
-            boolean sameLineAsLast = currentToken().startLine() == lastEndLine;
-            if (!sameLineAsLast && !peekKeyword("recover")) break;
-            if (peekKeyword("recover")) {
-                take();
-                boolean isTyped = false;
-                if (takeIdent("from")) {
-                    isTyped = true;
-                } else if (peek("ident") && !peekIdent("with")) {
-                    Token first  = peek();
-                    Token second = peekNext();
-                    isTyped = !second.type.equals("eoi")
-                            && second.startLine() == first.endLine()
-                            && !second.type.equals("(");
-                }
-                if (isTyped) {
-                    QualifiedIdent type = parseQualifiedIdent();
-                    takeIdent("with");
-                    NotchExpression expr = parseConditionalExpr();
-                    if (expr == null) {
-                        throw errorHandler.expectedExpressionAfterRecoverType();
-                    }
-                    typedRecovers.add(new NotchRecoverExpression.TypedRecover(type, expr));
-                    lastEndLine = lastToken().endLine();
-                } else {
-                    takeIdent("with");
-                    untypedRecover = requireExpression(errorHandler::expectedExpressionAfterRecover);
-                    break;
-                }
-            } else {
-                throw errorHandler.unexpectedTokenAfterRecover();
+        while (!atEnd() && takeKeyword("recover")) {
+            if (!recoverClauseIsTyped()) {
+                takeIdent("with");
+                untypedRecover = requireExpression(errorHandler::expectedExpressionAfterRecover);
+                break;
             }
+            typedRecovers.add(parseTypedRecover());
         }
         return new NotchRecoverExpression(tryExpr.span.through(lastToken()), tryExpr, typedRecovers, untypedRecover);
+    }
+
+    private boolean recoverClauseIsTyped() {
+        if (takeIdent("from")) return true;
+        if (!peek("ident") || peekIdent("with")) return false;
+        Token typeName = peek();
+        Token following = peekNext();
+        final boolean somethingFollows = !following.type.equals("eoi");
+        final boolean onTheSameLine = following.startLine() == typeName.endLine();
+        final boolean startsACall = following.type.equals("(");
+        return somethingFollows && onTheSameLine && !startsACall;
+    }
+
+    private NotchRecoverExpression.TypedRecover parseTypedRecover() {
+        QualifiedIdent type = parseQualifiedIdent();
+        takeIdent("with");
+        NotchExpression expr = parseConditionalExpr();
+        if (expr == null) throw errorHandler.expectedExpressionAfterRecoverType();
+        return new NotchRecoverExpression.TypedRecover(type, expr);
     }
 
     //TODO: Currently gives uncoded errors where used in the parser
