@@ -4,7 +4,9 @@ import edu.montana.notch.chisel.ParseErrors;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.TokenStream;
 import edu.montana.notch.chisel.Tokenizer;
+import edu.montana.notch.chisel.type.CCommentTokenType;
 import edu.montana.notch.chisel.type.LiteralTokenType;
+import edu.montana.notch.chisel.type.PoundCommentTokenType;
 import edu.montana.notch.console.NotchShell;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.Drain;
@@ -38,6 +40,8 @@ public class Notch {
             .withTokenType("keyword", NOTCH_KEYWORD)
             .withTokenType("ident", IDENT)
             .withTokenType("int", INT)
+            .withTokenType("_comment", PoundCommentTokenType.POUND_COMMENT)
+            .withTokenType("_comment", CCommentTokenType.C_COMMENT)
             .withTokenTypes(LiteralTokenType.COMMON);
 
     public static <T> T eval(String code) {

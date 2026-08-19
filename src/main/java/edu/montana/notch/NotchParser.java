@@ -46,6 +46,7 @@ public class NotchParser extends BasicParser {
     public NotchParser(TokenStream tokens) {
         super(tokens);
         ignoredTokenTypes.add("_ws");
+        ignoredTokenTypes.add("_comment");
     }
 
     public NotchParser(Source source) {

@@ -6,6 +6,7 @@ import edu.montana.notch.console.palettes.NerdFont;
 import edu.montana.notch.chisel.Token;
 import edu.montana.notch.chisel.Tokenizer;
 import edu.montana.notch.console.token.CStringTokenType;
+import edu.montana.notch.console.token.CommentTokenType;
 import edu.montana.notch.console.token.IntegerTokenType;
 import edu.montana.notch.console.token.PlainTokenType;
 import edu.montana.notch.console.token.TerminalKeywordTokenType;
@@ -26,7 +27,8 @@ public class TerminalSyntaxHighlighter implements Highlighter {
             "string", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.STRING),
             "plain", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.FOREGROUND),
             "_ws", AttributedStyle.DEFAULT.backgroundRgb(NerdFont.BACKGROUND),
-            "terminal_keyword", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.TYPE)
+            "terminal_keyword", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.TYPE),
+            "_comment", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.COMMENT)
     );
 
     private Tokenizer getTokenizer(String src) {
@@ -36,6 +38,7 @@ public class TerminalSyntaxHighlighter implements Highlighter {
                 .withTokenType("int", IntegerTokenType.INT)
                 .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
                 .withTokenType("terminal_keyword", TerminalKeywordTokenType.TERMINAL_KEYWORD)
+                .withTokenType("_comment", CommentTokenType.COMMENT)
                 .withTokenType("plain", PlainTokenType.PLAIN) // must be last
                 .create(source);
     }
