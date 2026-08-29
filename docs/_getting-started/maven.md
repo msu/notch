@@ -10,7 +10,7 @@ This page is for **embedding Notch as a library** inside your own program. If yo
 ## Add the dependency
 
 Notch is published to **Maven Central**. Use whichever build tool your project
-already uses. The published version may be newer than `0.1.1`. Best to use the latest stable release.
+already uses. The published version may be newer than `0.1.2`. Best to use the latest stable release.
 
 ### Maven
 
@@ -18,7 +18,7 @@ already uses. The published version may be newer than `0.1.1`. Best to use the l
 <dependency>
   <groupId>edu.montana.cs.notch</groupId>
   <artifactId>notch</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
 </dependency>
 ```
 
@@ -31,7 +31,7 @@ Make sure `mavenCentral()` is in your repositories.
 repositories { mavenCentral() }
 
 dependencies {
-  implementation 'edu.montana.cs.notch:notch:0.1.1'
+  implementation 'edu.montana.cs.notch:notch:0.1.2'
 }
 ```
 
@@ -40,7 +40,7 @@ dependencies {
 repositories { mavenCentral() }
 
 dependencies {
-  implementation("edu.montana.cs.notch:notch:0.1.1")
+  implementation("edu.montana.cs.notch:notch:0.1.2")
 }
 ```
 
@@ -99,7 +99,7 @@ Rule of thumb:
 
 ## Keeping the version current
 
-The `0.1.1` above tracks `pom.xml`; bump it to match the release you depend on. The pom is the source of truth for the current version.
+The `0.1.2` above tracks `pom.xml`; bump it to match the release you depend on. The pom is the source of truth for the current version.
 
 ## See also
 
