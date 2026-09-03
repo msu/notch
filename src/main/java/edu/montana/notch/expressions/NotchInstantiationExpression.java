@@ -30,7 +30,7 @@ public class NotchInstantiationExpression extends NotchExpression {
             return declaredClass.construct(runtime, evaluateArgs(runtime));
         }
         if (value instanceof NotchType importedType) {
-            Object[] argValues = evaluateArgs(runtime).toArray();
+            Object[] argValues = runtime.evaluate(args).toArray();
             try {
                 return importedType.newInstance(runtime, argValues);
             } catch (IllegalArgumentException noMatchingConstructor) {
@@ -38,7 +38,7 @@ public class NotchInstantiationExpression extends NotchExpression {
             }
         }
         if (value == NotchRuntime.UNDEFINED) {
-            List<Object> argValues = evaluateArgs(runtime);
+            List<Object> argValues = runtime.evaluate(args);
             try {
                 Object thrown = tryConstructThrowable(runtime, className.str(), argValues);
                 if (thrown != null) return thrown;

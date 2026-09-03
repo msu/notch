@@ -253,6 +253,15 @@ public class NotchRuntime {
         return value;
     }
 
+    public List<Object> evaluate(List<NotchExpression> args) {
+        var out = new BetterList<>();
+        for (NotchExpression arg : args) {
+            Object value = evaluate(arg);
+            out.add(value);
+        }
+        return out;
+    }
+
     public void execute(NotchStatement stmt) {
         try {
             stmt.execute(this);
