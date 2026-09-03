@@ -1,8 +1,11 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.errors.ParserError;
 import org.junit.jupiter.api.Test;
 
+import static edu.montana.notch.NotchTestUtils.assertCodes;
 import static edu.montana.notch.NotchTestUtils.exec;
+import static edu.montana.notch.NotchTestUtils.execDiagnostics;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -178,6 +181,30 @@ class NotchRecoverExprTest {
     }
 
     @Test
+    void aTypedRecoverCanBeACallArgument() {
+        assertEquals("1\n", exec(BOOM + """
+                print(boom() recover Exception 1)
+                """));
+    }
+
+    @Test
+    void aRecoverFallbackCanBeAPlainVariable() {
+        assertEquals("7\n", exec(BOOM + """
+                fallback = 7
+                x = boom() recover fallback
+                print(x)
+                """));
+    }
+
+    @Test
+    void aRecoverFallbackCanEndTheFile() {
+        assertEquals("1\n", exec(BOOM + """
+                fallback = 7
+                print(1)
+                x = boom() recover fallback"""));
+    }
+
+    @Test
     void untypedRecoverTreatedAsExpr() {
         assertEquals("7\n", exec("""
                 function fallback()
@@ -202,13 +229,12 @@ class NotchRecoverExprTest {
                 """));
     }
 
+    //TODO: Describes a regression in good error msgs that should be fixed.
     @Test
-    void strayTokenAfterTypedRecoverGivesError() {
-        var ex = assertThrows(RuntimeException.class, () -> exec(IO_ERROR + """
+    void aStrayTokenAfterARecoverChainIsReportedAsAStatement() {
+        assertCodes(execDiagnostics(IO_ERROR + """
                 x = ioError() recover IOException 1 garbage
-                """));
-        assertTrue(ex.getMessage().contains("unexpected token after recover"),
-                "expected stray token error but got: " + ex.getMessage());
+                """), ParserError.EP0013);
     }
 
     @Test

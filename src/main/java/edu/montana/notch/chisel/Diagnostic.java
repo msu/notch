@@ -10,6 +10,7 @@ import java.util.List;
 
 public class Diagnostic {
     private String title;
+    private DiagnosticCode code;
     private final List<Highlight> highlights = new BetterList<>();
     private final List<String> notes = new BetterList<>();
     private final StackTraceElement[] stackTrace;
@@ -21,6 +22,19 @@ public class Diagnostic {
     public Diagnostic setTitle(String title) {
         this.title = title;
         return this;
+    }
+
+    public Diagnostic code(DiagnosticCode code) {
+        this.code = code;
+        return this;
+    }
+
+    public DiagnosticCode getCode() {
+        return code;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public Diagnostic highlight(Spanned spanned) {
@@ -68,10 +82,15 @@ public class Diagnostic {
         var paddingLen = BetterMath.align(2 + maxLineNoSize, 4);
         var padding = " ".repeat(paddingLen);
 
-        if (title != null) {
-            sb
-                    .append(" ".repeat(paddingLen - 4))
-                    .append(" ERROR: ").append(title).append('\n');
+        if (title != null || code != null) {
+            sb.append(" ".repeat(paddingLen - 4)).append(" ERROR");
+            if (code != null) {
+                sb.append('[').append(code.id()).append(']');
+            }
+            if (title != null) {
+                sb.append(": ").append(title);
+            }
+            sb.append('\n');
         }
 
         for (var highlight : highlights) {
@@ -80,7 +99,8 @@ public class Diagnostic {
             var endLine = highlight.span.end().line;
             var endCol = highlight.span.end().column;
 
-            sb.append(" ".repeat(paddingLen - 1)).append("--> ").append(highlight.span.sourceId()).append('\n');
+            sb.append(" ".repeat(paddingLen - 1)).append("--> ").append(highlight.span.sourceId())
+                    .append(':').append(startLine).append(':').append(startCol).append('\n');
             sb.append(padding).append("|\n");
 
             var lines = highlighting.get(highlight);
@@ -99,7 +119,7 @@ public class Diagnostic {
                 } else if (lineNo == startLine) {
                     sb.append(padding).append("| ")
                             .append(" ".repeat(startCol - 1))
-                            .append("^".repeat(line.length() - startCol)).append('\n');
+                            .append("^".repeat(line.length() - startCol + 1)).append('\n');
                 } else if (lineNo == endLine) {
                     sb.append(padding).append("| ").append("^".repeat(endCol - 1)).append('\n');
                 }

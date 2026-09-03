@@ -16,7 +16,7 @@ returning to the home page (Stripe / Astro / Tailwind pattern).
   {% if page.collection == coll %}{% assign is_docs_page = true %}{% endif %}
 {% endfor %}
 {%- comment -%}
-Standalone pages (install, cheat sheet) opt into the docs chrome with a
+Standalone pages (install, reference sheet) opt into the docs chrome with a
 `docs_nav: true` front-matter flag; they render as flat links below.
 {%- endcomment -%}
 {% if page.docs_nav %}{% assign is_docs_page = true %}{% endif %}

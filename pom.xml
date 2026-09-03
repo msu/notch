@@ -9,11 +9,13 @@
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <notch.shade.skip>false</notch.shade.skip>
+        <!--Test should be fast. Used to exclude console tests that rely on a slow jar build-->
+        <notch.test.excludedGroups>slow</notch.test.excludedGroups>
     </properties>
 
     <groupId>edu.montana.cs.notch</groupId>
     <artifactId>notch</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
     <packaging>jar</packaging>
 
     <name>Notch</name>
@@ -91,6 +93,7 @@
                 <version>3.5.2</version>
                 <configuration>
                     <argLine>--enable-native-access=ALL-UNNAMED</argLine>
+                    <excludedGroups>${notch.test.excludedGroups}</excludedGroups>
                 </configuration>
             </plugin>
             <plugin>

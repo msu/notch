@@ -1,6 +1,8 @@
 package edu.montana.notch;
 
 import edu.montana.notch.chisel.Diagnostic;
+import edu.montana.notch.chisel.DiagnosticCode;
+import edu.montana.notch.chisel.ParseErrors;
 import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.TokenStream;
@@ -11,8 +13,12 @@ import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.statements.NotchStatement;
 import edu.montana.notch.util.BetterMap;
 
+import edu.montana.notch.util.BetterList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class NotchTestUtils {
@@ -69,26 +75,58 @@ public class NotchTestUtils {
     public static String exec(String src, Object... vars) {
         final Source source = new Source("<exec>", src);
         try {
-            TokenStream tokens = Notch.TOKENIZER.tokenize(source);
-            NotchParser notchParser = new NotchParser(tokens);
-            NotchStatement stmt = notchParser.parseAsStatement();
-            if (notchParser.hasErrors()) {
-                StringBuilder parseErrorMessage = new StringBuilder("Parse errors executing: " + src);
-                for (Diagnostic diagnostic : notchParser.getDiagnostics()) {
-                    parseErrorMessage.append("\n").append(diagnostic.render());
-                }
-                throw new RuntimeException(parseErrorMessage.toString());
-            }
             StringBuilder out = new StringBuilder();
             NotchRuntime runtime = new NotchRuntime(source, map(vars));
             runtime.setOut(out::append);
-            runtime.execute(stmt);
+            Notch.run(source, runtime);
             return out.toString();
         } catch (TokenizeException e) {
             throw new RuntimeException(e.diagnostic.render());
         } catch (NotchRuntimeException e) {
             throw new RuntimeException(e.diagnostic.render());
         }
+    }
+
+    public static List<Diagnostic> execDiagnostics(String src, Object... vars) {
+        try {
+            exec(src, vars);
+            return List.of();
+        } catch (ParseErrors e) {
+            return e.diagnostics;
+        }
+    }
+
+    public record TestDiagnosticCode(String id, String template) implements DiagnosticCode { }
+
+    public static final DiagnosticCode UNCODED = new TestDiagnosticCode("UNCODED", "(diagnostic with no code)");
+
+    public static void assertCodes(Collection<Diagnostic> diagnostics, DiagnosticCode... expected) {
+        var actualIds = BetterList.better(diagnostics)
+                .map(diagnostic -> diagnostic.getCode() == null
+                        ? UNCODED.id()
+                        : diagnostic.getCode().id());
+        var expectedIds = new BetterList<>(expected).map(DiagnosticCode::id);
+        assertEquals(expectedIds, actualIds,
+                () -> "diagnostic codes differ. Diagnostics were:\n" + describe(diagnostics));
+    }
+
+    public static String describe(Collection<Diagnostic> diagnostics) {
+        if (diagnostics.isEmpty()) return "(none)";
+        return BetterList.better(diagnostics)
+                .map(diagnostic -> diagnostic.render(false))
+                .toString("\n\n");
+    }
+
+    public static long countCode(Collection<Diagnostic> diagnostics, DiagnosticCode code) {
+        return BetterList.better(diagnostics)
+                .filter(diagnostic -> diagnostic.getCode() == code)
+                .count();
+    }
+
+    public static long countCode(Throwable failure, DiagnosticCode code) {
+        return failure instanceof ParseErrors parseErrors
+                ? countCode(parseErrors.diagnostics, code)
+                : 0;
     }
 
     public static Map<String, Object> map(Object[] vars) {

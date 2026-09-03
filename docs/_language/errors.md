@@ -54,5 +54,8 @@ Using an exception type as a plain value elsewhere still needs an import - see
 
 ## See also
 
+- [Error Index](/errors/) for every diagnostic code Notch reports, with a cause and a fix
+  for each. This page covers raising and handling errors in your own code; the index
+  covers the errors Notch itself reports.
 - [Java Interop](../java-interop/) for how JVM types resolve, and for `null` handling.
 - [Control Flow](../control-flow/) for the surrounding statement forms.

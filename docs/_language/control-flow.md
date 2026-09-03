@@ -31,13 +31,19 @@ print(x)
 ## if
 
 ```notch
-if true print('foo') else print('bar') end
+if true
+  print('foo')
+else
+  print('bar')
+end
 ```
 
 The `else` branch is optional:
 
 ```notch
-if true print('foo') end
+if true
+  print('foo')
+end
 ```
 
 ## for
@@ -45,7 +51,9 @@ if true print('foo') end
 `for` iterates over any iterable: lists, strings (per character), and maps.
 
 ```notch
-for x in 'foo' print(x) end
+for x in 'foo'
+  print(x)
+end
 ```
 
 That prints `f`, `o`, `o` on separate lines.
@@ -53,7 +61,10 @@ That prints `f`, `o`, `o` on separate lines.
 The optional `index` clause binds the iteration index:
 
 ```notch
-for x in 'foo' index i print(i) print(x) end
+for x in 'foo' index i
+  print(i)
+  print(x)
+end
 ```
 
 The loop variable does not escape the loop - see [Variables & Scope](../variables/).
@@ -64,16 +75,26 @@ The loop variable does not escape the loop - see [Variables & Scope](../variable
 current count to `it`:
 
 ```notch
-repeat 3 times print(it) end
+repeat 3 times
+  print(it)
+end
 ```
 
 `repeat while` runs as long as its predicate holds; `repeat until` runs until the
 predicate becomes true:
 
 ```notch
-repeat while x < 3 x = x + 1 end
-repeat until x >= 3 x = x + 1 end
+repeat while x < 3
+  x = x + 1
+end
+
+repeat until x >= 3
+  x = x + 1
+end
 ```
+
+The condition and body can share a line (`repeat while x < 3 x = x + 1 end`),
+but putting the body on its own line reads more clearly.
 
 Inside any loop, `break` exits and `continue` skips to the next iteration:
 

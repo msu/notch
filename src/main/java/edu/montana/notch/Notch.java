@@ -1,13 +1,19 @@
 package edu.montana.notch;
 
+import edu.montana.notch.chisel.ParseErrors;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.TokenStream;
 import edu.montana.notch.chisel.Tokenizer;
+import edu.montana.notch.chisel.type.CCommentTokenType;
 import edu.montana.notch.chisel.type.LiteralTokenType;
+import edu.montana.notch.chisel.type.PoundCommentTokenType;
+import edu.montana.notch.console.NotchShell;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.runtime.NotchBuiltins;
 import edu.montana.notch.runtime.NotchRuntime;
+import edu.montana.notch.runtime.builtins.NotchStructureFunction;
+import edu.montana.notch.statements.NotchStatement;
 import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.types.coercions.Coercion;
 import edu.montana.notch.util.BetterFS;
@@ -36,6 +42,8 @@ public class Notch {
             .withTokenType("keyword", NOTCH_KEYWORD)
             .withTokenType("ident", IDENT)
             .withTokenType("int", INT)
+            .withTokenType("_comment", PoundCommentTokenType.POUND_COMMENT)
+            .withTokenType("_comment", CCommentTokenType.C_COMMENT)
             .withTokenTypes(LiteralTokenType.COMMON);
 
     public static <T> T eval(String code) {
@@ -63,6 +71,31 @@ public class Notch {
     public static void render(String path, Appendable out, Object... kv) {
         TEMPLATES.renderTemplate(path, toMap(kv), new Drain(out));
     }
+
+    public static void run(String program) {
+        run(new Source("<embed>", program));
+    }
+
+    public static void run(Source source) {
+        run(source, new NotchRuntime(source));
+    }
+
+    public static Object run(Source source, NotchRuntime runtime) {
+        TokenStream tokens = TOKENIZER.tokenize(source);
+        NotchParser parser = new NotchParser(tokens);
+        NotchElement element = parser.parse();
+        if (parser.hasErrors()) {
+            throw new ParseErrors(parser.getDiagnostics());
+        }
+        if (element instanceof NotchStatement stmt) {
+            runtime.execute(stmt);
+            return null;
+        } else if (element instanceof NotchExpression expr) {
+            return runtime.evaluate(expr);
+        }
+        return null;
+    }
+
 
     private static Map<String, Object> toMap(Object[] kv) {
         if (kv == null || kv.length == 0) return Map.of();

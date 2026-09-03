@@ -92,14 +92,27 @@ export function init() {
 
     emptyState.hidden = true;
     activeIdx = -1;
-    const highlightParam = '?highlight=' + encodeURIComponent(input.value.trim());
+    const highlightQuery = encodeURIComponent(input.value.trim());
     resultsList.innerHTML = scored.map(result => {
       const snippet = getSnippet(result.doc.content, terms);
-      return `<li><a href="${result.doc.url}${highlightParam}">
+      return `<li><a href="${resultHref(result.doc.url, highlightQuery)}">
         <div class="search-result-title">${highlight(result.doc.title, terms)}</div>
         <div class="search-result-snippet">${highlight(snippet, terms)}</div>
         </a></li>`;
     }).join('');
+  }
+
+  // Error-index entries carry a fragment (/errors/#EP0018), so the highlight query has
+  // to be spliced in BEFORE it. Appended after, the whole thing becomes the fragment
+  // ('#EP0018?highlight=...'), which matches no element and drops the reader at the top
+  // of the page. search-highlight.js reads window.location.search, so it needs the query
+  // there anyway, and it already preserves the hash when it cleans the URL.
+  function resultHref(url, highlightQuery) {
+    const fragmentStart = url.indexOf('#');
+    if (fragmentStart === -1) {
+      return `${url}?highlight=${highlightQuery}`;
+    }
+    return `${url.slice(0, fragmentStart)}?highlight=${highlightQuery}${url.slice(fragmentStart)}`;
   }
 
   function getSnippet(content, terms) {

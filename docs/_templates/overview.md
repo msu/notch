@@ -1,6 +1,7 @@
 ---
 title: "Overview"
 subtitle: "Notch's built-in template engine"
+description: "NotchTemplates is Notch's built-in template engine: render text with embedded ${expressions} and #commands that call into Notch evaluation."
 order: 1
 ---
 

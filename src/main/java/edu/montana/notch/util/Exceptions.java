@@ -1,5 +1,6 @@
 package edu.montana.notch.util;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.concurrent.Callable;
@@ -44,6 +45,8 @@ public class Exceptions {
     public static <T> T safelyEval(Callable<T> callable) {
         try {
             return callable.call();
+        } catch (InvocationTargetException e) {
+            throw rethrow(e.getCause());
         } catch (Exception e) {
             throw rethrow(e);
         }

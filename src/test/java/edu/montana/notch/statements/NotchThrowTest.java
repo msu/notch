@@ -6,7 +6,6 @@ import static edu.montana.notch.NotchTestUtils.exec;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 class NotchThrowTest {
 
@@ -83,14 +82,14 @@ class NotchThrowTest {
     }
 
     @Test
-    void forgettingNewOnThrowableSuggestsNew() {
-        try {
-            exec("e = RuntimeException('oops')");
-            fail("expected RuntimeException");
-        } catch (RuntimeException e) {
-            assertTrue(e.getMessage().contains("did you mean 'new RuntimeException(...)'?"),
-                    "expected new-hint, got: " + e.getMessage());
-        }
+    void throwableTypeConstructibleByInvocationWithoutNew() {
+        assertEquals("caught\n", exec("""
+                try
+                  throw RuntimeException('boom')
+                catch RuntimeException as e
+                  print('caught')
+                end
+                """));
     }
 
     @Test

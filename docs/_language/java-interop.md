@@ -18,7 +18,9 @@ list.size          # getter
 list.size()        # method call
 java.util.List.of(1, 2, 3)         # static method
 java.lang.Character.TYPE           # static property
-for v in java.time.DayOfWeek.values print(v) end
+for v in java.time.DayOfWeek.values
+  print(v)
+end
 ```
 
 ## Calling methods
@@ -100,6 +102,15 @@ import it first:
 ```notch
 import java.io.IOException
 err = IOException("disk gone")
+```
+
+Add an `as` clause to bind the type to a different local name - useful for
+shortening a long name, disambiguating a collision, or just making inline calls
+read more clearly:
+
+```notch
+import java.util.List as JavaList
+JavaList.of(1, 2, 3)
 ```
 
 Exception types are the one exception to needing an import: they resolve

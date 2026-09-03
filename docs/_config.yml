@@ -1,7 +1,7 @@
 # Site settings
 title: Notch
-tagline: "A scripting language for the Java & Minecraft."
-description: "Notch is a powerful and customizable scripting and programming language built for the Java ecosystem. Seamless JVM integration, sane null propagation, syntax extensibility."
+tagline: "A scripting & programming language for the JVM"
+description: "Notch is a scripting and programming language for the JVM, from Montana State University (MSU). Seamless Java interop, sane null propagation, syntax extensibility, and an interactive REPL."
 author: Notch contributors
 
 # Build settings
@@ -50,6 +50,13 @@ collections:
 
 # Defaults
 defaults:
+  # Social preview card (og:image / twitter:image) for every page.
+  # jekyll-seo-tag reads `image` from page front matter, not site config,
+  # so it has to be injected here rather than set as a top-level key.
+  - scope:
+      path: ""
+    values:
+      image: /assets/images/og-card.png
   - scope:
       path: ""
       type: "getting-started"

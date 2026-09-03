@@ -3,13 +3,11 @@
 * fix unreachable parser fallback: switch `NotchParser.java:498` `RuntimeException` to `ParseException` so errors are `Spanned`
 
 # Website Documentation
-* Needs rewrite with proper documentation: installation, overview, etc.
-* Top level nav should include notch templates
-  * Notch templates are a flagship feature, needs good docs for 431 usage
-* Needs syntax highlighting
+* The site was rewritten into four collections (Language, Notch Templates, REPL) that still need review. 
+* Codes for the 56 uncoded sites (EP0027+) Takes `/errors/` from 26 to 71 entries and
+  retires the `UNCODED` markers in the parser tests.
 
 # Language Features
-* Needs to at least support classes/objects
 * `Foo.new()` for constructors (may actually already do this)
 * Spec on null/undefined behaviors
 * The `Notch` class should have an API making it easy to eval/exec notch code, create notch classes, etc.
@@ -25,11 +23,3 @@
 
 # Online Demo
 * Would need to build an entire javascript implementation (doable w/claude, but work and would need to keep in sync)
-
-# Existing TODOs (in source)
-* `NotchParser.java:497` — better parse-error recovery
-* `NotchParser.java:605` — `else if` chaining detection
-* `NotchClosure.java:34` — return-statement support
-* `NotchIndexExpression.java:29,49` — coercion + property lookup hardening
-* `NotchPropertyAccess.java:83` — move into runtime to support imports
-* `chisel/type/coercions/Coercion.java:8` — coercion priority + thread safety

@@ -1,10 +1,12 @@
 package edu.montana.notch;
 
 import edu.montana.notch.runtime.NotchRuntimeException;
+import edu.montana.notch.chisel.ParseErrors;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -101,5 +103,34 @@ public class NotchTest {
         Number result = Notch.eval("1", Number.class);
         assertInstanceOf(Integer.class, result);
         assertEquals(1, result.intValue());
+    }
+
+    /*Ensure run entry point works
+     See notch.cs.montana.edu/getting-started/maven/#run-notch-from-java
+     */
+    @Test
+    public void runExecutesMultiStatementProgram() {
+        assertEquals("2\n", NotchTestUtils.exec("""
+                x = 1
+                print(x + 1)
+                """));
+    }
+
+    @Test
+    public void runAcceptsStringProgramDirectly() {
+        assertDoesNotThrow(() -> Notch.run("""
+                x = 1
+                print(x + 1)
+                """));
+    }
+
+    @Test
+    public void runAcceptsSingleExpressionProgram() {
+        assertDoesNotThrow(() -> Notch.run("2 + 3"));
+    }
+
+    @Test
+    public void runThrowsOnParseError() {
+        assertThrows(ParseErrors.class, () -> Notch.run("if"));
     }
 }
