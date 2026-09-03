@@ -16,7 +16,7 @@ public class FileSystemNotchTemplateLoader extends NotchTemplateLoader {
 
     @Override
     public Source loadSource(String path) {
-        var templatePath = rootDir.resolve(path).toAbsolutePath();
+        var templatePath = rootDir.resolve(path).normalize().toAbsolutePath();
         if (!templatePath.startsWith(rootDir)) {
             throw new IllegalStateException("refused to load path, suspected path exploit: %s".formatted(Text.repr(templatePath)));
         }
