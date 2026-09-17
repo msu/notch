@@ -167,10 +167,10 @@ class NotchClassTest {
     public void complexClass() {
         var msg = exec("""
                 class Person(first, last, age)
-                    field fullName = f'{first} {last}'
+                    field fullName = '{first} {last}'
                 
                     function greet()
-                        return f"Hi, I'm {this.fullName} and I'm {this.age}"
+                        return "Hi, I'm {this.fullName} and I'm {this.age}"
                     end
                 end
                 
