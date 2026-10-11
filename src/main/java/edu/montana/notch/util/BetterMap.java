@@ -3,10 +3,12 @@ package edu.montana.notch.util;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class BetterMap<K, V> extends AbstractMap<K, V> implements BetterIterable<Map.Entry<K, V>> {
 
     private final Map<K, V> delegate;
+    private final Supplier<? extends V> onMiss;
 
     //=================================================================
     // Constructors, etc.
@@ -16,7 +18,12 @@ public class BetterMap<K, V> extends AbstractMap<K, V> implements BetterIterable
     }
 
     public BetterMap(Map<K, V> c) {
-        delegate = c;
+        this(c, null);
+    }
+
+    private BetterMap(Map<K, V> c, Supplier<? extends V> onMiss) {
+        this.delegate = c;
+        this.onMiss = onMiss;
     }
 
     public static <K, V> BetterMap<K, V> better(Map<K, V> args) {
@@ -43,6 +50,24 @@ public class BetterMap<K, V> extends AbstractMap<K, V> implements BetterIterable
     //=================================================================
     // Map implementation
     //=================================================================
+
+    @Override
+    public V get(Object key) {
+        if (onMiss == null || delegate.containsKey(key)) {
+            return delegate.get(key);
+        }
+        return onMiss.get();
+    }
+
+    @Override
+    public V getOrDefault(Object key, V defaultValue) {
+        return delegate.getOrDefault(key, defaultValue);
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return delegate.containsKey(key);
+    }
 
     @Override
     public V put(K key, V value) {
@@ -72,6 +97,24 @@ public class BetterMap<K, V> extends AbstractMap<K, V> implements BetterIterable
     //=================================================================
     // Extension methods
     //=================================================================
+
+    /**
+     * Returns a view of this map where get() returns value for a missing key.
+     * A miss does not change the map. Use only an immutable value, because
+     * every miss returns the same object. For a new object on each miss, use
+     * onMiss(Supplier).
+     */
+    public BetterMap<K, V> onMiss(V value) {
+        return new BetterMap<>(delegate, () -> value);
+    }
+
+    /**
+     * Returns a view of this map where get() calls supplier for a missing key.
+     * A miss does not change the map. To store the value, use computeIfAbsent().
+     */
+    public BetterMap<K, V> onMiss(Supplier<? extends V> supplier) {
+        return new BetterMap<>(delegate, supplier);
+    }
 
     public BetterMap<K, V> filterAsMap(Predicate<? super Map.Entry<K, V>> filter) {
         BetterMap<K, V> mappedResult = new BetterMap<>();
