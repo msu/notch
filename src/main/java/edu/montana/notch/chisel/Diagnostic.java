@@ -8,6 +8,8 @@ import edu.montana.notch.util.Text;
 import java.util.HashMap;
 import java.util.List;
 
+import static java.lang.Math.max;
+
 public class Diagnostic {
     private String title;
     private DiagnosticCode code;
@@ -76,7 +78,7 @@ public class Diagnostic {
             highlighting.put(highlight, lines);
 
             int lineNumberLen = ("" + highlight.span.end().line).length();
-            maxLineNoSize = Math.max(maxLineNoSize, lineNumberLen);
+            maxLineNoSize = max(maxLineNoSize, lineNumberLen);
         }
 
         var paddingLen = BetterMath.align(2 + maxLineNoSize, 4);
@@ -114,11 +116,11 @@ public class Diagnostic {
                     sb.append(padding).append("| ").append("^".repeat(line.length())).append('\n');
                 } else if (lineNo == startLine && lineNo == endLine) {
                     sb.append(padding).append("| ")
-                            .append(" ".repeat(startCol - 1))
+                            .append(" ".repeat(max(0, startCol - 1)))
                             .append("^".repeat(endCol - startCol)).append('\n');
                 } else if (lineNo == startLine) {
                     sb.append(padding).append("| ")
-                            .append(" ".repeat(startCol - 1))
+                            .append(" ".repeat(max(0, startCol - 1)))
                             .append("^".repeat(line.length() - startCol + 1)).append('\n');
                 } else if (lineNo == endLine) {
                     sb.append(padding).append("| ").append("^".repeat(endCol - 1)).append('\n');

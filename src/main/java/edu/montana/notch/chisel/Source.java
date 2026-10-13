@@ -2,6 +2,8 @@ package edu.montana.notch.chisel;
 
 import java.util.List;
 
+import static java.lang.Math.max;
+
 public final class Source {
     public final String id;
     public final CharSequence content;
@@ -44,7 +46,7 @@ public final class Source {
         Integer[] i = {startLine};
         return content.toString()
                 .lines()
-                .skip(startLine - 1)
+                .skip(max(0, startLine - 1))
                 .takeWhile(line -> i[0]++ <= endLine)
                 .toList();
     }
