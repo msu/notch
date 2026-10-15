@@ -18,7 +18,7 @@ import static edu.montana.notch.util.Text.repr;
 /// (base.html)
 /// ```html
 /// <head>
-///#block title
+///#content title with
 ///   <title>My App</title>
 ///#end
 /// </head>
@@ -32,7 +32,7 @@ import static edu.montana.notch.util.Text.repr;
 /// ```
 ///#layout "base.html"
 ///
-///#content e with
+///#content title with
 ///   <title>Home | MyApp</title>
 ///#end
 ///

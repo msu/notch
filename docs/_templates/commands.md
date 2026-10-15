@@ -31,7 +31,32 @@ Calling `BasicNotchTemplateCommands.registerAll(registry)` on a fresh registry a
 
 - **`layout <name>`** - declare that this template fills slots defined by another (parent) template. The parent's `content` slot is filled with whatever this template emits below the `layout` line.
 
-- **`content <name>`** - inside a parent template, mark a slot to be filled by child templates.
+- **`content [<name>] [with]` / `end`** - inside a parent template, mark a slot to be filled by child templates; with `with`, the body up to `end` is the slot's default. Inside a child template, `with` is required and the body fills the named slot. Omitting the name targets the main body slot.
+
+```notch
+(base.html)
+<head>
+# content title with
+  <title>My App</title>
+# end
+</head>
+<body>
+# content
+</body>
+```
+
+```notch
+(index.html)
+# layout "base.html"
+
+# content title with
+  <title>Home | MyApp</title>
+# end
+
+# content with
+  <main>...</main>
+# end
+```
 
 - **`include <name>`** - inline-render another template at this point.
 
