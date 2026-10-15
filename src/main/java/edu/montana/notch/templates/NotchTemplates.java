@@ -5,7 +5,7 @@ import edu.montana.notch.chisel.Tokenizer;
 import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.ast.NotchTemplateContentBlock;
 import edu.montana.notch.templates.command.FragmentCommand;
-import edu.montana.notch.templates.loader.ClasspathNotchTemplateLoader;
+import edu.montana.notch.templates.loader.DefaultNotchTemplateLoader;
 import edu.montana.notch.templates.loader.NotchTemplateLoader;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.templates.runtime.RenderException;
@@ -34,7 +34,7 @@ public class NotchTemplates {
     protected final LinkedHashMap<String, NotchTemplateCommand> commands = new LinkedHashMap<>();
 
     public NotchTemplates() {
-        this(new ClasspathNotchTemplateLoader());
+        this(new DefaultNotchTemplateLoader());
     }
 
     public NotchTemplates(NotchTemplateLoader loader) {
