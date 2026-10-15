@@ -21,6 +21,7 @@ import java.util.Map;
 
 import static edu.montana.notch.chisel.type.BooleanTokenType.BOOL;
 import static edu.montana.notch.chisel.type.IdentTokenType.IDENT;
+import static edu.montana.notch.chisel.type.DecimalTokenType.DECIMAL;
 import static edu.montana.notch.chisel.type.IntegerTokenType.INT;
 import static edu.montana.notch.chisel.type.WhitespaceTokenType.WHITESPACE;
 import static edu.montana.notch.token.NotchTokenTypeKeyword.NOTCH_KEYWORD;
@@ -38,6 +39,7 @@ public class Notch {
             .withTokenType("bool", BOOL)
             .withTokenType("keyword", NOTCH_KEYWORD)
             .withTokenType("ident", IDENT)
+            .withTokenType("decimal", DECIMAL)
             .withTokenType("int", INT)
             .withTokenType("_comment", PoundCommentTokenType.POUND_COMMENT)
             .withTokenType("_comment", CCommentTokenType.C_COMMENT)

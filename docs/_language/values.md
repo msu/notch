@@ -1,7 +1,7 @@
 ---
 title: "Values & Literals"
 subtitle: "Primary expressions: literals, identifiers, parens, lists, maps, sets"
-description: "Notch primary expressions: integer, boolean, string, and null literals, list, map, and set literals, identifiers, and grouping."
+description: "Notch primary expressions: integer, decimal, boolean, string, and null literals, list, map, and set literals, identifiers, and grouping."
 order: 1
 ---
 
@@ -11,6 +11,7 @@ Notch is built out of expressions and statements. This docs page address the exp
 
 ```notch
 42   0xff   0b101   0o77     # integers (decimal, hex, binary, octal)
+1.5   .5   1e10   2.5f        # decimals (double, float)
 true   false                 # booleans
 null                         # null
 'hello'   "hello"   :hello   # strings
@@ -30,13 +31,43 @@ An integer literal:
 42
 ```
 
-Integers are the only numeric literal. There is no decimal or floating-point
-form currently, and a literal must be in the range `0` to `2147483647`. See
+An integer literal is an `int` and must be in the range `0` to `2147483647`.
+For fractional values, see [Decimals](#decimals). See
 [Type Coercions](../coercions/) for how Notch reaches the other JVM numeric
 types.
 
 Integer literals also accept hexadecimal, binary, and octal prefixes: `0xff`,
 `0b101`, and `0o77` are `255`, `5`, and `63`.
+
+## Decimals
+
+A decimal literal is a `double`:
+
+```notch
+1.5
+0.25
+.5          # leading zero is optional
+1e10        # exponent
+1.5e-3
+2E+4
+```
+
+A suffix picks the type explicitly: `f` or `F` makes a `float`, and `d` or `D`
+makes a `double`. A suffix also turns a whole number into a decimal.
+
+```notch
+2.5f        # float
+3f          # float 3.0
+2d          # double 2.0
+```
+
+A trailing dot is not a decimal: `1.` is the integer `1` followed by member
+access, so `1.toString()` still works. Likewise `.5` only reads as a number
+where a member access couldn't appear, so `items.5` is not `items` followed by
+`0.5`.
+
+Decimals mix freely with integers in arithmetic and comparisons; `5 / 2.0` is
+`2.5`.
 
 ## Booleans and null
 

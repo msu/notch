@@ -7,6 +7,7 @@ import edu.montana.notch.chisel.Token;
 import edu.montana.notch.chisel.Tokenizer;
 import edu.montana.notch.console.token.CStringTokenType;
 import edu.montana.notch.console.token.CommentTokenType;
+import edu.montana.notch.chisel.type.DecimalTokenType;
 import edu.montana.notch.console.token.IntegerTokenType;
 import edu.montana.notch.console.token.PlainTokenType;
 import edu.montana.notch.console.token.TerminalKeywordTokenType;
@@ -24,6 +25,7 @@ public class TerminalSyntaxHighlighter implements Highlighter {
             "bool", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.CONSTANT),
             "ident", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.VARIABLE),
             "int", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.NUMBER),
+            "decimal", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.NUMBER),
             "string", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.STRING),
             "plain", AttributedStyle.DEFAULT.foregroundRgb(NerdFont.FOREGROUND),
             "_ws", AttributedStyle.DEFAULT.backgroundRgb(NerdFont.BACKGROUND),
@@ -35,6 +37,7 @@ public class TerminalSyntaxHighlighter implements Highlighter {
         final var source = new Source("notch-cli", src);
         return new Tokenizer()
                 .withTokenType("string", CStringTokenType.STR)
+                .withTokenType("decimal", DecimalTokenType.DECIMAL)
                 .withTokenType("int", IntegerTokenType.INT)
                 .withTokenType("_ws", WhitespaceTokenType.WHITESPACE)
                 .withTokenType("terminal_keyword", TerminalKeywordTokenType.TERMINAL_KEYWORD)

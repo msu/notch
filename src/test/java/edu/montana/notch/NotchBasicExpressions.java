@@ -41,6 +41,32 @@ public class NotchBasicExpressions {
     }
 
     @Test
+    public void evalDecimalLiteral() {
+        assertEquals(1.5, Notch.<Object>eval("1.5"));
+        assertEquals(0.5, Notch.<Object>eval(".5"));
+        assertEquals(1.5e-3, Notch.<Object>eval("1.5e-3"));
+    }
+
+    @Test
+    public void evalFloatSuffixedLiteral() {
+        assertEquals(2.5f, Notch.<Object>eval("2.5f"));
+        assertEquals(2.0, Notch.<Object>eval("2d"));
+    }
+
+    @Test
+    public void evalMixedDecimalArithmetic() {
+        assertEquals(2.5, Notch.<Object>eval("5 / 2.0"));
+        assertEquals(4.5, Notch.<Object>eval("(1 + .5) * 3"));
+        assertEquals(true, Notch.<Object>eval("0.1 < 1"));
+    }
+
+    @Test
+    public void evalToPrimitiveDoubleFromDecimal() {
+        double result = Notch.eval("1.25 * 2", Double.TYPE);
+        assertEquals(2.5, result);
+    }
+
+    @Test
     public void evalStringLiteral() {
         Object result = Notch.eval("'hello'");
         assertEquals("hello", result);

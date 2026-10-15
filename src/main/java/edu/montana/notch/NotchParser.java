@@ -540,6 +540,11 @@ public class NotchParser extends BasicParser {
             return new NotchIdentifierExpression(word, !take("?"), lastToken());
         }
 
+        Token decimalToken = consume("decimal");
+        if (decimalToken != null) {
+            return new NotchDecimalExpression(decimalToken);
+        }
+
         Token intToken = consume("int");
         if (intToken != null) {
             return new NotchIntegerExpression(intToken);

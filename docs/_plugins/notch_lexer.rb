@@ -48,7 +48,8 @@ module Rouge
         rule %r/0x[0-9a-fA-F_]+/, Num::Hex
         rule %r/0b[01_]+/,        Num::Bin
         rule %r/0o[0-7_]+/,       Num::Oct
-        rule %r/\d+\.\d+([eE][+-]?\d+)?/, Num::Float
+        rule %r/(\d*\.\d+)([eE][+-]?\d+)?[fFdD]?(?!\w)/, Num::Float
+        rule %r/\d+([eE][+-]?\d+[fFdD]?|[fFdD])(?!\w)/, Num::Float
         rule %r/\d+/,             Num::Integer
 
         rule %r/[+\-*\/%]=?/, Operator

@@ -12,6 +12,7 @@ A page of the most common Notch forms. Each section links to the full reference 
 
 ```notch
 42            0xff  0b101  0o77  # integers (hex, binary, octal)
+1.5  .5  1e10  2.5f               # decimals (double, float)
 true  false
 null                              
 'hello'  "hello"                 
