@@ -14,6 +14,7 @@ import edu.montana.notch.templates.runtime.NotchTemplateImportable;
 import edu.montana.notch.templates.runtime.NotchTemplateRenderable;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.util.BetterList;
+import edu.montana.notch.util.Text;
 
 import java.util.Map;
 
@@ -111,14 +112,14 @@ public class MacroCommand extends NotchTemplateCommand implements NotchTemplateI
 
                         var value = args.get(i, UNDEFINED);
                         if (type != null) {
-                            var clazz = type.qualifiedClass();
-
-                            if (!runtime.isUndefined(value) && value != null && clazz.isAssignableFrom(value.getClass())) {
-                                var diag = new Diagnostic();
-                                diag.highlight(name.span());
-                                diag.note("undefined is not assignable to " + type.qualifiedName());
+                            var notchType = type.qualifiedType();
+                            if (notchType == null) {
+                                var diag = new Diagnostic()
+                                        .highlight(type)
+                                        .note("unknown type " + Text.repr(type.qualifiedName()));
                                 throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
                             }
+                            value = runtime.coerce(notchType, value, name.span);
                         }
                         scope.define(name.str(), value);
                     }

@@ -9,9 +9,8 @@ import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.NotchTypeSystem;
+import edu.montana.notch.util.Text;
 
-import java.lang.reflect.Constructor;
 import java.util.List;
 
 public class HelperCommand extends NotchTemplateCommand {
@@ -40,7 +39,13 @@ public class HelperCommand extends NotchTemplateCommand {
 
     @Override
     public void preRender(NotchTemplateRuntime runtime) {
-        NotchType type = NotchTypeSystem.getType(path.qualifiedClass().getName());
+        NotchType type = path.qualifiedType();
+        if (type == null) {
+            final var diag = new Diagnostic()
+                    .highlight(path)
+                    .note("unknown type " + Text.repr(path.qualifiedName()));
+            throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
+        }
         Object helper;
         try {
             helper = type.newInstance(runtime, path.span, List.of(), List.of());

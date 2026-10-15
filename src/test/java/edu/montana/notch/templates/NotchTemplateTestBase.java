@@ -31,7 +31,8 @@ public abstract class NotchTemplateTestBase {
             return renderTemplateForError(uri, vars);
         } catch (RenderException e) {
             var msg = e.render();
-            Assertions.fail(msg, e);
+            System.err.println(msg);
+            Assertions.fail(e);
             throw Exceptions.rethrow(e);
         }
     }
@@ -97,4 +98,14 @@ public abstract class NotchTemplateTestBase {
         }
     }
 
+
+    protected static String messageOf(Throwable ex) {
+        var sb = new StringBuilder();
+        Throwable t = ex;
+        while (t != null) {
+            sb.append(t.getClass().getName()).append(": ").append(t.getMessage()).append('\n');
+            t = t.getCause();
+        }
+        return sb.toString();
+    }
 }

@@ -4,6 +4,8 @@ import edu.montana.notch.NotchParser;
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.chisel.Token;
+import edu.montana.notch.types.NotchType;
+import edu.montana.notch.types.NotchTypeSystem;
 import edu.montana.notch.util.BetterList;
 
 import java.util.Collections;
@@ -22,13 +24,8 @@ public class QualifiedIdent implements Spanned {
         this.names = new LinkedList<>(names);
     }
 
-    public Class<?> qualifiedClass() {
-        var name = qualifiedName();
-        try {
-            return Class.forName(name);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+    public NotchType qualifiedType() {
+        return NotchTypeSystem.resolveTypeName(qualifiedName());
     }
 
     public String qualifiedName() {

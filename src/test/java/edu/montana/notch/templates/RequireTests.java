@@ -113,6 +113,17 @@ public class RequireTests extends NotchTemplateTestBase {
     }
 
     @Test
+    public void testPrimitiveType() {
+        registerTemplate("m", """
+                #require x: byte
+                ${x}
+                """);
+
+        var s = renderTemplate("m", "x", (byte)3);
+        assertEquals("3\n", s);
+    }
+
+    @Test
     public void bangedAndUnbangedMixed() {
         var result = renderString("""
                 #require name: java.lang.String!, middle: java.lang.String
@@ -121,13 +132,14 @@ public class RequireTests extends NotchTemplateTestBase {
         assertEquals("Carson\n", result);
     }
 
-    private static String messageOf(Throwable ex) {
-        var sb = new StringBuilder();
-        Throwable t = ex;
-        while (t != null) {
-            sb.append(t.getClass().getName()).append(": ").append(t.getMessage()).append('\n');
-            t = t.getCause();
-        }
-        return sb.toString();
+    @Test
+    public void shortTypeNames() {
+        registerTemplate("m", """
+                #require name: String, items: List
+                ${name}${items.size()}
+                """);
+
+        var s = renderTemplate("m", "name", "Ada", "items", List.of(1, 2));
+        assertEquals("Ada2\n", s);
     }
 }

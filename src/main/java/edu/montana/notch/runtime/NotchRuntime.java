@@ -185,6 +185,12 @@ public class NotchRuntime {
         return NotchTypeSystem.getRuntimeType(value);
     }
 
+    public Object coerce(NotchType type, Object value, Spanned span) {
+        var clazz = type.getBackingClass();
+        if (clazz == null) throw new UnsupportedOperationException();
+        return coerce(clazz, value, span);
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T coerce(Class<T> clazz, Object value, Spanned span) {
         if (value == null || isUndefined(value) || clazz.isInstance(value)) {

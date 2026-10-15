@@ -45,13 +45,15 @@ Calling `BasicNotchTemplateCommands.registerAll(registry)` on a fresh registry a
 
 - **`set <name> = <expr>`** - bind `<name>` to the result of `<expr>` for the rest of the template's scope.
 
-- **`macro <name>(<params>)` / `end`** - define a reusable template snippet that takes parameters and emits output.
+- **`macro <name>(<params>)` / `end`** - define a reusable template snippet that takes parameters and emits output. A parameter can declare a type, as in `name: String`; the argument is coerced to that type.
 
 - **`helper <name> = <expr>`** - bind a helper (typically a closure) for use elsewhere in the template.
 
 ## Utilities
 
-- **`require <name>`** - assert that a binding is present in the rendering context; fail rendering with a clear message if not.
+- **`require <name>: <Type>[!]`** - assert that a binding is present in the rendering context and has the given type; fail rendering with a clear message if not. With `!`, the value must also be non-null. Separate several requirements with `,`.
+
+In `require` and typed macro parameters, a short type name such as `String` or `List` is looked up in `java.lang`, `java.io` and `java.util`. Other types need their fully-qualified name.
 
 - **`comment` / `end`** - everything between is ignored. Comments do not appear in output.
 

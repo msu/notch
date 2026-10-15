@@ -1,6 +1,7 @@
 package edu.montana.notch.templates;
 
 
+import edu.montana.notch.ErrorTest;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.templates.loader.NotchTemplateLoader;
@@ -87,6 +88,18 @@ public class TemplateTests extends NotchTemplateTestBase {
         assertContains("friend", content, "Helper should resolve 'name' to 'friend'");
         assertFalse(content.contains("${"), "No unresolved variables");
         assertFalse(content.contains("#helper"), "Command should not appear in output");
+    }
+
+    @ErrorTest
+    public void unknownHelperFails() {
+        registerTemplate("m", """
+                #helper com.example.MissingHelper
+                Hello
+                """);
+        var ex = assertThrows(RuntimeException.class, () -> renderTemplateForError("m"));
+        var msg = messageOf(ex);
+        assertContains("unknown type", msg, msg);
+        assertContains("com.example.MissingHelper", msg, msg);
     }
 
     @Test

@@ -59,20 +59,28 @@ public class NotchTypeSystem {
         });
     }
 
-    private static final String[] DEFAULT_THROWABLE_PACKAGES = {"java.lang", "java.io", "java.util"};
+    private static final String[] DEFAULT_PACKAGES = {"java.lang", "java.io", "java.util"};
 
-    //asymmetry for Notch allowing "catch IOException" without import
-    public static Class<?> resolveThrowableType(String name) {
+    /**
+     * Resolves a type name as written in source. A name with no {@code .} that is not a class or
+     * primitive is also tried in {@link #DEFAULT_PACKAGES}, so {@code String} and {@code IOException}
+     * work without an import. Returns {@code null} if nothing matches.
+     */
+    public static NotchType resolveTypeName(String name) {
         NotchType direct = getType(name);
-        if (direct != null) return direct.getBackingClass();
-        if (name.indexOf('.') >= 0) return null;
-        for (String pkg : DEFAULT_THROWABLE_PACKAGES) {
+        if (direct != null || name.indexOf('.') >= 0) return direct;
+        for (String pkg : DEFAULT_PACKAGES) {
             NotchType type = getType(pkg + "." + name);
             if (type != null) {
-                return type.getBackingClass();
+                return type;
             }
         }
         return null;
+    }
+
+    public static Class<?> resolveThrowableType(String name) {
+        NotchType type = resolveTypeName(name);
+        return type == null ? null : type.getBackingClass();
     }
 
     public static NotchType getType(String className) {
