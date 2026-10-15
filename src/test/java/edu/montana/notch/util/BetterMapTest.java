@@ -394,4 +394,93 @@ class BetterMapTest {
         assertFalse(result.containsKey("cherry"));
         assertFalse(result.containsKey("date"));
     }
+
+    @Test
+    void testOnMissValue() {
+        BetterMap<String, Integer> map = new BetterMap<>();
+        map.put("a", 1);
+
+        BetterMap<String, Integer> counts = map.onMiss(0);
+        assertEquals(Integer.valueOf(1), counts.get("a"));
+        assertEquals(Integer.valueOf(0), counts.get("b"));
+        assertFalse(counts.containsKey("b"));
+        assertEquals(1, counts.size());
+        assertNull(map.get("b"));
+    }
+
+    @Test
+    void testOnMissSupplier() {
+        BetterMap<String, BetterList<String>> map = new BetterMap<String, BetterList<String>>()
+                .onMiss(BetterList::new);
+
+        assertNotSame(map.get("a"), map.get("a"));
+        map.get("a").add("x");
+        assertTrue(map.get("a").isEmpty());
+        assertEquals(0, map.size());
+    }
+
+    @Test
+    void testOnMissIsAView() {
+        BetterMap<String, Integer> map = new BetterMap<>();
+        BetterMap<String, Integer> view = map.onMiss(0);
+
+        map.put("a", 1);
+        assertEquals(Integer.valueOf(1), view.get("a"));
+
+        view.put("b", 2);
+        assertEquals(Integer.valueOf(2), map.get("b"));
+    }
+
+    @Test
+    void testOnMissGetOrDefault() {
+        BetterMap<String, Integer> map = new BetterMap<String, Integer>().onMiss(0);
+        assertEquals(Integer.valueOf(5), map.getOrDefault("a", 5));
+    }
+
+    @Test
+    void testOnMissComputeIfAbsent() {
+        BetterMap<String, Integer> map = new BetterMap<String, Integer>().onMiss(0);
+        assertEquals(Integer.valueOf(5), map.computeIfAbsent("a", k -> 5));
+        assertEquals(Integer.valueOf(5), map.get("a"));
+        assertEquals(1, map.size());
+    }
+
+    @Test
+    void testOnMissPutIfAbsent() {
+        BetterMap<String, Integer> map = new BetterMap<String, Integer>().onMiss(0);
+        assertNull(map.putIfAbsent("a", 7));
+        assertEquals(Integer.valueOf(7), map.get("a"));
+    }
+
+    @Test
+    void testOnMissReplace() {
+        BetterMap<String, Integer> map = new BetterMap<String, Integer>().onMiss(0);
+        assertNull(map.replace("a", 9));
+        assertFalse(map.replace("a", 0, 9));
+        assertFalse(map.containsKey("a"));
+        assertEquals(0, map.size());
+    }
+
+    @Test
+    void testOnMissComputeIfPresent() {
+        BetterMap<String, Integer> map = new BetterMap<String, Integer>().onMiss(0);
+        assertNull(map.computeIfPresent("a", (k, v) -> v + 1));
+        assertFalse(map.containsKey("a"));
+    }
+
+    @Test
+    void testOnMissCompute() {
+        BetterMap<String, Integer> map = new BetterMap<String, Integer>().onMiss(0);
+        map.compute("a", (k, v) -> v == null ? 10 : v + 1);
+        assertEquals(Integer.valueOf(10), map.get("a"));
+    }
+
+    @Test
+    void testOnMissMerge() {
+        BetterMap<String, Integer> map = new BetterMap<String, Integer>().onMiss(0);
+        map.merge("a", 3, (a, b) -> a * 100 + b);
+        assertEquals(Integer.valueOf(3), map.get("a"));
+        map.merge("a", 4, (a, b) -> a * 100 + b);
+        assertEquals(Integer.valueOf(304), map.get("a"));
+    }
 }
