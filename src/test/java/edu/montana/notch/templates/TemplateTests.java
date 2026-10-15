@@ -40,6 +40,16 @@ public class TemplateTests extends NotchTemplateTestBase {
     }
 
     @Test
+    public void testCommandNameNotAtLineStartIsText() {
+        var tmpl = """
+                ${name} #if
+                """;
+
+        var content = renderString(tmpl, "name", "soup");
+        assertEquals("soup #if\n", content);
+    }
+
+    @Test
     public void testUnsetFallback() {
         var tmpl = """
                 ${value?: "so back"}

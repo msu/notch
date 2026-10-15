@@ -13,9 +13,11 @@ public class NotchTemplateTokenTypeCommand implements TokenType {
     @Override
     public TokenData tokenize(Tokenizer t) throws TokenizeException {
         // consume leading whitespace
+        if (t.location().column != 1) return null;
         while (t.take(' ', '\t')) ;
 
         final var start = t.location();
+
         var commandName = NotchTemplateTokenTypeCommandName.COMMAND_NAME.tokenize(t);
         if (commandName == null) {
             return null;
