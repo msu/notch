@@ -1,7 +1,10 @@
 package edu.montana.notch.templates;
 
+import edu.montana.notch.ErrorTest;
 import org.junit.jupiter.api.Test;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +32,7 @@ public class RequireTests extends NotchTemplateTestBase {
         assertEquals("Carson is 40\n", result);
     }
 
-    @Test
+    @ErrorTest
     public void missingSymbolFails() {
         registerTemplate("m", """
                 #require name: java.lang.String
@@ -41,7 +44,7 @@ public class RequireTests extends NotchTemplateTestBase {
         assertContains("\"name\"", msg, msg);
     }
 
-    @Test
+    @ErrorTest
     public void wrongTypeFails() {
         registerTemplate("m", """
                 #require age: java.lang.Integer
@@ -75,7 +78,7 @@ public class RequireTests extends NotchTemplateTestBase {
         assertEquals("ok\n", result);
     }
 
-    @Test
+    @ErrorTest
     public void nullRejectedWhenBang() {
         registerTemplate("m", """
                 #require name: java.lang.String!
@@ -97,7 +100,7 @@ public class RequireTests extends NotchTemplateTestBase {
         assertEquals("hi Carson\n", result);
     }
 
-    @Test
+    @ErrorTest
     public void unknownTypeFails() {
         registerTemplate("m", """
                 #require x: com.example.Missing

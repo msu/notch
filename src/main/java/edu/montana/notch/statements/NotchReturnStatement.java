@@ -2,6 +2,7 @@ package edu.montana.notch.statements;
 
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.expressions.NotchExpression;
+import edu.montana.notch.runtime.NotchControlFlow;
 import edu.montana.notch.runtime.NotchRuntime;
 
 public class NotchReturnStatement extends NotchStatement {
@@ -16,19 +17,6 @@ public class NotchReturnStatement extends NotchStatement {
     public void execute(NotchRuntime runtime) {
         Object v = null;
         if (value != null) v = runtime.evaluate(value);
-        throw new ReturnSignal(v);
-    }
-
-    public static final class ReturnSignal extends RuntimeException {
-        public final Object value;
-
-        public ReturnSignal(Object value) {
-            this.value = value;
-        }
-
-        @Override
-        public Throwable fillInStackTrace() {
-            return this;
-        }
+        throw new NotchControlFlow.Return(v);
     }
 }

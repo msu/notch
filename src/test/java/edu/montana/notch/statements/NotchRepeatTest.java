@@ -1,5 +1,6 @@
 package edu.montana.notch.statements;
 
+import edu.montana.notch.ErrorTest;
 import org.junit.jupiter.api.Test;
 
 import static edu.montana.notch.AssertContains.assertContains;
@@ -127,7 +128,7 @@ class NotchRepeatTest {
         assertEquals("x\n", result);
     }
 
-    @Test
+    @ErrorTest
     void repeatTimesNonNumberTargetedError() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 repeat 'oops' times

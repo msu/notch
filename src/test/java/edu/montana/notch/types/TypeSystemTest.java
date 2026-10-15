@@ -10,48 +10,48 @@ public class TypeSystemTest {
 
     @Test
     public void testBasicTypeLoads() {
-        NotchType type = TypeRegistry.getType(DemoType.class);
+        NotchType type = NotchTypeSystem.getType(DemoType.class);
         assertNotNull(type);
     }
 
     @Test
     public void testPublicMethodsAreAvailable() {
-        NotchType type = TypeRegistry.getType(DemoType.class);
+        NotchType type = NotchTypeSystem.getType(DemoType.class);
         NotchMethod method = type.getMethod("publicMethod");
         assertNotNull(method);
     }
 
     @Test
     public void testProtectedMethodsAreNotAvailable() {
-        NotchType type = TypeRegistry.getType(DemoType.class);
+        NotchType type = NotchTypeSystem.getType(DemoType.class);
         NotchMethod method = type.getMethod("protectedMethod");
         assertNull(method);
     }
 
     @Test
     public void testPrivateMethodsAreNotAvailable() {
-        NotchType type = TypeRegistry.getType(DemoType.class);
+        NotchType type = NotchTypeSystem.getType(DemoType.class);
         NotchMethod method = type.getMethod("privateMethod");
         assertNull(method);
     }
 
     @Test
     public void testStaticMethodsAreNotAvailable() {
-        NotchType type = TypeRegistry.getType(DemoType.class);
+        NotchType type = NotchTypeSystem.getType(DemoType.class);
         NotchMethod method = type.getMethod("publicStaticMethod");
         assertNull(method);
     }
 
     @Test
     public void testStaticMethodsAreAvailableViaStaticMethod() {
-        NotchType type = TypeRegistry.getType(DemoType.class);
-        NotchMethod method = type.getStaticMethod("publicStaticMethod");
+        NotchType type = NotchTypeSystem.getType(DemoType.class);
+        NotchFunction method = type.getStaticMethod("publicStaticMethod");
         assertNotNull(method);
     }
 
     @Test
     public void testPropertiesResolveProperly() {
-        var type = TypeRegistry.getType(DemoType.class);
+        var type = NotchTypeSystem.getType(DemoType.class);
 
         var prop = type.getProperty("prop1");
         assertNotNull(prop);
@@ -68,7 +68,7 @@ public class TypeSystemTest {
 
     @Test
     public void testPropertiesAlsoResolveAsFunctionsProperly() {
-        var type = TypeRegistry.getType(DemoType.class);
+        var type = NotchTypeSystem.getType(DemoType.class);
 
         var method = type.getMethod("prop1");
         assertNotNull(method);
@@ -86,15 +86,15 @@ public class TypeSystemTest {
 
     @Test
     public void testPropertiesAlternateNameResolves() {
-        var type = TypeRegistry.getType(DemoType.class);
+        var type = NotchTypeSystem.getType(DemoType.class);
         var prop = type.getProperty("prop_four");
         assertNotNull(prop);
     }
 
     @Test
     public void resolveThrowableTypeIsStableAcrossCalls() {
-        Class<?> first = TypeRegistry.resolveThrowableType("IOException");
-        Class<?> second = TypeRegistry.resolveThrowableType("IOException");
+        Class<?> first = NotchTypeSystem.resolveThrowableType("IOException");
+        Class<?> second = NotchTypeSystem.resolveThrowableType("IOException");
         assertNotNull(first);
         assertSame(first, second);
     }

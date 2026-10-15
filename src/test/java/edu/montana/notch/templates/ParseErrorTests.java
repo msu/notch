@@ -1,5 +1,6 @@
 package edu.montana.notch.templates;
 
+import edu.montana.notch.ErrorTest;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.templates.loader.NotchTemplateLoader;
 import org.junit.jupiter.api.Nested;
@@ -18,7 +19,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
     @Nested
     class MissingEndTags {
 
-        @Test
+        @ErrorTest
         void missingEndForIf() {
             registerTemplate("template", """
                     #if true
@@ -27,7 +28,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "unterminated");
         }
 
-        @Test
+        @ErrorTest
         void missingEndForNestedIf() {
             registerTemplate("template", """
                     #if true
@@ -39,7 +40,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "unterminated");
         }
 
-        @Test
+        @ErrorTest
         void missingEndForFor() {
             registerTemplate("template", """
                     #for x in [1,2,3]
@@ -48,7 +49,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "unterminated");
         }
 
-        @Test
+        @ErrorTest
         void missingEndForFragment() {
             registerTemplate("template", """
                     #macro card(id)
@@ -57,7 +58,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "unterminated");
         }
 
-        @Test
+        @ErrorTest
         void missingEndForContent() {
             registerTemplate("template", """
                     #content footer with
@@ -66,7 +67,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "unterminated");
         }
 
-        @Test
+        @ErrorTest
         void missingEndForNestedFor() {
             registerTemplate("template", """
                     #for x in [1,2,3]
@@ -78,7 +79,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "unterminated");
         }
 
-        @Test
+        @ErrorTest
         void missingEndForIfWithElse() {
             registerTemplate("template", """
                     #if true
@@ -89,7 +90,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "unterminated");
         }
 
-        @Test
+        @ErrorTest
         void missingEndForIfWithElseIf() {
             registerTemplate("template", """
                     #if false
@@ -125,7 +126,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             assertNotNull(result, "Parser allows elseif after else (though semantically odd)");
         }
 
-        @Test
+        @ErrorTest
         void doubleElseInFor() {
             registerTemplate("template", """
                     #for x in [1,2,3]
@@ -139,7 +140,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "unknown command \"else\"");
         }
 
-        @Test
+        @ErrorTest
         void elseifInFor() {
             registerTemplate("template", """
                     #for x in [1,2,3]
@@ -159,7 +160,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
     @Nested
     class MalformedCommands {
 
-        @Test
+        @ErrorTest
         void ifWithoutCondition() {
             registerTemplate("template", """
                     #if
@@ -170,7 +171,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectRenderError("template", null);
         }
 
-        @Test
+        @ErrorTest
         void forWithoutIn() {
             registerTemplate("template", """
                     #for x [1,2,3]
@@ -180,7 +181,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "in");
         }
 
-        @Test
+        @ErrorTest
         void forWithoutVarName() {
             registerTemplate("template", """
                     #for in [1,2,3]
@@ -190,7 +191,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", null);
         }
 
-        @Test
+        @ErrorTest
         void forWithoutIterable() {
             registerTemplate("template", """
                     #for x in
@@ -200,7 +201,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", null);
         }
 
-        @Test
+        @ErrorTest
         void elseifWithoutCondition() {
             registerTemplate("template", """
                     #if false
@@ -213,7 +214,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectRenderError("template", null);
         }
 
-        @Test
+        @ErrorTest
         void fragmentWithoutName() {
             registerTemplate("template", """
                     #fragment
@@ -223,7 +224,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", null);
         }
 
-        @Test
+        @ErrorTest
         void expandWithoutName() {
             registerTemplate("template", """
                     #expand
@@ -231,7 +232,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", null);
         }
 
-        @Test
+        @ErrorTest
         void ifWithExtraTokens() {
             registerTemplate("template", """
                     #if true extra stuff here
@@ -241,7 +242,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "extra tokens");
         }
 
-        @Test
+        @ErrorTest
         void forWithExtraTokens() {
             registerTemplate("template", """
                     #for x in [1,2,3] extra
@@ -259,7 +260,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
     @Nested
     class UnknownCommands {
 
-        @Test
+        @ErrorTest
         void unknownCommand() {
             registerTemplate("template", """
                     #foobar
@@ -269,7 +270,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "unknown command");
         }
 
-        @Test
+        @ErrorTest
         void typoInIfCommand() {
             registerTemplate("template", """
                     #iif true
@@ -279,7 +280,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "unknown command");
         }
 
-        @Test
+        @ErrorTest
         void caseSensitiveCommand() {
             registerTemplate("template", """
                     #IF true
@@ -289,7 +290,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             expectParseError("template", "unknown command");
         }
 
-        @Test
+        @ErrorTest
         void typoInForCommand() {
             registerTemplate("template", """
                     #fore x in [1,2,3]
@@ -307,38 +308,38 @@ public class ParseErrorTests extends NotchTemplateTestBase {
     @Nested
     class MalformedExpressions {
 
-        @Test
+        @ErrorTest
         void emptyExpression() {
             registerTemplate("template", "${}");
             expectParseError("template", "expression");
         }
 
-        @Test
+        @ErrorTest
         void expressionWithTrailingTokens() {
             // This might be caught by the Notch parser
             registerTemplate("template", "${value extra}");
             expectParseError("template", "trailing tokens");
         }
 
-        @Test
+        @ErrorTest
         void malformedElvis() {
             registerTemplate("template", "${value ?:}");
             expectParseError("template", null);
         }
 
-        @Test
+        @ErrorTest
         void incompleteConditionalExpression() {
             registerTemplate("template", "${\"value\" if}");
             expectParseError("template", null);
         }
 
-        @Test
+        @ErrorTest
         void unbalancedParentheses() {
             registerTemplate("template", "${(value}");
             expectParseError("template", null);
         }
 
-        @Test
+        @ErrorTest
         void invalidOperator() {
             registerTemplate("template", "${value !! other}");
             expectParseError("template", null);
@@ -435,7 +436,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
     @Nested
     class MacroExpandEdgeCases {
 
-        @Test
+        @ErrorTest
         void expandUndefinedFragment() {
             registerTemplate("template", """
                     #expand nonexistent()
@@ -504,7 +505,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
     @Nested
     class TemplateLoadingEdgeCases {
 
-        @Test
+        @ErrorTest
         void includeNonExistentTemplate() {
             var tmpl = """
                     #include "nonexistent.html"
@@ -524,7 +525,7 @@ public class ParseErrorTests extends NotchTemplateTestBase {
             });
         }
 
-        @Test
+        @ErrorTest
         void layoutNonExistentTemplate() {
             var tmpl = """
                     #layout "nonexistent.html"

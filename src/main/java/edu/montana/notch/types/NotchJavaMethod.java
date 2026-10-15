@@ -41,44 +41,12 @@ public class NotchJavaMethod implements NotchMethod {
     }
 
     @Override
-    public Object invoke(NotchRuntime runtime, Object rootVal, List<Object> args, List<Span> argSpan) {
-        try {
-            if (javaMethods.isEmpty()) {
-                throw new NoSuchMethodException("No methods named " + this.name + " were found on " + backingClass.getName());
-            }
-            Method method = bestMatch(runtime, args);
-            if (method == null) {
-                String argTypes = BetterList.better(args).map(NotchRuntime::className).toString(",");
-                throw new IllegalArgumentException("Could not find compatible method with args (" + argTypes + ")");
-            }
-            MethodResolver.coerceArguments(runtime, method, args, argSpan, 0);
-            return method.invoke(rootVal, args.toArray());
-        } catch (Throwable e) {
-            if (e instanceof InvocationTargetException) {
-                e = e.getCause();
-                // remove reflection internals
-                e.setStackTrace(Exceptions.replaceInStackTrace(e.getStackTrace(),
-                        (ste) -> ste.getClassName().startsWith("java.") ||
-                                ste.getClassName().startsWith("jdk.") ||
-                                ste.getClassName().startsWith("javax.") ||
-                                ste.getClassName().contains("NotchJavaMethod"),
-                        new RuntimeException()));
-            }
-            throw rethrow(e);
-        }
-    }
-
-    private Method bestMatch(NotchRuntime runtime, List<Object> argValues) {
-        return MethodResolver.getBestMatch(runtime, argValues, javaMethods);
+    public Object invoke(NotchRuntime runtime, Object rootVal, Span callsite, List<Object> args, List<Span> argSpan) {
+        return NotchJavaMethodUtils.invoke(rootVal, callsite, runtime, javaMethods, args, argSpan, false);
     }
 
     @Override
     public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getDisplayName() {
         return javaMethods.get(0).getName() + "()";
     }
 
@@ -100,13 +68,13 @@ public class NotchJavaMethod implements NotchMethod {
 
     @Override
     public NotchType getDeclaringType() {
-        return TypeRegistry.getType(this.backingClass);
+        return NotchTypeSystem.getType(this.backingClass);
     }
 
     @Override
-    public boolean canInvokeWith(NotchRuntime runtime, List<Object> args) {
-        Method method = bestMatch(runtime, args);
-        return method != null;
+    public boolean canInvokeWith(NotchRuntime runtime, NotchType root, List<NotchType> args) {
+        var bestMethod = NotchJavaMethodUtils.getBestMatch(runtime, args, javaMethods, false);
+        return bestMethod != null;
     }
 
     @Override
@@ -117,10 +85,10 @@ public class NotchJavaMethod implements NotchMethod {
             Parameter[] parameters = method.getParameters();
             for (Parameter param : parameters) {
                 var name = param.getName();
-                var ty = TypeRegistry.getType(param.getType());
+                var ty = NotchTypeSystem.getType(param.getType());
                 params.add(pair(ty, name));
             }
-            final var rt = TypeRegistry.getType(method.getReturnType());
+            final var rt = NotchTypeSystem.getType(method.getReturnType());
             out.add(new NotchFunctionDescription(rt, params));
         }
         return out;

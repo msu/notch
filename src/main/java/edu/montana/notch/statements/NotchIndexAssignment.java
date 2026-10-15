@@ -42,7 +42,7 @@ public class NotchIndexAssignment extends NotchStatement {
     }
 
     private static Integer toInteger(Object index) {
-        // TODO - replace with proper coercions
+        // TODO - replace with proper coercers
         // call throws a raw ClassCastException (no Notch diagnostic) nums['one'] = 5
         return (Integer) index;
     }

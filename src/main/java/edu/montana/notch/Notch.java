@@ -7,19 +7,16 @@ import edu.montana.notch.chisel.Tokenizer;
 import edu.montana.notch.chisel.type.CCommentTokenType;
 import edu.montana.notch.chisel.type.LiteralTokenType;
 import edu.montana.notch.chisel.type.PoundCommentTokenType;
-import edu.montana.notch.console.NotchShell;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.runtime.NotchBuiltins;
 import edu.montana.notch.runtime.NotchRuntime;
-import edu.montana.notch.runtime.builtins.NotchStructureFunction;
-import edu.montana.notch.statements.NotchStatement;
 import edu.montana.notch.templates.NotchTemplates;
-import edu.montana.notch.types.coercions.Coercion;
-import edu.montana.notch.util.BetterFS;
+import edu.montana.notch.types.NotchTypeCoercer;
+import edu.montana.notch.types.coercions.*;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static edu.montana.notch.chisel.type.BooleanTokenType.BOOL;
@@ -73,7 +70,7 @@ public class Notch {
     }
 
     public static void run(String program) {
-        run(new Source("<embed>", program));
+        run(new Source("<u-shouldnt-run-programs-this-way.notch>", program));
     }
 
     public static void run(Source source) {
@@ -87,13 +84,7 @@ public class Notch {
         if (parser.hasErrors()) {
             throw new ParseErrors(parser.getDiagnostics());
         }
-        if (element instanceof NotchStatement stmt) {
-            runtime.execute(stmt);
-            return null;
-        } else if (element instanceof NotchExpression expr) {
-            return runtime.evaluate(expr);
-        }
-        return null;
+        return NotchRuntime.run(runtime, element);
     }
 
 
@@ -112,22 +103,14 @@ public class Notch {
         return map;
     }
 
-    public static void run(String program) {
-        var src = new Source("<run>", program);
-        var ast = new NotchParser(src).parseAsStatement();
-        final var runtime = new NotchRuntime(src);
-        ast.execute(runtime);
-    }
-
-    public static void main(String[] args) {
-        String file = "examples/battleship.notch";
-        String content = BetterFS.read(file);
-        Notch.run(content);
-//        NotchShell.start(true);
-    }
-
-    public static Collection<? extends Coercion> coercions() {
-        return Coercion.defaults();
+    public static List<NotchTypeCoercer> coercions() {
+        return List.of(
+                VoidNullCoercion.INSTANCE,
+                PrimitiveCoercions.INSTANCE,
+                new SubtypeCoercer(),
+                IterableCoercions.INSTANCE,
+                new NotchFunctionCoercer()
+        );
     }
 
     public static Map<String, Object> builtins() {

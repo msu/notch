@@ -1,7 +1,8 @@
 package edu.montana.notch.templates.command;
 
 import edu.montana.notch.NotchParser;
-import edu.montana.notch.chisel.Token;
+import edu.montana.notch.chisel.Diagnostic;
+import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.Drain;
 import edu.montana.notch.templates.NotchTemplateCommand;
@@ -16,7 +17,13 @@ public class IncludeCommand extends NotchTemplateCommand {
 
     @Override
     public void parseCommand(NotchParser parser) {
-        path = parser.requireStringExpression("expected a file path here");
+        path = parser.parseStringExpression();
+        if (path == null) {
+            var diag = new Diagnostic();
+            diag.highlight(parser.currentToken());
+            diag.note("expected included template path");
+            throw new ParseException(diag);
+        }
     }
 
     @Override

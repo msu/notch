@@ -1,8 +1,8 @@
 package edu.montana.notch.expressions;
 
-import edu.montana.notch.types.TypeRegistry;
-import edu.montana.notch.types.TypeSystem;
-import org.junit.jupiter.api.Disabled;
+import edu.montana.notch.ErrorTest;
+import edu.montana.notch.runtime.NotchRuntimeException;
+import edu.montana.notch.types.NotchTypeSystem;
 import org.junit.jupiter.api.Test;
 
 import static edu.montana.notch.NotchTestUtils.eval;
@@ -24,7 +24,7 @@ public class NotchMethodInvocationExpressionTest {
 
     @Test
     public void testStaticMethodInvocationWorks() {
-        var type = TypeRegistry.getType(SampleClass.class);
+        var type = NotchTypeSystem.getType(SampleClass.class);
         Object result = eval("SampleClass.staticMethod()", type.getSimpleName(), type);
         assertEquals("staticMethod", result);
     }
@@ -97,12 +97,13 @@ public class NotchMethodInvocationExpressionTest {
 
     @Test
     public void testExceptionsPropagateProperly() {
-        assertThrows(CustomException.class, () -> evalNoCatch("foo.throwsException(x)", "foo", new SampleClass(), "x", 10));
+        var ex = assertThrows(NotchRuntimeException.class, () -> evalNoCatch("foo.throwsException(x)", "foo", new SampleClass(), "x", 10));
+        assertInstanceOf(CustomException.class, ex.getCause());
     }
 
     @Test
     public void testConstructorViaTypeInvocation() {
-        var type = TypeSystem.getType(SampleClass.class);
+        var type = NotchTypeSystem.getType(SampleClass.class);
         Object result = eval("SampleClass()", type.getSimpleName(), type);
         assertInstanceOf(SampleClass.class, result);
     }
@@ -117,13 +118,13 @@ public class NotchMethodInvocationExpressionTest {
         assertEquals("hi", eval("java.lang.StringBuilder('hi').toString()"));
     }
 
-    @Test
+    @ErrorTest
     public void testConstructorWithNoMatchingOverloadReports() {
         var ex = assertThrows(RuntimeException.class, () -> eval("java.util.List()"));
         assertTrue(ex.getMessage().contains("no constructor"), ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     public void bareThrowableInvocationErrorsWithoutImport() {
         var ex = assertThrows(RuntimeException.class, () -> eval("IOException('boom')"));
         String msg = ex.getMessage();
@@ -132,7 +133,7 @@ public class NotchMethodInvocationExpressionTest {
         assertTrue(msg.contains("new IOException(...)"), msg);
     }
 
-    @Test
+    @ErrorTest
     public void bareNonThrowableInvocationSuggestsImportButNotNew() {
         var ex = assertThrows(RuntimeException.class, () -> eval("ArrayList('x')"));
         String msg = ex.getMessage();
@@ -143,12 +144,12 @@ public class NotchMethodInvocationExpressionTest {
 
     @Test
     public void boundThrowableTypeConstructsOnInvocation() {
-        var type = TypeSystem.getType(java.io.IOException.class);
+        var type = NotchTypeSystem.getType(java.io.IOException.class);
         Object result = eval("IOException('boom')", "IOException", type);
         assertInstanceOf(java.io.IOException.class, result);
     }
 
-    @Test
+    @ErrorTest
     public void newOnJvmTypeSuggestsImport() {
         // `new ArrayList('x')` without an import should point at the import
         var ex = assertThrows(RuntimeException.class, () -> eval("new ArrayList('x')"));
@@ -160,7 +161,7 @@ public class NotchMethodInvocationExpressionTest {
         assertTrue(!msg.contains("make sure the class is declared"), msg);
     }
 
-    @Test
+    @ErrorTest
     public void newUndefinedGuidanceDeclareClass() {
         var ex = assertThrows(RuntimeException.class, () -> eval("new Nonexistent999()"));
         String msg = ex.getMessage();
@@ -168,7 +169,7 @@ public class NotchMethodInvocationExpressionTest {
         assertTrue(msg.contains("make sure the class is declared"), msg);
     }
 
-    @Test
+    @ErrorTest
     public void newOnPrimitiveDoesNotSuggestImportingIt() {
         var ex = assertThrows(RuntimeException.class, () -> eval("new int()"));
         String msg = ex.getMessage();
@@ -176,16 +177,16 @@ public class NotchMethodInvocationExpressionTest {
         assertTrue(!msg.contains("import int"), msg);
     }
 
-    @Test
+    @ErrorTest
     public void constructorBodyExceptionSurfacesRealCause() {
-        var type = TypeSystem.getType(java.io.FileReader.class);
+        var type = NotchTypeSystem.getType(java.io.FileReader.class);
         var ex = assertThrows(RuntimeException.class, () -> exec("err = new FileReader('/no/such/file')\n", "FileReader", type));
         String msg = ex.getMessage();
         assertTrue(msg.contains("FileNotFoundException") || msg.contains("/no/such/file"), msg);
         assertTrue(!msg.contains("InvocationTargetException"), msg);
     }
 
-    @Test
+    @ErrorTest
     public void errorEvaluatingConstructorArgIsNotReportedAsNoConstructor() {
         // (closure invoked with the wrong arity)
         // must surface as its own error, not swallowed and mislabeled
@@ -199,7 +200,7 @@ public class NotchMethodInvocationExpressionTest {
         assertTrue(!msg.contains("no constructor"), msg);
     }
 
-    @Test
+    @ErrorTest
     public void catchingThrowableDoesNotMakeBareNameConstructibleLater() {
         String script = """
                 try

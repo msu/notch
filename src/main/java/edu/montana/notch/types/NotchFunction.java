@@ -7,11 +7,15 @@ import java.util.List;
 
 public interface NotchFunction {
     String getName();
-    Object invoke(NotchRuntime runtime, Object rootVal, List<Object> args, List<Span> argSpan);
+    Object invoke(NotchRuntime runtime, Span callsite, List<Object> args, List<Span> argSpan);
 
-    boolean canInvokeWith(NotchRuntime runtime, List<Object> args);
+    default <T> T invoke(Class<T> clazz, NotchRuntime runtime, Span callsite, List<Object> args, List<Span> argSpan) {
+        Object result = invoke(runtime, callsite, args, argSpan);
+        T out = runtime.coerce(clazz, result, callsite);
+        return out;
+    }
 
-
+    boolean canInvokeWith(NotchRuntime runtime, List<NotchType> args);
     default List<NotchFunctionDescription> getVariants() {
         // by default functions do not have to declare their args & return types
         return List.of();

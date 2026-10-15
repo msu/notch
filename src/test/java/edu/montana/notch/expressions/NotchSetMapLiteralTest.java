@@ -1,5 +1,6 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.ErrorTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -63,7 +64,7 @@ class NotchSetMapLiteralTest {
         assertEquals(2, map.get("bar"));
     }
 
-    @Test
+    @ErrorTest
     void undefinedBareKeyThrowsWithQuoteHint() {
         var ex = assertThrows(RuntimeException.class, () -> eval("{foo? -> 1}"));
         assertTrue(ex.getMessage().contains("undefined map key"),
@@ -72,7 +73,7 @@ class NotchSetMapLiteralTest {
                 "expected a quote-it hint, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void undefinedKeySuggestsNearbyVariable() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 food = 5
@@ -82,7 +83,7 @@ class NotchSetMapLiteralTest {
                 "expected a nearby-variable suggestion, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void generalExpressionUndefinedKeyThrows() {
         var ex = assertThrows(RuntimeException.class, () -> eval("{p?.x -> 1}"));
         assertTrue(ex.getMessage().contains("undefined map key"),

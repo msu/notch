@@ -32,7 +32,7 @@ public final class NotchClass {
         for (NotchField f : bodyFields) declaredFields.add(f.getName().str());
     }
 
-    public record Method(List<Token> params, List<NotchStatement> body) {
+    public record Method(Token name, List<Token> params, List<NotchStatement> body) {
         //method template
     }
 
@@ -77,7 +77,7 @@ public final class NotchClass {
         if (m == null) return null;
         NotchRuntime methodScope = new NotchRuntime(captured.source, captured);
         methodScope.defineOrUpdate("this", self);
-        return new NotchClosure(methodScope, m.params(), null, m.body(), name + "." + methodName);
+        return new NotchClosure(m.name().span, methodScope, m.params(), null, m.body(), name + "." + methodName);
     }
 
     @Override

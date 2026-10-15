@@ -1,6 +1,7 @@
 package edu.montana.notch.statements;
 
 import edu.montana.notch.chisel.Span;
+import edu.montana.notch.runtime.NotchControlFlow;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 
@@ -22,11 +23,10 @@ public abstract class NotchLoop extends NotchStatement {
         for (NotchStatement stmt : body) {
             try {
                 runtime.execute(stmt);
-            } catch (NotchRuntimeException nre) {
-                Throwable cause = nre.getCause();
-                if (cause instanceof NotchBreak.BreakSignal) return Control.BREAK;
-                if (cause instanceof NotchContinue.ContinueSignal) return Control.CONTINUE;
-                throw nre;
+            } catch (NotchControlFlow.Continue ignored) {
+                return Control.CONTINUE;
+            } catch (NotchControlFlow.Break ignored) {
+                return Control.BREAK;
             }
         }
         return Control.CONTINUE;

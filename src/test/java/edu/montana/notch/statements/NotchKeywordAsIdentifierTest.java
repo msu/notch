@@ -1,6 +1,6 @@
 package edu.montana.notch.statements;
 
-import org.junit.jupiter.api.Test;
+import edu.montana.notch.ErrorTest;
 
 import static edu.montana.notch.NotchTestUtils.exec;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NotchKeywordAsIdentifierTest {
 
-    @Test
+    @ErrorTest
     void cannotUseBreakAsLoopVariable() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 for break in [1, 2, 3]
@@ -19,7 +19,7 @@ class NotchKeywordAsIdentifierTest {
                 "expected keyword-specific error, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void nonIdentLoopVariableGivesGenericError() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 for 5 in [1, 2, 3]
@@ -30,7 +30,7 @@ class NotchKeywordAsIdentifierTest {
                 "expected generic loop-variable error, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void cannotUseRepeatAsPropertyName() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 x = 'hi'
@@ -40,7 +40,7 @@ class NotchKeywordAsIdentifierTest {
                 "expected keyword-specific error, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void cannotUseClassAsPropertyName() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 x = 'hi'

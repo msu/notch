@@ -4,7 +4,7 @@ import edu.montana.notch.chisel.Token;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.UnknownVariableException;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeRegistry;
+import edu.montana.notch.types.NotchTypeSystem;
 
 import static edu.montana.notch.runtime.NotchRuntime.UNDEFINED;
 
@@ -31,7 +31,7 @@ public class NotchIdentifierExpression extends NotchExpression implements DotPat
         var name = name();
         var val = runtime.getSymbol(name);
         if (val == UNDEFINED) {
-            NotchType type = TypeRegistry.getType(name);
+            NotchType type = NotchTypeSystem.getType(name);
             if (type != null) {
                 return type;
             }

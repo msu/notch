@@ -1,5 +1,7 @@
 package edu.montana.notch.parser;
 
+import edu.montana.notch.ErrorTest;
+import org.junit.jupiter.api.Tag;
 import edu.montana.notch.errors.ParserError;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.Timeout;
 import static edu.montana.notch.NotchTestUtils.assertCodes;
 import static edu.montana.notch.NotchTestUtils.execDiagnostics;
 
+@Tag(ErrorTest.TAG)
 class ParserErrorSynchronizationTest {
 
     @Test

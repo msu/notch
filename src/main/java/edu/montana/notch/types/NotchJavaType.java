@@ -1,6 +1,7 @@
 package edu.montana.notch.types;
 
 
+import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.BetterSet;
@@ -24,7 +25,7 @@ public class NotchJavaType implements NotchType {
     private final ConcurrentHashMap<String, NotchJavaProperty> properties = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, NotchJavaProperty> staticProperties = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, NotchMethod> methods = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, NotchMethod> staticMethods = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NotchFunction> staticMethods = new ConcurrentHashMap<>();
     private List<NotchType> supertypes;
     private BetterList<Constructor> constructors;
 
@@ -84,8 +85,8 @@ public class NotchJavaType implements NotchType {
         for (Method method : backingClass.getMethods()) {
             boolean staticMethod = Modifier.isStatic(method.getModifiers());
             if (staticMethod && !staticMethods.containsKey(method.getName())) {
-                NotchJavaMethod notchMethod = new NotchJavaMethod(method.getName(), backingClass, true);
-                staticMethods.put(method.getName(), notchMethod);
+                NotchFunction notchFunction = new NotchBoundJavaFunction(backingClass, method.getName());
+                staticMethods.put(method.getName(), notchFunction);
             } else if (!staticMethod && !methods.containsKey(method.getName())) {
                 NotchJavaMethod notchMethod = new NotchJavaMethod(method.getName(), backingClass, false);
                 methods.put(method.getName(), notchMethod);
@@ -119,7 +120,7 @@ public class NotchJavaType implements NotchType {
             return "class " + backingClass.getName();
         }
         if (backingClass.isArray()) {
-            var ty = TypeRegistry.getType(backingClass.getComponentType());
+            var ty = NotchTypeSystem.getType(backingClass.getComponentType());
             return ty.getDisplayName() + "[]";
         }
         return backingClass.getName();
@@ -146,7 +147,7 @@ public class NotchJavaType implements NotchType {
     }
 
     @Override
-    public List<NotchMethod> getStaticMethods() {
+    public List<NotchFunction> getStaticMethods() {
         return new BetterList<>(staticMethods.values());
     }
 
@@ -169,19 +170,19 @@ public class NotchJavaType implements NotchType {
         // assignable to Object, so put it back for them.
         Class<?> superclass = backingClass.getSuperclass();
         if (superclass != null) {
-            out.add(TypeRegistry.getType(superclass));
+            out.add(NotchTypeSystem.getType(superclass));
         } else if (backingClass.isInterface()) {
-            out.add(TypeRegistry.getType(Object.class));
+            out.add(NotchTypeSystem.getType(Object.class));
         }
         // Array covariance is not reported by getSuperclass(): String[] says
         // Object, not Object[].
         if (backingClass.isArray()
                 && !backingClass.getComponentType().isPrimitive()
                 && backingClass != Object[].class) {
-            out.add(TypeRegistry.getType(Object[].class));
+            out.add(NotchTypeSystem.getType(Object[].class));
         }
         for (var iface : backingClass.getInterfaces()) {
-            out.add(TypeRegistry.getType(iface));
+            out.add(NotchTypeSystem.getType(iface));
         }
         supertypes = out;
         return supertypes;
@@ -199,13 +200,9 @@ public class NotchJavaType implements NotchType {
     }
 
     @Override
-    public Object newInstance(NotchRuntime runtime, Object[] args) {
-        Constructor bestMatch = MethodResolver.getBestMatch(runtime, Arrays.asList(args), constructors);
-        if (bestMatch != null) {
-            return safelyEval(() -> bestMatch.newInstance(args));
-        } else {
-            throw new IllegalArgumentException("No constructor available for values " + Arrays.asList(args));
-        }
+    public Object newInstance(NotchRuntime runtime, Span callsite, List<Object> args, List<Span> argSpan) {
+        Object value = NotchJavaMethodUtils.newInstance(callsite, runtime, constructors, args, argSpan, false);
+        return value;
     }
 
     @Override
@@ -219,7 +216,7 @@ public class NotchJavaType implements NotchType {
     }
 
     @Override
-    public NotchMethod getStaticMethod(String propName) {
+    public NotchFunction getStaticMethod(String propName) {
         return staticMethods.get(propName);
     }
 

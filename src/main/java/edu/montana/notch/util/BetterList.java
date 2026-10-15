@@ -16,6 +16,9 @@ public class BetterList<T> extends AbstractList<T> implements BetterIterable<T> 
         this(new ArrayList<>());
     }
 
+    public BetterList(int length) {
+        this(new  ArrayList<>(length));
+    }
     public BetterList(Collection<? extends T> c) {
         if (c instanceof List l && !(c instanceof BetterList)) {
             delegate = l;

@@ -1,5 +1,6 @@
 package edu.montana.notch.statements;
 
+import edu.montana.notch.ErrorTest;
 import org.junit.jupiter.api.Test;
 
 import static edu.montana.notch.NotchTestUtils.exec;
@@ -80,7 +81,7 @@ class NotchContinueTest {
         assertEquals("1\n3\n--\n1\n3\n--\n", result);
     }
 
-    @Test
+    @ErrorTest
     void testContinueOutsideAnyLoopIsParseError() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 continue
@@ -91,7 +92,7 @@ class NotchContinueTest {
                 "expected 'continue' outside a loop diagnostic, got: " + msg);
     }
 
-    @Test
+    @ErrorTest
     void testContinueInIfOutsideLoopIsParseError() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 if true

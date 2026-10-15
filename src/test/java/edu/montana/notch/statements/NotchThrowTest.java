@@ -1,5 +1,6 @@
 package edu.montana.notch.statements;
 
+import edu.montana.notch.ErrorTest;
 import org.junit.jupiter.api.Test;
 
 import static edu.montana.notch.NotchTestUtils.exec;
@@ -114,7 +115,7 @@ class NotchThrowTest {
                 """));
     }
 
-    @Test
+    @ErrorTest
     void throwUnknownTypeGivesClearError() {
         RuntimeException ex = assertThrows(RuntimeException.class, () -> exec("""
                 throw NotARealType("msg")
@@ -126,7 +127,7 @@ class NotchThrowTest {
                 "expected error message to include throwable guidance but was: " + msg);
     }
 
-    @Test
+    @ErrorTest
     void javaExceptionBadConstructorArgsGivesClearError() {
         RuntimeException ex = assertThrows(RuntimeException.class, () -> exec("""
                 throw IOException(42, 99)

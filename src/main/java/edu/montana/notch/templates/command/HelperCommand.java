@@ -9,9 +9,10 @@ import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeRegistry;
+import edu.montana.notch.types.NotchTypeSystem;
 
 import java.lang.reflect.Constructor;
+import java.util.List;
 
 public class HelperCommand extends NotchTemplateCommand {
     public HelperCommand() {
@@ -39,23 +40,16 @@ public class HelperCommand extends NotchTemplateCommand {
 
     @Override
     public void preRender(NotchTemplateRuntime runtime) {
-        NotchType type = TypeRegistry.getType(path.qualifiedClass().getName());
-        Object helper = null;
+        NotchType type = NotchTypeSystem.getType(path.qualifiedClass().getName());
+        Object helper;
         try {
-            try {
-                Constructor cons = type.getBackingClass().getConstructor(NotchTemplateRuntime.class);
-                helper = cons.newInstance(runtime);
-            } catch (NoSuchMethodException | SecurityException e) {}
-
-            if (helper == null) {
-                helper = type.newInstance(runtime, new Object[0]);
-            }
+            helper = type.newInstance(runtime, path.span, List.of(), List.of());
         } catch (Exception e) {
             final var diag = new Diagnostic();
             diag.highlight(path);
             diag.note("unable to create helper");
-            diag.note(e.getMessage());
-            throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
+            diag.note("caught exception: " + e.getMessage());
+            throw new NotchRuntimeException(runtime.currentStackTrace(), diag, e);
         }
         runtime.setHelper(helper);
     }

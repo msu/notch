@@ -1,5 +1,6 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.NotchElement;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Token;
@@ -7,61 +8,66 @@ import edu.montana.notch.runtime.NotchClass;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeRegistry;
+import edu.montana.notch.types.NotchTypeSystem;
+import edu.montana.notch.util.BetterList;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class NotchInstantiationExpression extends NotchExpression {
     private final Token className;
-    private final List<NotchExpression> args;
+    private final BetterList<NotchExpression> args;
 
     public NotchInstantiationExpression(Span span, Token className, List<NotchExpression> args) {
         super(span);
         this.className = className;
-        this.args = args;
+        this.args = new BetterList<>(args);
         addChildren(args);
     }
 
     @Override
     public Object evaluate(NotchRuntime runtime) {
         Object value = runtime.getSymbol(className.str());
+        // TODO: this should be an instance of NotchType, not a special case
         if (value instanceof NotchClass declaredClass) {
             return declaredClass.construct(runtime, evaluateArgs(runtime));
         }
+
+        NotchType consType = null;
         if (value instanceof NotchType importedType) {
-            Object[] argValues = runtime.evaluate(args).toArray();
-            try {
-                return importedType.newInstance(runtime, argValues);
-            } catch (IllegalArgumentException noMatchingConstructor) {
-                throw noConstructor(runtime, importedType.getDisplayName());
+            consType = importedType;
+        } else if (runtime.isUndefined(value)) {
+            Class<?> type = NotchTypeSystem.resolveThrowableType(className.str());
+            if (type != null && Throwable.class.isAssignableFrom(type)) {
+                consType = NotchTypeSystem.getType(type);
             }
         }
-        if (value == NotchRuntime.UNDEFINED) {
-            List<Object> argValues = runtime.evaluate(args);
-            try {
-                Object thrown = tryConstructThrowable(runtime, className.str(), argValues);
-                if (thrown != null) return thrown;
-            } catch (IllegalArgumentException noMatchingConstructor) {
-                throw noConstructor(runtime, className.str());
-            }
-            throw unknownClass(runtime);
+
+        if (consType == null) {
+            throw cannotInstantiateNonClassValue(runtime);
         }
-        throw cannotInstantiateNonClassValue(runtime);
+
+        var argValues = runtime.evaluate(args);
+        var argSpan = args.map(NotchElement::span);
+        try {
+            return consType.newInstance(runtime, className.span, argValues, argSpan);
+        } catch (IllegalArgumentException noMatchingConstructor) {
+            throw noConstructor(runtime, consType.getDisplayName(), noMatchingConstructor);
+        }
     }
 
-    private NotchRuntimeException noConstructor(NotchRuntime runtime, String typeName) {
+    private NotchRuntimeException noConstructor(NotchRuntime runtime, String typeName, IllegalArgumentException noMatchingConstructor) {
         var diag = new Diagnostic()
                 .setTitle("no constructor for '" + typeName + "' accepts these argument types")
                 .highlight(span());
-        return new NotchRuntimeException(runtime.currentStackTrace(), diag);
+        return new NotchRuntimeException(runtime.currentStackTrace(), diag, noMatchingConstructor);
     }
 
     private NotchRuntimeException unknownClass(NotchRuntime runtime) {
         var diag = new Diagnostic()
                 .setTitle("no class named '" + className.str() + "'")
                 .highlight(span());
-        Class<?> resolvedType = TypeRegistry.resolveThrowableType(className.str());
+        Class<?> resolvedType = NotchTypeSystem.resolveThrowableType(className.str());
         if (resolvedType != null && !resolvedType.isPrimitive()) {
             diag.note("'%s' is a Java type, import it to use it: 'import %s'"
                     .formatted(className.str(), resolvedType.getName()));
@@ -87,11 +93,10 @@ public class NotchInstantiationExpression extends NotchExpression {
         return argValues;
     }
 
-    public static Object tryConstructThrowable(NotchRuntime runtime, String name, List<Object> argValues) {
-        Class<?> type = TypeRegistry.resolveThrowableType(name);
+    public static Object tryConstructThrowable(NotchRuntime runtime, String name, Span callsite, List<Object> argValues, List<Span> argSpan) {
+        Class<?> type = NotchTypeSystem.resolveThrowableType(name);
         if (type == null || !Throwable.class.isAssignableFrom(type)) return null;
-        NotchType notchType = TypeRegistry.getType(type);
-        Object[] args = argValues.toArray();
-        return notchType.newInstance(runtime, args);
+        NotchType notchType = NotchTypeSystem.getType(type);
+        return notchType.newInstance(runtime, callsite, argValues, argSpan);
     }
 }

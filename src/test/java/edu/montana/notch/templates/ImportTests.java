@@ -1,5 +1,7 @@
 package edu.montana.notch.templates;
 
+import edu.montana.notch.ErrorTest;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -312,6 +314,7 @@ public class ImportTests extends NotchTemplateTestBase {
     // ========================================================================
 
     @Nested
+    @Tag(ErrorTest.TAG)
     class ErrorCases {
 
         @Test

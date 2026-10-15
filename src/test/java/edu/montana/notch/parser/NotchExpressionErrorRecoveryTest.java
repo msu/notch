@@ -1,5 +1,7 @@
 package edu.montana.notch.parser;
 
+import edu.montana.notch.ErrorTest;
+import org.junit.jupiter.api.Tag;
 import edu.montana.notch.chisel.Diagnostic;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import static edu.montana.notch.NotchTestUtils.execDiagnostics;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+@Tag(ErrorTest.TAG)
 class NotchExpressionErrorRecoveryTest {
 
     private static List<String> errorsIn(String source) {

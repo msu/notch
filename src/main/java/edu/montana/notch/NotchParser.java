@@ -296,7 +296,7 @@ public class NotchParser extends BasicParser {
                 throw errorHandler.expectedExpressionAfterOperator(op.str());
             }
 
-            expr = new NotchEquality(op, expr, rhs);
+            expr = new NotchEqualityExpression(op, expr, rhs);
         }
 
         return expr;
@@ -456,7 +456,7 @@ public class NotchParser extends BasicParser {
         }
         String opStr = isInverted ? "!=" : "==";
         Token Op = new Token(isToken.span(), opStr, opStr);
-        return new NotchEquality(Op, lhs, rhs);
+        return new NotchEqualityExpression(Op, lhs, rhs);
     }
 
     private NotchExpression parseIndexOperation(NotchExpression root) {
@@ -516,14 +516,6 @@ public class NotchParser extends BasicParser {
             return new NotchStringExpression(stringToken);
         }
         return null;
-    }
-
-    public NotchExpression requireStringExpression(String message) {
-        var str = parseStringExpression();
-        if (str != null) {
-            return str;
-        }
-        throw errorHandler.required(currentToken(), message);
     }
 
     private NotchExpression parsePrimaryExpression() {
@@ -878,7 +870,7 @@ public class NotchParser extends BasicParser {
         }
 
         final var span = new Span(source(), start, lastToken().end());
-        return new NotchImport(span, type, alias);
+        return new NotchImportStatement(span, type, alias);
     }
 
     private NotchStatement parseRethrowStatement() {
@@ -983,22 +975,22 @@ public class NotchParser extends BasicParser {
         return body;
     }
 
-    private NotchBreak parseBreakStatement() {
+    private NotchBreakStatement parseBreakStatement() {
         var start = tokens.location();
         if (takeKeyword("break")) {
             final var span = new Span(source(), start, lastToken().end());
             requireInLoop(span, "break");
-            return new NotchBreak(span);
+            return new NotchBreakStatement(span);
         }
         return null;
     }
 
-    private NotchContinue parseContinueStatement() {
+    private NotchContinueStatement parseContinueStatement() {
         var start = tokens.location();
         if (takeKeyword("continue")) {
             final var span = new Span(source(), start, lastToken().end());
             requireInLoop(span, "continue");
-            return new NotchContinue(span);
+            return new NotchContinueStatement(span);
         }
         return null;
     }
@@ -1082,17 +1074,17 @@ public class NotchParser extends BasicParser {
         requireInFunction(keywordSpan, "return");
 
         NotchExpression value = null;
-        if (returnValueFollows(returnToken)) {
-            value = parseExpression();
-        } else if (peekNext().startLine() == lastToken().endLine()) {
-            if (takeIdent("unless")) {
+        if (peek().startLine() == lastToken().endLine()) {
+            if (takeKeyword("unless")) {
                 var condition = requireExpression("expected condition after 'unless'");
                 final var span = new Span(source(), start, lastToken().end());
                 return new NotchReturnUnlessStatement(span, condition);
-            } else if (peekNext().startLine() == lastToken().endLine() && takeIdent("if")) {
+            } else if (takeKeyword("if")) {
                 var condition = requireExpression("expected condition after 'if'");
                 final var span = new Span(source(), start, lastToken().end());
                 return new NotchReturnIfStatement(span, condition);
+            } else {
+                value = parseExpression();
             }
         }
 

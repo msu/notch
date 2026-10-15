@@ -53,14 +53,14 @@ public class NotchRenderTest {
         assertEquals("static content", sb.toString());
     }
 
-    @Test
+    @ErrorTest
     public void renderOddArityThrows() {
         var ex = assertThrows(IllegalArgumentException.class,
                 () -> Notch.render("notch_render/hello.notch", "name"));
         assertTrue(ex.getMessage().contains("even number"), ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     public void renderNonStringKeyThrows() {
         var ex = assertThrows(IllegalArgumentException.class,
                 () -> Notch.render("notch_render/hello.notch", 42, "Alice"));

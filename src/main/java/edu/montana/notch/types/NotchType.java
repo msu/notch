@@ -1,5 +1,6 @@
 package edu.montana.notch.types;
 
+import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.NotchRuntime;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.Set;
 public interface NotchType {
     NotchMethod getMethod(String propName);
 
-    NotchMethod getStaticMethod(String propName);
+    NotchFunction getStaticMethod(String propName);
 
     NotchProperty getProperty(String propName);
 
@@ -22,7 +23,7 @@ public interface NotchType {
 
     List<NotchMethod> getMethods();
 
-    List<NotchMethod> getStaticMethods();
+    List<NotchFunction> getStaticMethods();
 
     List<NotchProperty> getProperties();
 
@@ -34,7 +35,7 @@ public interface NotchType {
 
     Set<NotchType> getAllSupertypes();
 
-    Object newInstance(NotchRuntime runtime, Object[] args);
+    Object newInstance(NotchRuntime runtime, Span callsite, List<Object> args, List<Span> argSpan);
 
     NotchField getField(String name);
 }

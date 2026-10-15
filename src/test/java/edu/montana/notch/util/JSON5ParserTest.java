@@ -1,5 +1,6 @@
 package edu.montana.notch.util;
 
+import edu.montana.notch.ErrorTest;
 import edu.montana.notch.chisel.ParseException;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.json5.*;
@@ -259,19 +260,19 @@ class JSON5ParserTest {
         assertThrows(ParseException.class, () -> parse(""));
     }
 
-    @Test
+    @ErrorTest
     void testParseMissingCommaInObject() {
         var ex = assertThrows(ParseException.class, () -> parse("{a: 1 b: 2}"));
         assertContains("comma", ex.getMessage(), "Error message should mention comma");
     }
 
-    @Test
+    @ErrorTest
     void testParseMissingCommaInArray() {
         var ex = assertThrows(ParseException.class, () -> parse("[1 2]"));
         assertContains("comma", ex.getMessage(), "Error message should mention comma: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void testParseInvalidMemberName() {
         var ex = assertThrows(ParseException.class, () -> parse("{123: \"value\"}"));
         assertContains("member name", ex.getMessage(), "Error message should mention member name");

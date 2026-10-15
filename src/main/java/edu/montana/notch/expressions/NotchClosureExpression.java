@@ -23,6 +23,6 @@ public class NotchClosureExpression extends NotchExpression {
     @Override
     public Object evaluate(NotchRuntime runtime) {
         NotchRuntime closure = new NotchRuntime(source(), runtime);
-        return new NotchClosure(closure, parameters, expression, statements, null);
+        return new NotchClosure(span, closure, parameters, expression, statements, null);
     }
 }

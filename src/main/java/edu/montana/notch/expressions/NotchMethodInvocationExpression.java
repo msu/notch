@@ -4,26 +4,24 @@ import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Location;
 import edu.montana.notch.chisel.Span;
 import edu.montana.notch.runtime.*;
-import edu.montana.notch.types.NotchJavaMethod;
-import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeRegistry;
+import edu.montana.notch.types.NotchFunction;
+import edu.montana.notch.types.NotchTypeSystem;
+import edu.montana.notch.util.BetterList;
+import edu.montana.notch.util.Exceptions;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-
-import static edu.montana.notch.util.Exceptions.safelyEval;
 
 public class NotchMethodInvocationExpression extends NotchExpression {
 
     public final NotchExpression root;
-    public final List<NotchExpression> args;
+    public final BetterList<NotchExpression> args;
 
     public NotchMethodInvocationExpression(NotchExpression root, List<NotchExpression> args, Location end) {
         super(root.span().through(end));
         this.root = Objects.requireNonNull(root);
-        this.args = List.copyOf(Objects.requireNonNull(args));
+        this.args = BetterList.better(Objects.requireNonNull(args));
     }
 
     @Override
@@ -46,6 +44,8 @@ public class NotchMethodInvocationExpression extends NotchExpression {
             throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
         }
 
+        NotchFunction invocable = runtime.coerce(NotchFunction.class, functionObj, root.span);
+
         var argValues = new ArrayList<>(args.size());
         var argSpan = new ArrayList<Span>(args.size());
         for (NotchExpression arg : args) {
@@ -53,56 +53,20 @@ public class NotchMethodInvocationExpression extends NotchExpression {
             argSpan.add(arg.span);
         }
 
-        if (functionObj instanceof NotchBoundMethod bm) {
-            try (var ignoredTrace = runtime.trace(span(), bm.method().getQualifiedName())) {
-                return bm.invoke(runtime, argValues, argSpan);
-            }
-        } else if (functionObj instanceof NotchClosure nc) {
-            try (var ignoredTrace = runtime.trace(span(), nc.getQualifiedName())) {
-                return nc.call(argValues);
-            }
-        } else if (functionObj instanceof NotchJavaMethod jm) {
-            try (var ignoredTrace = runtime.trace(span(), jm.getQualifiedName())) {
-                return jm.invoke(runtime, null, argValues, argSpan);
-            }
-        } else if (functionObj instanceof NotchType type) {
-            try (var ignoredTrace = runtime.trace(span(), "<constructor:" + type.getSimpleName() + ">")) {
-                return type.newInstance(runtime, argValues.toArray());
-            } catch (IllegalArgumentException e) {
-                var diag = new Diagnostic();
-                diag.setTitle("no constructor for '" + type.getDisplayName() + "' accepts these argument types");
-                diag.highlight(root.span());
-                throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
-            }
-        } else if (functionObj instanceof Callable<?> c) {
-            try (var ignoreTrace = runtime.trace(span(), "<callable:%s>".formatted(NotchRuntime.className(c)))) {
-                return safelyEval(c);
-            }
-        } else if (functionObj instanceof Runnable r) {
-            try (var ignoreTrace = runtime.trace(span(), "<internal:%s>".formatted(NotchRuntime.className(r)))) {
-                return run(r);
-            }
-        } else {
-            var diag = new Diagnostic();
-            diag.setTitle("failed to invoke unknown value");
-            diag.highlight(root.span());
-            diag.note("the value had type " + NotchRuntime.className(functionObj));
-            throw new NotchRuntimeException(runtime.currentStackTrace(), diag);
+        var frame = new NotchStackTraceElement.Notch(span, "TODO: current-function-name");
+        try (var _guard = runtime.addStackFrame(frame)) {
+            Object value = invocable.invoke(runtime, span, argValues, argSpan);
+            return value;
         }
     }
 
     private static void addJavaTypeHints(Diagnostic diag, String name) {
-        Class<?> resolvedType = TypeRegistry.resolveThrowableType(name);
+        Class<?> resolvedType = NotchTypeSystem.resolveThrowableType(name);
         if (resolvedType == null) return;
         diag.note("'%s' is a Java type, import it to use it as a value: 'import %s'"
                 .formatted(name, resolvedType.getName()));
         if (Throwable.class.isAssignableFrom(resolvedType)) {
             diag.note("or construct it directly: 'new %s(...)'".formatted(name));
         }
-    }
-
-    private static Object run(Runnable r) {
-        r.run();
-        return null;
     }
 }

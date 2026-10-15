@@ -1,5 +1,7 @@
 package edu.montana.notch.parser;
 
+import edu.montana.notch.ErrorTest;
+import org.junit.jupiter.api.Tag;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.errors.ParserError;
 import org.junit.jupiter.api.Test;
@@ -9,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag(ErrorTest.TAG)
 class DiagnosticRenderShapeTest {
 
     private static String renderFirstDiagnostic(String source) {

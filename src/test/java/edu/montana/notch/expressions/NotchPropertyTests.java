@@ -1,5 +1,6 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.ErrorTest;
 import org.junit.jupiter.api.Test;
 
 import static edu.montana.notch.AssertContains.assertContains;
@@ -8,7 +9,7 @@ import static edu.montana.notch.runtime.NotchRuntime.UNDEFINED;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class NotchPropertyTests {
-    @Test
+    @ErrorTest
     public void undefinedSymbolIsUndefined() {
         RuntimeException exc = assertThrows(RuntimeException.class, () -> eval("foo"));
         assertContains("unknown variable \"foo\"", exc.getMessage());
@@ -33,7 +34,7 @@ public class NotchPropertyTests {
         assertEquals(UNDEFINED, value);
     }
 
-    @Test
+    @ErrorTest
     public void invokingNullThrowsError() {
         try {
             eval("foo.bar()", "foo", null);
@@ -43,7 +44,7 @@ public class NotchPropertyTests {
         }
     }
 
-    @Test
+    @ErrorTest
     public void noSuchMethodIsUndefined() {
         var ex = assertThrows(RuntimeException.class, () -> eval("foo.bar()", "foo", new Foo()));
         assertContains("no method 'bar' on Foo - Did you mean 'baz'?", ex.getMessage());

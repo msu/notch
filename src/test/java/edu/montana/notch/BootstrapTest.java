@@ -1,9 +1,10 @@
 package edu.montana.notch;
 
 import edu.montana.notch.runtime.NotchClosure;
+import edu.montana.notch.types.NotchFunction;
 import edu.montana.notch.types.NotchMethod;
 import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeRegistry;
+import edu.montana.notch.types.NotchTypeSystem;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.BetterMap;
 import org.junit.jupiter.api.Test;
@@ -86,8 +87,8 @@ public class BootstrapTest {
 
     @Test
     public void bootstrapTopLevelMethodInvocation() {
-        NotchType testType = TypeRegistry.getType(BootstrapTest.class);
-        NotchMethod method = testType.getStaticMethod("foo");
+        NotchType testType = NotchTypeSystem.getType(BootstrapTest.class);
+        NotchFunction method = testType.getStaticMethod("foo");
         Object result = eval("foo(10)", "foo", method);
         assertEquals(10, result);
     }
@@ -124,14 +125,14 @@ public class BootstrapTest {
 
     @Test
     public void bootstrapClosureAsBiFunction() {
-        BiFunction result = (BiFunction) eval("(\\ x, y -> x == y).toBiFunction()");
+        BiFunction result = eval(BiFunction.class, "(\\ x, y -> x == y)");
         assertEquals(true, result.apply(1, 1));
         assertEquals(false, result.apply(1, 2));
     }
 
     @Test
     public void bootstrapClosureAsBiPredicate() {
-        BiPredicate result = (BiPredicate) eval("(\\ x, y -> x == y).toBiPredicate()");
+        BiPredicate result = eval(BiPredicate.class, "(\\ x, y -> x == y)");
         assertTrue(result.test(1, 1));
         assertFalse(result.test(1, 2));
     }

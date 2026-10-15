@@ -27,6 +27,10 @@ public class NotchTestUtils {
     }
 
     public static Object eval(String src, Object... vars) {
+        return eval(Object.class, src, vars);
+    }
+
+    public static <T> T eval(Class<T> clazz, String src, Object... vars) {
         try {
             Source source = new Source("<eval>", src);
             TokenStream tokens = Notch.TOKENIZER.tokenize(source);
@@ -46,8 +50,10 @@ public class NotchTestUtils {
                 diag.highlight(notchParser.currentToken());
                 throw new RuntimeException(diag.render());
             }
-            Object result = expr.evaluate(map(vars));
-            return result;
+            var runtime = new NotchRuntime(source, map(vars));
+            Object result = NotchRuntime.run(runtime, expr);
+            T out = runtime.coerce(clazz, result, source.span);
+            return out;
         } catch (NotchRuntimeException ex) {
             var result = ex.getMessage();
             throw new RuntimeException(result);

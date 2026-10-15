@@ -22,8 +22,12 @@ public class NotchIsEmptyExpression extends NotchExpression {
             return !isInverted;
         } else {
             var iterable = runtime.coerce(Iterable.class, lval, lhs);
-            var it = iterable.iterator();
-            return isInverted == it.hasNext();
+            if (iterable != null) {
+                var it = iterable.iterator();
+                return isInverted == it.hasNext();
+            } else {
+                return !isInverted;
+            }
         }
     }
 }

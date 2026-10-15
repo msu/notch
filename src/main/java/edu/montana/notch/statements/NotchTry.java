@@ -2,10 +2,13 @@ package edu.montana.notch.statements;
 
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Span;
+import edu.montana.notch.runtime.NotchControlFlow;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 
 import java.util.List;
+
+import static edu.montana.notch.util.Exceptions.rethrow;
 
 public class NotchTry extends NotchStatement {
     private final List<NotchStatement> body;
@@ -25,8 +28,9 @@ public class NotchTry extends NotchStatement {
             for (NotchStatement stmt : body) {
                 runtime.execute(stmt);
             }
+        } catch (NotchControlFlow cf) {
+            throw rethrow(cf);
         } catch (NotchRuntimeException nre) {
-            if (NotchCatch.isControlFlow(nre)) throw nre;
             if (!NotchCatch.catchHandled(runtime, nre, clauses)) throw nre;
         } catch (Exception e) {
             Diagnostic diag = new Diagnostic();

@@ -1,5 +1,7 @@
 package edu.montana.notch.parser;
 
+import edu.montana.notch.ErrorTest;
+import org.junit.jupiter.api.Tag;
 import edu.montana.notch.chisel.Diagnostic;
 import org.junit.jupiter.api.Test;
 
@@ -10,6 +12,7 @@ import static edu.montana.notch.NotchTestUtils.execDiagnostics;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag(ErrorTest.TAG)
 class ParserDiagnosticHintTest {
 
     private static boolean hasNote(List<Diagnostic> diagnostics, String note) {
@@ -112,7 +115,7 @@ class ParserDiagnosticHintTest {
                 "a following line is not trailing input:\n" + describe(diagnostics));
     }
 
-    @Test
+    @ErrorTest
     void printWithoutParensSuggestsWrappingTheArgument() {
         var diagnostics = execDiagnostics("print hello");
         assertTrue(hasNote(diagnostics, "print requires parentheses around its arguments"),

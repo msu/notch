@@ -24,13 +24,13 @@ public class NotchForLoop extends NotchLoop {
     @Override
     public void execute(NotchRuntime runtime) {
         Object result = runtime.evaluate(expr);
+        Iterable i = runtime.coerce(Iterable.class, result, expr);
         int index = 0;
         try (var scope = runtime.pushScope()) {
-            Iterable i = runtime.coerce(Iterable.class, result, expr);
             for (Object o : i) {
-                runtime.defineOrUpdate(((String) loopVariable.data), o);
+                scope.define(loopVariable.str(), o);
                 if (indexVariable != null) {
-                    runtime.defineOrUpdate(indexVariable.str(), index++);
+                    scope.define(indexVariable.str(), index++);
                 }
                 if (runBody(runtime) == Control.BREAK) return;
             }

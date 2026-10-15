@@ -1,5 +1,6 @@
 package edu.montana.notch.statements;
 
+import edu.montana.notch.ErrorTest;
 import org.junit.jupiter.api.Test;
 
 import static edu.montana.notch.NotchTestUtils.exec;
@@ -87,7 +88,7 @@ class NotchClassTest {
         assertEquals("1\n", out);
     }
 
-    @Test
+    @ErrorTest
     void writingUndeclaredFieldGivesClearError() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 class Point(x, y)
@@ -99,7 +100,7 @@ class NotchClassTest {
                 "expected a no-such-field error, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void misspelledFieldSuggestsClosestDeclaredField() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 class Point(x, y)
@@ -112,7 +113,7 @@ class NotchClassTest {
                 "expected a 'did you mean' suggestion, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void unrelatedFieldWriteOffersNoSuggestion() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 class Point(x, y)
@@ -127,7 +128,7 @@ class NotchClassTest {
                 "a far-off name should not produce a suggestion, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void newOnNonClassThrows() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 notAClass = 5
@@ -137,14 +138,14 @@ class NotchClassTest {
                 "expected a not-a-class error, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void instantiatingUndeclaredClassThrows() {
         var ex = assertThrows(RuntimeException.class, () -> exec("p = new Point(1, 2)"));
         assertTrue(ex.getMessage().contains("no class named 'Point'"),
                 "expected a no-such-class error, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void instantiatingBeforeDeclarationThrows() {
         // Classes are not hoisted
         var ex = assertThrows(RuntimeException.class, () -> exec("""
@@ -156,7 +157,7 @@ class NotchClassTest {
                 "expected a no-such-class error (no hoisting), got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void cannotAssignToThis() {
         var ex = assertThrows(RuntimeException.class, () -> exec("this = 5"));
         assertTrue(ex.getMessage().contains("cannot assign to 'this'"),

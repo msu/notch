@@ -1,9 +1,9 @@
 package edu.montana.notch.runtime;
 
-import edu.montana.notch.types.NotchBuiltinMethod;
+import edu.montana.notch.types.NotchBoundJavaFunction;
 import edu.montana.notch.types.NotchMethod;
 import edu.montana.notch.types.NotchProperty;
-import edu.montana.notch.types.TypeRegistry;
+import edu.montana.notch.types.NotchTypeSystem;
 import edu.montana.notch.util.Key;
 import edu.montana.notch.util.Pair;
 
@@ -16,30 +16,30 @@ import static edu.montana.notch.util.Pair.pair;
 public class NotchBuiltins {
     public static final Key<Random> kRANDOM = new Key<>("random");
 
-    public void print(NotchRuntime runtime, Object object) {
+    public static void print(NotchRuntime runtime, Object object) {
         runtime.println(object);
     }
 
-    public void write(NotchRuntime runtime, Object object) {
+    public static void write(NotchRuntime runtime, Object object) {
         runtime.print(object);
     }
 
-    public String ask(NotchRuntime runtime, String prompt) {
+    public static String ask(NotchRuntime runtime, String prompt) {
         System.out.print(prompt);
         System.out.flush();
         // TODO: this should use runtime-input
         return new Scanner(System.in).nextLine();
     }
 
-    private Random getRandom(NotchRuntime runtime) {
+    private static Random getRandom(NotchRuntime runtime) {
         return runtime.storage(kRANDOM, (Supplier<Random>) Random::new);
     }
 
-    public float random(NotchRuntime runtime) {
+    public static float random(NotchRuntime runtime) {
         return getRandom(runtime).nextFloat();
     }
 
-    public Number random(NotchRuntime runtime, Number max) {
+    public static Number random(NotchRuntime runtime, Number max) {
         return switch (max) {
             case Integer i -> getRandom(runtime).nextInt(i);
             case Float f -> getRandom(runtime).nextFloat(f);
@@ -48,7 +48,7 @@ public class NotchBuiltins {
         };
     }
 
-    public Number random(NotchRuntime runtime, Number min, Number max) {
+    public static Number random(NotchRuntime runtime, Number min, Number max) {
         if (min instanceof Float || max instanceof Float) {
             return getRandom(runtime).nextFloat(min.floatValue(), max.floatValue());
         } else if (min instanceof Double || max instanceof Double) {
@@ -60,17 +60,17 @@ public class NotchBuiltins {
         }
     }
 
-    public Object sample(NotchRuntime runtime, Collection<Object> values) {
+    public static Object sample(NotchRuntime runtime, Collection<Object> values) {
         Random r = getRandom(runtime);
         int i = r.nextInt(values.size());
         return values.stream().skip(i).findFirst().get();
     }
 
-    public String structure(NotchRuntime runtime, Object value) {
+    public static String structure(NotchRuntime runtime, Object value) {
         if (value == null) return "<null>";
         if (runtime.isUndefined(value)) return "<undefined>";
 
-        var type = TypeRegistry.getRuntimeType(value);
+        var type = NotchTypeSystem.getRuntimeType(value);
         // TODO: for props & methods, include the first doc-comment line
         // TODO: enum, primitive reprs, notch-method source code
         var out = new StringBuilder();
@@ -86,7 +86,7 @@ public class NotchBuiltins {
         return out.toString();
     }
 
-    private void propertyStructure(StringBuilder out, NotchProperty prop) {
+    private static void propertyStructure(StringBuilder out, NotchProperty prop) {
         var ty = prop.getType();
         out.append("  - ").append(prop.getName());
         if (prop.isStatic()) {
@@ -95,7 +95,7 @@ public class NotchBuiltins {
         out.append(": ").append(ty.getDisplayName()).append("\n");
     }
 
-    private void methodStructure(StringBuilder out, NotchMethod method) {
+    private static void methodStructure(StringBuilder out, NotchMethod method) {
         var variants = method.getVariants();
         String lineStart;
         if (method.isStatic()) {
@@ -139,9 +139,9 @@ public class NotchBuiltins {
         for (var method : clazz.getMethods()) {
             if (method.getDeclaringClass() == Object.class) continue;
             if (out.containsKey(method.getName())) continue;
-            if (Modifier.isStatic(method.getModifiers())) continue;
-            final var notchMethod = new NotchBuiltinMethod(method.getName(), clazz);
-            out.put(method.getName(), new NotchBoundMethod(root, notchMethod));
+            if (!Modifier.isStatic(method.getModifiers())) continue;
+            final var func = new NotchBoundJavaFunction(clazz, method.getName());
+            out.put(method.getName(), func);
         }
         return out;
     }

@@ -31,7 +31,7 @@ public class NotchClassDeclaration extends NotchStatement {
         Map<String, NotchClass.Method> methodMap = new LinkedHashMap<>();
         for (NotchFunctionDeclaration m : methods) {
             String methodName = m.name().str();
-            NotchClass.Method method = new NotchClass.Method(m.paramTokens(), m.body());
+            NotchClass.Method method = new NotchClass.Method(m.name(), m.paramTokens(), m.body());
             methodMap.put(methodName, method);
         }
         NotchClass clazz = new NotchClass(name.str(), headerFields, bodyFields, methodMap, captured);

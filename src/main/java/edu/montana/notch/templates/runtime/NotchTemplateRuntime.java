@@ -95,7 +95,8 @@ public class NotchTemplateRuntime extends NotchRuntime {
     }
 
     public void render(NotchExpression expression, Drain out) {
-        try (var ignoredTrace = trace(expression, source.id)) {
+        final var ste = new NotchTemplateStackTraceElement(source.id, expression.span);
+        try (var ignoredTrace = addStackFrame(ste)) {
             var value = evaluate(expression);
             if (!isUndefined(value)) {
                 String text;

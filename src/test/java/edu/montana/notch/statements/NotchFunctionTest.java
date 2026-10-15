@@ -1,5 +1,6 @@
 package edu.montana.notch.statements;
 
+import edu.montana.notch.ErrorTest;
 import org.junit.jupiter.api.Test;
 
 import static edu.montana.notch.NotchTestUtils.exec;
@@ -71,7 +72,7 @@ class NotchFunctionTest {
         assertEquals("5\n", out);
     }
 
-    @Test
+    @ErrorTest
     void arityMismatchThrows() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 function add(a, b)
@@ -83,7 +84,7 @@ class NotchFunctionTest {
                 "expected arity mismatch message, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void returnOutsideFunctionIsParseError() {
         var ex = assertThrows(RuntimeException.class, () -> exec("return 5"));
         assertTrue(ex.getMessage().contains("'return' outside a function"),
@@ -100,14 +101,14 @@ class NotchFunctionTest {
                 """));
     }
 
-    @Test
+    @ErrorTest
     void callingUndefinedFunctionThrowsError() {
         var ex = assertThrows(RuntimeException.class, () -> exec("add()"));
         assertTrue(ex.getMessage().contains("undefined function 'add'"),
                 "expected undefined function message, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void callingUndefinedMethodThrowsError() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 x = 5
@@ -117,7 +118,7 @@ class NotchFunctionTest {
                 "expected no-method message, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void nearMissMethodSuggestsCorrectName() {
         var ex = assertThrows(RuntimeException.class, () -> exec("""
                 s = "hello"

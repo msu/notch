@@ -1,5 +1,6 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.ErrorTest;
 import edu.montana.notch.errors.ParserError;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +52,7 @@ class NotchRecoverExprTest {
                 """));
     }
 
-    @Test
+    @ErrorTest
     void catchAfterExprGivesClearError() {
         // TODO: make 3 diagnostics one here (you can highlight multiple things so highlight & note both catch & recover)
         var ex = assertThrows(RuntimeException.class, () -> exec(BOOM + """
@@ -122,7 +123,7 @@ class NotchRecoverExprTest {
                 "expected rethrown exception message, got: " + ex.getMessage());
     }
 
-    @Test
+    @ErrorTest
     void typedRecoverUnknownTypeFails() {
         var ex = assertThrows(RuntimeException.class, () -> exec(BOOM + """
                 x = boom() recover from FakeException 1 recover 0
@@ -230,14 +231,14 @@ class NotchRecoverExprTest {
     }
 
     //TODO: Describes a regression in good error msgs that should be fixed.
-    @Test
+    @ErrorTest
     void aStrayTokenAfterARecoverChainIsReportedAsAStatement() {
         assertCodes(execDiagnostics(IO_ERROR + """
                 x = ioError() recover IOException 1 garbage
                 """), ParserError.EP0013);
     }
 
-    @Test
+    @ErrorTest
     void typedRecoverMissingFallbackGivesError() {
         var ex = assertThrows(RuntimeException.class, () -> exec(IO_ERROR + """
                 x = ioError() recover IOException recover 0

@@ -1,5 +1,7 @@
 package edu.montana.notch.parser;
 
+import edu.montana.notch.ErrorTest;
+import org.junit.jupiter.api.Tag;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.expressions.NotchErrorExpression;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@Tag(ErrorTest.TAG)
 class NotchErrorNodeTest {
 
     private static final Source SOURCE = new Source("<test>", "");
@@ -21,7 +24,7 @@ class NotchErrorNodeTest {
         var stmt = new NotchErrorStatement(SOURCE.span, diag);
         var runtime = new NotchRuntime(SOURCE);
         assertSame(diag, assertThrows(NotchRuntimeException.class,
-                () -> stmt.execute(runtime)).diagnostic);
+                () -> NotchRuntime.run(runtime, stmt)).diagnostic);
     }
 
     @Test
@@ -30,6 +33,6 @@ class NotchErrorNodeTest {
         var expr = new NotchErrorExpression(SOURCE.span, diag);
         var runtime = new NotchRuntime(SOURCE);
         assertSame(diag, assertThrows(NotchRuntimeException.class,
-                () -> expr.evaluate(runtime)).diagnostic);
+                () -> NotchRuntime.run(runtime, expr)).diagnostic);
     }
 }

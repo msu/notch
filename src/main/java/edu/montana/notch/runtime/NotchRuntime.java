@@ -1,35 +1,39 @@
 package edu.montana.notch.runtime;
 
 import edu.montana.notch.Notch;
+import edu.montana.notch.NotchElement;
 import edu.montana.notch.chisel.Diagnostic;
 import edu.montana.notch.chisel.Source;
 import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.statements.NotchStatement;
-import edu.montana.notch.types.NotchType;
-import edu.montana.notch.types.TypeRegistry;
-import edu.montana.notch.types.coercions.Coercion;
-import edu.montana.notch.types.coercions.CoercionGraph;
-import edu.montana.notch.types.coercions.CoercionPath;
+import edu.montana.notch.types.*;
 import edu.montana.notch.util.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static edu.montana.notch.util.Exceptions.rethrow;
+
 public class NotchRuntime {
-    public static final Object UNDEFINED = new Object() {
+    public static final Object UNDEFINED = new HasCustomNotchType() {
         @Override
         public String toString() {
             return "<undefined>";
         }
+
+        @Override
+        public NotchType getNotchType() {
+            return NotchUndefinedType.INST;
+        }
     };
+    public static final Key<List<NotchTypeCoercer>> kCoercions = new Key<>("notch.type.coercers");
 
     public final Source source;
     private LinkedList<Scope> values = new LinkedList<>();
-    protected BetterList<NotchStackTraceElement> stackTrace = new BetterList<>();
-    protected CoercionGraph coercions = new CoercionGraph();
-    // TODO: convert out to be in storage
+    private final StackTracer stackTracer = new StackTracer();
     private Consumer<Object> out = System.out::print;
     private BetterMap<Key, Object> storage = new BetterMap<>();
     private final Deque<Throwable> handledExceptions = new ArrayDeque<>();
@@ -45,23 +49,14 @@ public class NotchRuntime {
         var scope = new Scope(entryBlock);
         values.push(scope);
 
-        coercions.addAll(Notch.coercions());
-
-
-        final var currentStackTrace = Thread.currentThread().getStackTrace();
-        final var frame = currentStackTrace[1];
-        stackTrace.add(new NotchStackTraceElement(
-                source.span,
-                "<render@%s.%s:%d>".formatted(frame.getClassName(), frame.getMethodName(), frame.getLineNumber())
-        ));
+        storage.put(kCoercions, Notch.coercions());
     }
 
     public NotchRuntime(Source source, NotchRuntime parent) {
         this.source = source;
         out = parent.out;
         values = new LinkedList<>(parent.values);
-        stackTrace.addAll(parent.stackTrace);
-        coercions = new CoercionGraph(parent.coercions);
+        storage.put(kCoercions, parent.storage(kCoercions));
     }
 
     public static String className(Object obj) {
@@ -71,6 +66,21 @@ public class NotchRuntime {
             return "<undefined>";
         }
         return obj.getClass().getName();
+    }
+
+    public static Object run(NotchRuntime runtime, NotchElement item) {
+       try (var _run = runtime.hideStackFrames()) {
+            if (item instanceof NotchExpression e) {
+                return runtime.evaluate(e);
+            } else if (item instanceof NotchStatement s) {
+                runtime.execute(s);
+                return null;
+            } else {
+                final var d = new Diagnostic();
+                d.note("don't know how to run " + Text.simpleClassName(item));
+                throw new NotchRuntimeException(runtime.currentStackTrace(), d);
+            }
+        }
     }
 
     public Object getSymbol(String sym) {
@@ -105,10 +115,6 @@ public class NotchRuntime {
     }
 
     public void defineOrUpdate(String sym, Object value) {
-        if (isUndefined(value)) {
-            unsetSymbol(sym);
-        }
-
         for (var frame : values) {
             if (frame.containsKey(sym)) {
                 frame.put(sym, value);
@@ -124,11 +130,6 @@ public class NotchRuntime {
         values.push(entry);
         var lock = new ScopeLock(entry);
         return lock;
-    }
-
-    public TraceGuard trace(Spanned spanned, String hint) {
-        var elt = new NotchStackTraceElement(spanned.span(), hint);
-        return new TraceGuard(elt);
     }
 
     public void setOut(Consumer<Object> out) {
@@ -157,8 +158,11 @@ public class NotchRuntime {
     }
 
     public NotchStackTrace currentStackTrace() {
-        var trace = stackTrace.toArray(NotchStackTraceElement[]::new);
-        return new NotchStackTrace(trace);
+        return stackTracer.dumpStackTrace();
+    }
+
+    public NotchStackTrace getStackTrace(StackTraceElement catchSite, Throwable t) {
+        return stackTracer.getStackTrace(catchSite, t);
     }
 
     public void pushHandled(Throwable t) {
@@ -174,33 +178,71 @@ public class NotchRuntime {
     }
 
     public NotchType typeOf(Class<?> clazz) {
-        return TypeRegistry.getType(clazz);
+        return NotchTypeSystem.getType(clazz);
     }
 
     public NotchType typeOf(Object value) {
-        return TypeRegistry.getRuntimeType(value);
+        return NotchTypeSystem.getRuntimeType(value);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T coerce(Class<T> clazz, Object value, Spanned item) {
+    public <T> T coerce(Class<T> clazz, Object value, Spanned span) {
         if (value == null || isUndefined(value) || clazz.isInstance(value)) {
-            return cast(clazz, value, item);
+            return cast(clazz, value, span);
         }
-        var path = getCoercion(typeOf(value), clazz);
-        if (path == null) return cast(clazz, value, item);
-        return (T) path.apply(value);
+        var target = NotchTypeSystem.getType(clazz);
+        var source = typeOf(value);
+        var coerceResult = getCoercer(source, target);
+        if (coerceResult == null) {
+            final var d = new Diagnostic()
+                    .highlight(span)
+                    .note("unable to coerce %s into %s".formatted(source.getDisplayName(), target.getDisplayName()));
+            throw new NotchRuntimeException(currentStackTrace(), d);
+        }
+        try {
+            Object result = coerceResult.coercer.coerce(this, value, span.span(), source, target);
+            return (T) result;
+        } catch (Exception e) {
+            final var d = new Diagnostic()
+                    .highlight(span)
+                    .note("unable to coerce %s into %s".formatted(source.getDisplayName(), target.getDisplayName()));
+            if (e instanceof NotchTypeCoercer.CoercionFailure) {
+                d.note("this was likely an internal bug with the coercer: %s".formatted(coerceResult.coercer.getClass().getName()));
+            }
+            throw new NotchRuntimeException(currentStackTrace(), d, e);
+        }
     }
 
-    public void addCoercion(Coercion coercion) {
-        coercions.add(coercion);
+    public SafeAutoClosable showStackFrames() {
+        var trace = Thread.currentThread().getStackTrace();
+        var caller = trace[3];
+        return stackTracer.showStackFramesAfter(caller);
     }
 
-    public CoercionPath getCoercion(Class<?> from, Class<?> to) {
-        return coercions.find(typeOf(from), to);
+    public SafeAutoClosable hideStackFrames() {
+        var trace = Thread.currentThread().getStackTrace();
+        var caller = trace[3];
+        return stackTracer.hideStackFramesAfter(caller);
     }
 
-    public CoercionPath getCoercion(NotchType from, Class<?> to) {
-        return coercions.find(from, to);
+    public SafeAutoClosable addStackFrame(NotchStackTraceElement element) {
+        return stackTracer.addStackFrame(element);
+    }
+
+    public record BestCoercer(int cost, NotchTypeCoercer coercer) {}
+    public BestCoercer getCoercer(NotchType source, NotchType target) {
+        var coercions = storage(kCoercions);
+        int minCost = Integer.MAX_VALUE;
+        NotchTypeCoercer choice = null;
+        for (NotchTypeCoercer coercion : coercions) {
+            int cost = coercion.getCoercionCost(source, target);
+            if (cost >= 0 && cost < minCost) {
+                minCost = cost;
+                choice = coercion;
+            }
+        }
+        if (choice == null) return null;
+        return new BestCoercer(minCost, choice);
     }
 
     public <T> T cast(Class<T> clazz, Object value, Spanned item) {
@@ -210,8 +252,8 @@ public class NotchRuntime {
             String valueType;
             if (value == null) valueType = "null";
             else if (isUndefined(value)) valueType = "undefined";
-            else valueType = TypeRegistry.getRuntimeType(value).getDisplayName();
-            var targetType = TypeRegistry.getType(clazz).getDisplayName();
+            else valueType = NotchTypeSystem.getRuntimeType(value).getDisplayName();
+            var targetType = NotchTypeSystem.getType(clazz).getDisplayName();
 
             var diag = new Diagnostic();
             diag.setTitle("value cast failed");
@@ -249,8 +291,21 @@ public class NotchRuntime {
     }
 
     public Object evaluate(NotchExpression expression) {
-        var value = expression.evaluate(this);
-        return value;
+        try {
+            var value = expression.evaluate(this);
+            return value;
+        } catch (NotchRuntimeException | NotchControlFlow e) {
+            throw rethrow(e);
+        } catch (Throwable t) {
+            var site = Thread.currentThread().getStackTrace();
+            final var st = getStackTrace(site[3], t);
+            final var d = new Diagnostic();
+            d.highlight(expression.span);
+            d.note("threw %s".formatted(t.getClass().getName()));
+            var msg = t.getMessage();
+            if (msg != null) d.note(msg);
+            throw new NotchRuntimeException(st, d, t);
+        }
     }
 
     public List<Object> evaluate(List<NotchExpression> args) {
@@ -265,15 +320,16 @@ public class NotchRuntime {
     public void execute(NotchStatement stmt) {
         try {
             stmt.execute(this);
-        } catch (NotchRuntimeException e) {
-            throw Exceptions.rethrow(e);
+        } catch (NotchRuntimeException | NotchControlFlow e) {
+            throw rethrow(e);
         } catch (Throwable t) {
-            var st = currentStackTrace();
+            var trace = Thread.currentThread().getStackTrace();
+            var st = getStackTrace(trace[2], t);
             var diag = new Diagnostic();
-            diag.setTitle("failed to execute statement");
             diag.highlight(stmt.span());
-            diag.note("threw a %s".formatted(t.getClass().getName()));
-            diag.note(t.getMessage());
+            diag.note("threw %s".formatted(t.getClass().getName()));
+            var msg = t.getMessage();
+            if (msg != null) diag.note(msg);
             throw new NotchRuntimeException(st, diag, t);
         }
     }
@@ -304,6 +360,10 @@ public class NotchRuntime {
         storage.remove(key);
     }
 
+    public StackTracer getStackTracer() {
+        return stackTracer;
+    }
+
     public static class Scope extends LinkedHashMap<String, Object> {
         public Scope() {
         }
@@ -313,18 +373,134 @@ public class NotchRuntime {
         }
     }
 
-    public class TraceGuard implements SafeAutoClosable {
-        public final NotchStackTraceElement element;
+    private class StackTracer {
+        private final BetterList<Control> controls = new BetterList<>();
 
-        public TraceGuard(NotchStackTraceElement element) {
-            this.element = Objects.requireNonNull(element);
-            stackTrace.add(this.element);
+        /// note: `t` must just have been thrown
+        NotchStackTrace getStackTrace(StackTraceElement catchsite, Throwable t) {
+            var t1 = t.getStackTrace();
+            if (t instanceof InvocationTargetException) {
+                var t2 = t.getCause().getStackTrace();
+                return getStackTrace(catchsite, t2);
+            } else {
+                return getStackTrace(catchsite, t1);
+            }
         }
 
-        @Override
-        public void close() {
-            var removed = stackTrace.removeLast();
-            assert element == removed;
+        public NotchStackTrace dumpStackTrace() {
+            var trace = Thread.currentThread().getStackTrace();
+            var out = new BetterList<NotchStackTraceElement>();
+            int frameIdx = 2;
+            for (int i = controls.size() - 1; i >= 0; i--) {
+                var control = controls.get(i);
+                if (control instanceof Add it) {
+                    out.add(it.element);
+                } else if (control instanceof Hide it) {
+                    while (!trace[frameIdx].equals(it.start)) {
+                        frameIdx += 1;
+                    }
+                } else if (control instanceof Show it) {
+                    while (!trace[frameIdx].equals(it.start)) {
+                        out.add(new NotchStackTraceElement.Java(trace[frameIdx]));
+                        frameIdx += 1;
+                    }
+                }
+            }
+            while (frameIdx < trace.length) {
+                out.add(new NotchStackTraceElement.Java(trace[frameIdx]));
+                frameIdx += 1;
+            }
+
+            return new NotchStackTrace(out.toArray(NotchStackTraceElement[]::new), trace);
+        }
+
+        private NotchStackTrace getStackTrace(StackTraceElement catchsite, StackTraceElement[] trace) {
+            int localTraceSize = 0;
+            for (int i = 0; i < trace.length; i += 1) {
+                if (trace[i + 1].equals(catchsite)) break;
+                localTraceSize = i;
+            }
+            if (localTraceSize == trace.length) {
+                throw new IllegalStateException("wrong callsite passed!");
+            }
+
+            int relevantTraceSize = localTraceSize;
+            for (int i = localTraceSize; i >= 0; i--) {
+                var elt = trace[i];
+                var cname = elt.getClassName();
+                if (cname.startsWith("java.lang.reflect") || cname.startsWith("jdk.internal.reflect")) {
+                    relevantTraceSize--;
+                } else {
+                    break;
+                }
+            }
+
+            var out = new BetterList<NotchStackTraceElement>();
+            for (int i = 0; i < relevantTraceSize; i += 1) {
+                out.add(new NotchStackTraceElement.Java(trace[i]));
+            }
+
+
+            int frameIdx = localTraceSize + 2;
+            for (int i = controls.size() - 1; i >= 0; i--) {
+                var control = controls.get(i);
+                if (control instanceof Add it) {
+                    out.add(it.element);
+                } else if (control instanceof Hide it) {
+                    while (!trace[frameIdx].equals(it.start)) {
+                        frameIdx += 1;
+                    }
+                } else if (control instanceof Show it) {
+                    while (!trace[frameIdx].equals(it.start)) {
+                        out.add(new NotchStackTraceElement.Java(trace[frameIdx]));
+                        frameIdx += 1;
+                    }
+                } else {
+                    throw new UnsupportedOperationException();
+                }
+            }
+
+            while (frameIdx < trace.length) {
+                out.add(new NotchStackTraceElement.Java(trace[frameIdx]));
+                frameIdx += 1;
+            }
+
+            return new NotchStackTrace(out.toArray(NotchStackTraceElement[]::new), trace);
+        }
+
+        public ControlGuard showStackFramesAfter(StackTraceElement caller) {
+            return new ControlGuard(new Show(caller));
+        }
+
+        public ControlGuard hideStackFramesAfter(StackTraceElement caller) {
+            return new ControlGuard(new Hide(caller));
+        }
+
+        public ControlGuard addStackFrame(NotchStackTraceElement element) {
+            return new ControlGuard(new Add(element));
+        }
+
+        sealed interface Control {}
+        record Hide(StackTraceElement start) implements Control {}
+        record Add(NotchStackTraceElement element) implements Control {}
+        record Show(StackTraceElement start) implements Control {}
+
+
+        class ControlGuard implements SafeAutoClosable {
+            final Control control;
+
+            public ControlGuard(Control control) {
+                this.control = control;
+                stackTracer.controls.add(control);
+            }
+
+            @Override
+            public void close() {
+                var c = stackTracer.controls.removeLast();
+                if (c != control) {
+                    throw new IllegalStateException("stack controls corrupted");
+                }
+            }
         }
     }
 }

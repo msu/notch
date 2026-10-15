@@ -1,5 +1,6 @@
 package edu.montana.notch.expressions;
 
+import edu.montana.notch.ErrorTest;
 import org.junit.jupiter.api.Test;
 
 import static edu.montana.notch.AssertContains.assertContains;
@@ -8,7 +9,7 @@ import static edu.montana.notch.NotchTestUtils.evalEx;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class NotchFStringTest {
-    @Test
+    @ErrorTest
     public void testUnescapedString() {
         assertEquals("Hello {name}", eval("\"Hello {{name}}\""));
         assertEquals("Hello {name}", eval("'Hello {{name}}'"));
@@ -28,7 +29,7 @@ public class NotchFStringTest {
         assertEquals("Hello, soup", eval("'Hello, {name}'", "name", "soup"));
     }
 
-    @Test
+    @ErrorTest
     public void testUnterminated() {
         // TODO: improve this error message to say unterminated '{' group
         var msg = evalEx("'Hello, {goodbye!'").getMessage();

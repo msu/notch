@@ -1,12 +1,15 @@
 package edu.montana.notch.expressions;
 
 import edu.montana.notch.chisel.Span;
+import edu.montana.notch.runtime.NotchControlFlow;
 import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.statements.NotchCatch;
 import edu.montana.notch.templates.ast.QualifiedIdent;
 import edu.montana.notch.util.Exceptions;
 
 import java.util.List;
+
+import static edu.montana.notch.util.Exceptions.rethrow;
 
 public class NotchRecoverExpression extends NotchExpression {
 
@@ -29,8 +32,9 @@ public class NotchRecoverExpression extends NotchExpression {
     public Object evaluate(NotchRuntime runtime) {
         try {
             return runtime.evaluate(tryExpr);
+        } catch (NotchControlFlow cf) {
+            throw rethrow(cf);
         } catch (Throwable t) {
-            if (NotchCatch.isControlFlow(t)) throw Exceptions.rethrow(t);
             return handle(runtime, t);
         }
     }
@@ -44,6 +48,6 @@ public class NotchRecoverExpression extends NotchExpression {
             }
         }
         if (untypedRecover != null) return runtime.evaluate(untypedRecover);
-        throw Exceptions.rethrow(t);
+        throw rethrow(t);
     }
 }

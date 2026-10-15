@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.Callable;
 
 import static edu.montana.notch.NotchTestUtils.eval;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NotchBasicExpressionTest {
 
@@ -130,19 +129,19 @@ public class NotchBasicExpressionTest {
     public void testLogicalOperatorsShortCircuits() {
         var callable = new MyCallable(true);
         assertEquals(true, eval("true and foo()", "foo", callable));
-        assertEquals(true, callable.wasCalled);
+        assertTrue(callable.wasCalled);
 
         callable = new MyCallable(true);
         assertEquals(false, eval("false and foo()", "foo", callable));
-        assertEquals(false, callable.wasCalled);
+        assertFalse(callable.wasCalled);
 
         callable = new MyCallable(true);
         assertEquals(true, eval("false or foo()", "foo", callable));
-        assertEquals(true, callable.wasCalled);
+        assertTrue(callable.wasCalled);
 
         callable = new MyCallable(true);
         assertEquals(true, eval("true or foo()", "foo", callable));
-        assertEquals(false, callable.wasCalled);
+        assertFalse(callable.wasCalled);
     }
 
     @Test

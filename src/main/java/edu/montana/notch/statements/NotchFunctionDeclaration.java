@@ -32,7 +32,7 @@ public class NotchFunctionDeclaration extends NotchStatement {
         for (NotchField field : params) {
             paramTokens.add(field.getName());
         }
-        NotchClosure closure = new NotchClosure(captured, paramTokens, null, body, name.str());
+        NotchClosure closure = new NotchClosure(span, captured, paramTokens, null, body, name.str());
         runtime.defineOrUpdate(name.str(), closure);
     }
 
