@@ -12,19 +12,19 @@ Calling `BasicNotchTemplateCommands.registerAll(registry)` on a fresh registry a
 - **`if <expr>` / `elseif <expr>` / `else` / `end`** - conditional blocks. The contents between `if` (or a passing `elseif` branch) and the matching `end` render only when the predicate is true.
 
 ```notch
-# if user.admin
+#if user.admin
   Admin panel
-# else
+#else
   Welcome, ${ user.name }
-# end
+#end
 ```
 
 - **`for <name> in <expr>` / `end`** - iterate over an iterable. The current item is bound to `<name>` inside the block.
 
 ```notch
-# for item in items
+#for item in items
   - ${ item }
-# end
+#end
 ```
 
 ## Layout and composition
@@ -33,30 +33,32 @@ Calling `BasicNotchTemplateCommands.registerAll(registry)` on a fresh registry a
 
 - **`content [<name>] [with]` / `end`** - inside a parent template, mark a slot to be filled by child templates; with `with`, the body up to `end` is the slot's default. Inside a child template, `with` is required and the body fills the named slot. Omitting the name targets the main body slot.
 
-```notch
-(base.html)
+<div class="code-file"><div class="code-file-title">base.html</div>
+{% highlight notch %}
 <head>
-# content title with
+#content title with
   <title>My App</title>
-# end
+#end
 </head>
 <body>
-# content
+#content
 </body>
-```
+{% endhighlight %}
+</div>
 
-```notch
-(index.html)
-# layout "base.html"
+<div class="code-file"><div class="code-file-title">index.html</div>
+{% highlight notch %}
+#layout "base.html"
 
-# content title with
+#content title with
   <title>Home | MyApp</title>
-# end
+#end
 
-# content with
+#content with
   <main>...</main>
-# end
-```
+#end
+{% endhighlight %}
+</div>
 
 - **`include <name>`** - inline-render another template at this point.
 

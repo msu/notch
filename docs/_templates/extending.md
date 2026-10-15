@@ -27,9 +27,9 @@ registry.addCommand("upper", new MyUpperCommand())
 Templates can then use the new command:
 
 ```notch
-# upper
+#upper
 hello
-# end
+#end
 ```
 
 Renders `HELLO`.

@@ -40,9 +40,9 @@ with `{'name' -> "world"}` renders as `Hello, world!`.
 A line that starts with `#` is a template command. Commands drive control flow, layout, variable binding, and other directives.
 
 ```notch
-# for item in items
+#for item in items
   - ${ item }
-# end
+#end
 ```
 
 with `{'items' -> ["a", "b", "c"]}` renders as:
