@@ -7,6 +7,7 @@ import edu.montana.notch.types.NotchTypeSystem;
 import edu.montana.notch.util.Key;
 import edu.montana.notch.util.Pair;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Supplier;
@@ -136,13 +137,13 @@ public class NotchBuiltins {
     public static Map<String, Object> getBuiltins(Object root) {
         final var out = new HashMap<String, Object>();
         final var clazz = root.getClass();
+        final var candidates = new LinkedHashMap<String, List<Method>>();
         for (var method : clazz.getMethods()) {
             if (method.getDeclaringClass() == Object.class) continue;
-            if (out.containsKey(method.getName())) continue;
             if (!Modifier.isStatic(method.getModifiers())) continue;
-            final var func = new NotchBoundJavaFunction(clazz, method.getName());
-            out.put(method.getName(), func);
+            candidates.computeIfAbsent(method.getName(), k -> new ArrayList<>()).add(method);
         }
+        candidates.forEach((name, methods) -> out.put(name, new NotchBoundJavaFunction(clazz, name, null, methods)));
         return out;
     }
 }

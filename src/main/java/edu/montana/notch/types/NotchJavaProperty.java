@@ -59,8 +59,8 @@ public class NotchJavaProperty implements NotchProperty {
 
         for (String methodName : methodPossibilities) {
             try {
-                Method method = aClass.getMethod(methodName);
-                if (matchesStaticFlag(method)) {
+                Method method = NotchJavaMethodUtils.accessibleMethod(aClass.getMethod(methodName));
+                if (method != null && matchesStaticFlag(method)) {
                     return new MethodGetter(method);
                 }
             } catch (NoSuchMethodException nsme) {
@@ -68,8 +68,8 @@ public class NotchJavaProperty implements NotchProperty {
             }
         }
         try {
-            Field field = aClass.getField(propName);
-            if (matchesStaticFlag(field)) {
+            Field field = NotchJavaMethodUtils.accessibleField(aClass.getField(propName));
+            if (field != null && matchesStaticFlag(field)) {
                 return new FieldAccessor(field);
             }
         } catch (NoSuchFieldException nfe) {
@@ -157,7 +157,8 @@ public class NotchJavaProperty implements NotchProperty {
                 if (setterName.startsWith("get")) {
                     setterName = "set" + setterName.substring(3);
                 }
-                return new MethodSetter(method.getDeclaringClass().getMethod(setterName, method.getReturnType()));
+                Method setter = NotchJavaMethodUtils.accessibleMethod(method.getDeclaringClass().getMethod(setterName, method.getReturnType()));
+                return setter == null ? null : new MethodSetter(setter);
             } catch (NoSuchMethodException e) {
                 return null;
             }

@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 public class NotchBoundJavaFunction implements NotchFunction {
@@ -25,6 +27,10 @@ public class NotchBoundJavaFunction implements NotchFunction {
     }
 
     public NotchBoundJavaFunction(Class<?> owner, String methodName, Object root) {
+        this(owner, methodName, root, Arrays.stream(owner.getMethods()).filter(m -> m.getName().equals(methodName)).toList());
+    }
+
+    public NotchBoundJavaFunction(Class<?> owner, String methodName, Object root, List<Method> candidates) {
         this.owner = owner;
         this.methodName = methodName;
         this.root = root;
@@ -32,14 +38,16 @@ public class NotchBoundJavaFunction implements NotchFunction {
         boolean onlyStatic = root == null;
         methods = new BetterList<>();
         variants = new BetterList<>();
-        for (var method : owner.getMethods()) {
-            if (!method.getName().equals(methodName)) continue;
+        var signatures = new HashSet<List<Class<?>>>();
+        for (var method : candidates) {
             if (Modifier.isStatic(method.getModifiers()) != onlyStatic) continue;
-            try {
-                method.setAccessible(true);
-                methods.add(method);
-            } catch (SecurityException e) {
-                log.error("Cannot access method {}.{}()", owner.getName(), methodName);
+            Method accessible = NotchJavaMethodUtils.accessibleMethod(method);
+            if (accessible == null) {
+                log.debug("Cannot access method {}.{}()", owner.getName(), methodName);
+                continue;
+            }
+            if (signatures.add(List.of(accessible.getParameterTypes()))) {
+                methods.add(accessible);
             }
         }
 

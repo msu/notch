@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
+import java.util.HashSet;
 import java.util.List;
 
 import static edu.montana.notch.util.Exceptions.rethrow;
@@ -22,21 +23,24 @@ public class NotchJavaMethod implements NotchMethod {
     private final Class backingClass;
     private final boolean staticMethod;
 
-    public NotchJavaMethod(String methodName, Class backingClass, boolean staticMethod) {
+    public NotchJavaMethod(String methodName, Class backingClass, boolean staticMethod, List<Method> candidates) {
         this.name = methodName;
         this.staticMethod = staticMethod;
         this.backingClass = backingClass;
         this.javaMethods = new BetterList<>();
-        Method[] allMethods = backingClass.getMethods();
-        for (Method m : allMethods) {
-            if (m.getName().equals(methodName) && Modifier.isStatic(m.getModifiers()) == staticMethod) {
-                try {
-                    m.setAccessible(true);
-                    javaMethods.add(m);
-                } catch (SecurityException e) {
-                    log.error("Cannot access method {}.{}()", backingClass.getName(), methodName);
-                }
+        var signatures = new HashSet<List<Class<?>>>();
+        for (Method m : candidates) {
+            Method accessible = NotchJavaMethodUtils.accessibleMethod(m);
+            if (accessible == null) {
+                log.debug("Cannot access method {}.{}()", backingClass.getName(), methodName);
+                continue;
             }
+            if (signatures.add(List.of(accessible.getParameterTypes()))) {
+                javaMethods.add(accessible);
+            }
+        }
+        if (javaMethods.isEmpty()) {
+            throw new IllegalStateException("No accessible methods named " + methodName + " found for " + backingClass.getName());
         }
     }
 

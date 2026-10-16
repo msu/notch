@@ -8,7 +8,9 @@ import edu.montana.notch.util.BetterSet;
 import edu.montana.notch.util.Text;
 
 import java.lang.reflect.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,16 +50,11 @@ public class NotchJavaType implements NotchType {
     }
 
     private void initConstructors() {
-        this.constructors = new BetterList<>(backingClass.getDeclaredConstructors())
-                .tap(constructor -> {
-                    try {
-                        constructor.setAccessible(true);
-                    } catch (java.lang.reflect.InaccessibleObjectException ignored) {
-                        // JPMS-locked non-public constructor (e.g. private
-                        // String ctors). Public ones are already accessible;
-                        // leave non-public ones in their default state.
-                    }
-                });
+        // JPMS-locked constructors (e.g. private String ctors, or anything on a JDK-internal class)
+        // cannot be invoked, so leave them out rather than fail at the call site.
+        this.constructors = new BetterList<>(Arrays.stream(backingClass.getDeclaredConstructors())
+                .filter(Constructor::trySetAccessible)
+                .toList());
     }
 
     private void initProperties() {
@@ -82,16 +79,26 @@ public class NotchJavaType implements NotchType {
     }
 
     private void initMethods() {
+        var instanceMethods = new LinkedHashMap<String, List<Method>>();
+        var staticCandidates = new LinkedHashMap<String, List<Method>>();
         for (Method method : backingClass.getMethods()) {
-            boolean staticMethod = Modifier.isStatic(method.getModifiers());
-            if (staticMethod && !staticMethods.containsKey(method.getName())) {
-                NotchFunction notchFunction = new NotchBoundJavaFunction(backingClass, method.getName());
-                staticMethods.put(method.getName(), notchFunction);
-            } else if (!staticMethod && !methods.containsKey(method.getName())) {
-                NotchJavaMethod notchMethod = new NotchJavaMethod(method.getName(), backingClass, false);
-                methods.put(method.getName(), notchMethod);
-            }
+            var group = Modifier.isStatic(method.getModifiers()) ? staticCandidates : instanceMethods;
+            group.computeIfAbsent(method.getName(), k -> new ArrayList<>()).add(method);
         }
+        staticCandidates.forEach((name, candidates) -> {
+            try {
+                staticMethods.put(name, new NotchBoundJavaFunction(backingClass, name, null, candidates));
+            } catch (IllegalArgumentException e) {
+                // no accessible version of this method
+            }
+        });
+        instanceMethods.forEach((name, candidates) -> {
+            try {
+                methods.put(name, new NotchJavaMethod(name, backingClass, false, candidates));
+            } catch (IllegalStateException e) {
+                // no accessible version of this method
+            }
+        });
     }
 
     private void addProperty(NotchJavaProperty property) {

@@ -7,6 +7,7 @@ import edu.montana.notch.runtime.NotchRuntime;
 import edu.montana.notch.runtime.NotchRuntimeException;
 import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplates;
+import edu.montana.notch.types.NotchJavaMethodUtils;
 import edu.montana.notch.util.BetterList;
 import edu.montana.notch.util.Exceptions;
 
@@ -152,7 +153,7 @@ public class NotchTemplateRuntime extends NotchRuntime {
             }
 
             for (var field : helper.getClass().getFields()) {
-                if (field.getName().equals(name)) {
+                if (field.getName().equals(name) && NotchJavaMethodUtils.accessibleField(field) != null) {
                     try {
                         return field.get(this.helper);
                     } catch (IllegalAccessException e) {

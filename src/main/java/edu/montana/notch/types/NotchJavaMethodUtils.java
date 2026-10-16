@@ -10,8 +10,12 @@ import edu.montana.notch.util.Exceptions;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.List;
 
 import static edu.montana.notch.util.Exceptions.rethrow;
@@ -48,6 +52,52 @@ public final class NotchJavaMethodUtils {
             }
             return values;
         }
+    }
+
+    /**
+     * Returns a version of {@code method} that can be invoked reflectively, or {@code null} if there is none.
+     * <p>
+     * Public methods on non-public classes (e.g. {@code ImmutableCollections$MapN.size()} from {@code Map.of()})
+     * cannot be invoked from outside their package, and the module system blocks {@code setAccessible}. Instead,
+     * this walks the supertypes for a public, exported declaration of the same signature ({@code Map.size()}).
+     * Invoking that still dispatches to the runtime implementation.
+     */
+    public static Method accessibleMethod(Method method) {
+        if (isAccessible(method.getDeclaringClass())) return method;
+        // static methods are not inherited, so a supertype's version would be a different method
+        if (Modifier.isStatic(method.getModifiers())) return null;
+        var queue = new ArrayDeque<Class<?>>();
+        var seen = new HashSet<Class<?>>();
+        queue.add(method.getDeclaringClass());
+        while (!queue.isEmpty()) {
+            Class<?> c = queue.poll();
+            if (!seen.add(c)) continue;
+            if (c != method.getDeclaringClass() && isAccessible(c)) {
+                try {
+                    return c.getMethod(method.getName(), method.getParameterTypes());
+                } catch (NoSuchMethodException e) {
+                    // keep looking
+                }
+            }
+            if (c.getSuperclass() != null) queue.add(c.getSuperclass());
+            queue.addAll(List.of(c.getInterfaces()));
+        }
+        return null;
+    }
+
+    /**
+     * Returns {@code field} if it can be read reflectively, or {@code null} if it is declared on a class
+     * outside our reach. Unlike methods, fields are not overridden, so there is no supertype to fall back to.
+     */
+    public static Field accessibleField(Field field) {
+        return isAccessible(field.getDeclaringClass()) ? field : null;
+    }
+
+    private static boolean isAccessible(Class<?> c) {
+        if (!Modifier.isPublic(c.getModifiers())) return false;
+        Class<?> outer = c.getEnclosingClass();
+        if (outer != null && !isAccessible(outer)) return false;
+        return c.getModule().isExported(c.getPackageName(), NotchJavaMethodUtils.class.getModule());
     }
 
     public static <T extends Executable> BestMatch<T> getBestMatch(NotchRuntime runtime, List<NotchType> args, List<T> executables, boolean allowImplicitRuntime) {

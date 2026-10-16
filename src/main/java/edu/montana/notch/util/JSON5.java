@@ -3,6 +3,7 @@ package edu.montana.notch.util;
 import edu.montana.notch.chisel.*;
 import edu.montana.notch.chisel.type.LiteralTokenType;
 import edu.montana.notch.json5.*;
+import edu.montana.notch.types.NotchJavaMethodUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -115,7 +116,7 @@ public class JSON5 {
         var clazz = value.getClass();
         Method toJsonMethod = null;
         try {
-            toJsonMethod = clazz.getMethod("toJson");
+            toJsonMethod = NotchJavaMethodUtils.accessibleMethod(clazz.getMethod("toJson"));
         } catch (NoSuchMethodException ignored) {
         }
         if (toJsonMethod != null) {

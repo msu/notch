@@ -2,6 +2,8 @@ package edu.montana.notch.expressions;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static edu.montana.notch.NotchTestUtils.eval;
@@ -190,6 +192,12 @@ public class NotchBasicExpressionTest {
         assertEquals(false, eval("foo is null", "foo", 1));
         assertEquals(false, eval("foo is not null", "foo", null));
         assertEquals(true, eval("foo is not null", "foo", 1));
+    }
+
+    @Test
+    public void immutableCollectionAccessibilityIssues() {
+        assertEquals(1, eval("m.a", "m", Map.of("a", 1, "b", 2)));
+        assertEquals(3, eval("xs.size", "xs", List.of(1, 2, 3)));
     }
 
     private static class MyCallable implements Callable<Boolean> {
