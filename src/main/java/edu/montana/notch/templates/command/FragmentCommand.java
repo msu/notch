@@ -69,7 +69,7 @@ public class FragmentCommand extends NotchTemplateCommand implements NotchTempla
         @Override
         public void render(BetterList<Object> args, NotchTemplateRuntime runtime, Drain out) {
             var child = new NotchTemplateRuntime(source(), runtime);
-            try (var ignoreScope = child.pushScope()) {
+            try (var _hide = runtime.hideStackFrames(); var ignoreScope = child.pushScope()) {
                 content.render(child, out);
             }
         }

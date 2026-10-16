@@ -132,7 +132,7 @@ public class NotchTemplates {
             final var contentBlock = parser.parseContentBlock();
             return contentBlock;
         } catch (Exception e) {
-            throw new RenderException(e);
+            throw RenderException.wrap(e);
         }
     }
 
@@ -172,14 +172,17 @@ public class NotchTemplates {
     }
 
     public void renderFromSource(Source source, String fragmentName, NotchTemplateRuntime runtime, Drain out) {
-        final var contentBlock = parseSource(source);
-        if (fragmentName != null) {
-            contentBlock.preRender(runtime);
-            FragmentCommand.Fragment fragment = findFragment(fragmentName, runtime);
-            fragment.render(new BetterList<>(), runtime, out);
-            contentBlock.postRender(runtime);
-        } else {
-            contentBlock.fullRender(runtime, out);
+        // the template engine's own frames are noise, the template frames say where we are
+        try (var _hide = runtime.hideStackFrames()) {
+            final var contentBlock = parseSource(source);
+            if (fragmentName != null) {
+                contentBlock.preRender(runtime);
+                FragmentCommand.Fragment fragment = findFragment(fragmentName, runtime);
+                fragment.render(new BetterList<>(), runtime, out);
+                contentBlock.postRender(runtime);
+            } else {
+                contentBlock.fullRender(runtime, out);
+            }
         }
     }
 

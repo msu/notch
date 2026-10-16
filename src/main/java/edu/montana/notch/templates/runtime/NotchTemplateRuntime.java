@@ -9,7 +9,6 @@ import edu.montana.notch.templates.NotchTemplateCommand;
 import edu.montana.notch.templates.NotchTemplates;
 import edu.montana.notch.types.NotchJavaMethodUtils;
 import edu.montana.notch.util.BetterList;
-import edu.montana.notch.util.Exceptions;
 
 import java.util.*;
 
@@ -25,6 +24,17 @@ public class NotchTemplateRuntime extends NotchRuntime {
             Map<String, Object> entry
     ) {
         super(source, entry);
+        this.templates = templates;
+    }
+
+    /// a fresh top-level scope whose stack frames are still recorded in `caller`'s stack trace
+    public NotchTemplateRuntime(
+            Source source,
+            NotchTemplates templates,
+            Map<String, Object> entry,
+            NotchTemplateRuntime caller
+    ) {
+        super(source, entry, caller);
         this.templates = templates;
     }
 
@@ -92,12 +102,13 @@ public class NotchTemplateRuntime extends NotchRuntime {
     }
 
     public void render(NotchTemplateCommand cmd, Drain out) {
-        cmd.render(this, out);
+        try (var _frame = addStackFrame(NotchTemplateStackTraceElement.of(cmd))) {
+            cmd.render(this, out);
+        }
     }
 
     public void render(NotchExpression expression, Drain out) {
-        final var ste = new NotchTemplateStackTraceElement(source.id, expression.span);
-        try (var ignoredTrace = addStackFrame(ste)) {
+        try (var _frame = addStackFrame(NotchTemplateStackTraceElement.of(expression))) {
             var value = evaluate(expression);
             if (!isUndefined(value)) {
                 String text;
@@ -109,8 +120,6 @@ public class NotchTemplateRuntime extends NotchRuntime {
                 }
                 out.append(text);
             }
-        } catch (RenderException e) {
-            throw Exceptions.rethrow(e);
         } catch (NotchRuntimeException e) {
             throw new RenderException(e);
         }
@@ -120,7 +129,9 @@ public class NotchTemplateRuntime extends NotchRuntime {
         if (command.isGlobal()) {
             globals.add(command);
         }
-        command.preRender(this);
+        try (var _frame = addStackFrame(NotchTemplateStackTraceElement.of(command))) {
+            command.preRender(this);
+        }
     }
 
     public <T extends NotchTemplateCommand> List<T> globals(Class<T> clazz) {

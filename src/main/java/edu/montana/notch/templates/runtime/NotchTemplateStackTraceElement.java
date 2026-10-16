@@ -1,11 +1,33 @@
 package edu.montana.notch.templates.runtime;
 
 import edu.montana.notch.chisel.Span;
+import edu.montana.notch.expressions.NotchExpression;
 import edu.montana.notch.runtime.NotchStackTraceElement;
+import edu.montana.notch.templates.NotchTemplateCommand;
 
-public record NotchTemplateStackTraceElement(String templateId, Span callsite) implements NotchStackTraceElement {
+import java.util.Objects;
+
+/// a frame of template rendering, reported like `#include(main.html:3)` or `${...}(card.html:7)`
+public record NotchTemplateStackTraceElement(String name, Span callsite) implements NotchStackTraceElement {
+    public NotchTemplateStackTraceElement {
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(callsite);
+    }
+
+    public static NotchTemplateStackTraceElement of(NotchTemplateCommand command) {
+        return new NotchTemplateStackTraceElement("#" + command.commandName, command.span());
+    }
+
+    public static NotchTemplateStackTraceElement of(NotchExpression expression) {
+        return new NotchTemplateStackTraceElement("${...}", expression.span);
+    }
+
+    public String templateId() {
+        return callsite.source().id;
+    }
+
     @Override
     public String report() {
-        return "NotchTemplateStackTraceElement(%s, %s)".formatted(templateId, callsite);
+        return "%s(%s:%d)".formatted(name, templateId(), callsite.startLine());
     }
 }

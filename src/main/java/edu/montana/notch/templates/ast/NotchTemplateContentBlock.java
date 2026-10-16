@@ -10,7 +10,6 @@ import edu.montana.notch.templates.ast.content.NotchTemplateContentItem;
 import edu.montana.notch.templates.ast.content.NotchTemplateContentText;
 import edu.montana.notch.templates.runtime.NotchTemplateRuntime;
 import edu.montana.notch.templates.runtime.RenderException;
-import edu.montana.notch.util.Exceptions;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,20 +35,16 @@ public class NotchTemplateContentBlock implements Spanned {
     public void fullRender(NotchTemplateRuntime runtime, Drain out) {
         try {
             preRender(runtime);
-        } catch (RenderException e) {
-            throw Exceptions.rethrow(e);
         } catch (Exception e) {
-            throw new RenderException(e);
+            throw RenderException.wrap(e);
         }
 
         render(runtime, out);
 
         try {
             postRender(runtime);
-        } catch (RenderException e) {
-            throw Exceptions.rethrow(e);
         } catch (Exception e) {
-            throw new RenderException(e);
+            throw RenderException.wrap(e);
         }
     }
 
@@ -66,10 +61,8 @@ public class NotchTemplateContentBlock implements Spanned {
                 } else {
                     throw new UnsupportedOperationException("unreachable: don't know how to render " + item.getClass());
                 }
-            } catch (RenderException e) {
-                throw Exceptions.rethrow(e);
             } catch (Exception e) {
-                throw new RenderException(e);
+                throw RenderException.wrap(e);
             }
         }
     }

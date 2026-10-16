@@ -103,7 +103,7 @@ public class MacroCommand extends NotchTemplateCommand implements NotchTemplateI
         @Override
         public void render(BetterList<Object> args, NotchTemplateRuntime runtime, Drain out) {
             var child = new NotchTemplateRuntime(source(), runtime);
-            try (var scope = child.pushScope()) {
+            try (var _hide = runtime.hideStackFrames(); var scope = child.pushScope()) {
                 scope.define("arguments", args);
                 if (parameterNames != null) {
                     for (int i = 0; i < parameterTypes.size(); i++) {

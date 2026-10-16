@@ -4,6 +4,7 @@ import edu.montana.notch.chisel.Span;
 import edu.montana.notch.chisel.Spanned;
 import edu.montana.notch.util.BetterList;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class NotchStackTrace {
@@ -53,6 +54,14 @@ public class NotchStackTrace {
         }
 
         return new NotchStackTrace(out.toArray(NotchStackTraceElement[]::new), fullTrace.clone());
+    }
+
+    /// drops the java frames below the outermost notch frame, i.e. whoever called into notch
+    public NotchStackTrace trimCallers() {
+        int keep = elements.length;
+        while (keep > 0 && elements[keep - 1] instanceof NotchStackTraceElement.Java) keep--;
+        if (keep == 0) return this;
+        return new NotchStackTrace(Arrays.copyOf(elements, keep), fullTrace);
     }
 
     public NotchStackTrace localize() {

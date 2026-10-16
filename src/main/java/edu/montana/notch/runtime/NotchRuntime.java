@@ -33,7 +33,7 @@ public class NotchRuntime {
 
     public final Source source;
     private LinkedList<Scope> values = new LinkedList<>();
-    private final StackTracer stackTracer = new StackTracer();
+    private final StackTracer stackTracer;
     private Consumer<Object> out = System.out::print;
     private BetterMap<Key, Object> storage = new BetterMap<>();
     private final Deque<Throwable> handledExceptions = new ArrayDeque<>();
@@ -44,7 +44,17 @@ public class NotchRuntime {
     }
 
     public NotchRuntime(Source source, Map<String, Object> entryBlock) {
+        this(source, entryBlock, new StackTracer());
+    }
+
+    /// a fresh top-level scope whose stack frames are still recorded in `caller`'s stack trace
+    public NotchRuntime(Source source, Map<String, Object> entryBlock, NotchRuntime caller) {
+        this(source, entryBlock, caller.stackTracer);
+    }
+
+    private NotchRuntime(Source source, Map<String, Object> entryBlock, StackTracer stackTracer) {
         this.source = Objects.requireNonNull(source);
+        this.stackTracer = stackTracer;
         Objects.requireNonNull(entryBlock);
         var scope = new Scope(entryBlock);
         values.push(scope);
@@ -54,6 +64,7 @@ public class NotchRuntime {
 
     public NotchRuntime(Source source, NotchRuntime parent) {
         this.source = source;
+        stackTracer = parent.stackTracer;
         out = parent.out;
         values = new LinkedList<>(parent.values);
         storage.put(kCoercions, parent.storage(kCoercions));
@@ -379,7 +390,7 @@ public class NotchRuntime {
         }
     }
 
-    private class StackTracer {
+    private static class StackTracer {
         private final BetterList<Control> controls = new BetterList<>();
 
         /// note: `t` must just have been thrown
@@ -396,27 +407,7 @@ public class NotchRuntime {
         public NotchStackTrace dumpStackTrace() {
             var trace = Thread.currentThread().getStackTrace();
             var out = new BetterList<NotchStackTraceElement>();
-            int frameIdx = 2;
-            for (int i = controls.size() - 1; i >= 0; i--) {
-                var control = controls.get(i);
-                if (control instanceof Add it) {
-                    out.add(it.element);
-                } else if (control instanceof Hide it) {
-                    while (!trace[frameIdx].equals(it.start)) {
-                        frameIdx += 1;
-                    }
-                } else if (control instanceof Show it) {
-                    while (!trace[frameIdx].equals(it.start)) {
-                        out.add(new NotchStackTraceElement.Java(trace[frameIdx]));
-                        frameIdx += 1;
-                    }
-                }
-            }
-            while (frameIdx < trace.length) {
-                out.add(new NotchStackTraceElement.Java(trace[frameIdx]));
-                frameIdx += 1;
-            }
-
+            applyControls(trace, 2, out);
             return new NotchStackTrace(out.toArray(NotchStackTraceElement[]::new), trace);
         }
 
@@ -447,22 +438,29 @@ public class NotchRuntime {
             }
 
 
-            int frameIdx = localTraceSize + 2;
+            applyControls(trace, localTraceSize + 2, out);
+            return new NotchStackTrace(out.toArray(NotchStackTraceElement[]::new), trace);
+        }
+
+        /// walks `trace` from `frameIdx` outwards, newest control first, deciding which java frames to keep
+        private void applyControls(StackTraceElement[] trace, int frameIdx, BetterList<NotchStackTraceElement> out) {
+            // the start frame of the previous show/hide is never the start of the next one, even when
+            // they look equal (e.g. nested includes all start at the same line of IncludeCommand)
+            int searchFrom = frameIdx;
             for (int i = controls.size() - 1; i >= 0; i--) {
                 var control = controls.get(i);
                 if (control instanceof Add it) {
                     out.add(it.element);
                 } else if (control instanceof Hide it) {
-                    while (!trace[frameIdx].equals(it.start)) {
-                        frameIdx += 1;
-                    }
+                    frameIdx = indexOf(trace, searchFrom, it.start);
+                    searchFrom = frameIdx + 1;
                 } else if (control instanceof Show it) {
-                    while (!trace[frameIdx].equals(it.start)) {
+                    int start = indexOf(trace, searchFrom, it.start);
+                    while (frameIdx < start) {
                         out.add(new NotchStackTraceElement.Java(trace[frameIdx]));
                         frameIdx += 1;
                     }
-                } else {
-                    throw new UnsupportedOperationException();
+                    searchFrom = frameIdx + 1;
                 }
             }
 
@@ -470,8 +468,14 @@ public class NotchRuntime {
                 out.add(new NotchStackTraceElement.Java(trace[frameIdx]));
                 frameIdx += 1;
             }
+        }
 
-            return new NotchStackTrace(out.toArray(NotchStackTraceElement[]::new), trace);
+        private static int indexOf(StackTraceElement[] trace, int from, StackTraceElement element) {
+            for (int i = from; i < trace.length; i++) {
+                if (trace[i].equals(element)) return i;
+            }
+            // the frame was cut off of a very deep trace
+            return trace.length;
         }
 
         public ControlGuard showStackFramesAfter(StackTraceElement caller) {
@@ -497,12 +501,12 @@ public class NotchRuntime {
 
             public ControlGuard(Control control) {
                 this.control = control;
-                stackTracer.controls.add(control);
+                controls.add(control);
             }
 
             @Override
             public void close() {
-                var c = stackTracer.controls.removeLast();
+                var c = controls.removeLast();
                 if (c != control) {
                     throw new IllegalStateException("stack controls corrupted");
                 }

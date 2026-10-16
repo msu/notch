@@ -68,7 +68,7 @@ public class ImportCommand extends NotchTemplateCommand {
             var pathStr = runtime.cast(String.class, pathValue, path);
             contentBlock = templates.getTemplateContent(pathStr);
 
-            contentRuntime = new NotchTemplateRuntime(contentBlock.source(), runtime.templates(), Map.of());
+            contentRuntime = new NotchTemplateRuntime(contentBlock.source(), runtime.templates(), Map.of(), runtime);
             contentBlock.preRender(contentRuntime);
 
             if (alias == null) {

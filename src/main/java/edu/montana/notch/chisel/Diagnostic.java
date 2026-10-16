@@ -153,6 +153,10 @@ public class Diagnostic {
     record Highlight(Span span) {
     }
 
+    public List<Span> getSpans() {
+        return highlights.stream().map(Highlight::span).toList();
+    }
+
     public List<String> getNotes() {
         return List.copyOf(notes);
     }
