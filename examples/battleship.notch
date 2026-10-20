@@ -1,0 +1,75 @@
+import java.util.Random
+
+enum Ship(length)
+    variant Cruiser(2)
+    variant Destroyer(2)
+    variant Submarine(3)
+    variant Battleship(4)
+    variant Carrier(5)
+end
+
+class ShipPosition(ship, vertical, x, y)
+end
+
+class Board(mapSize)
+    field map = []
+    field hit = []
+    field shipPositions = {}
+
+    method setupGame()
+        this.map = [null] * (mapSize * mapSize)
+        this.hit = [false] * (mapSize * mapSize)
+        this.shipPositions = {}
+
+        for ship in Ship.values
+            repeat forever
+                vertical = random(boolean)
+                x = random(this.mapSize)
+                y = random(this.mapSize)
+                pos = ShipPosition(ship, vertical, x, y)
+
+                if not this.fits(pos)
+                    continue
+                end
+
+                this.shipPositions[ship] = pos
+                for idx in this.shipIndices(ship)
+                    this.map[idx] = ship
+                end
+            end
+        end
+    end
+
+    method fits(pos)
+        if pos.vertical
+            if pos.y + pos.ship.length >= this.mapSize
+                return false
+            end
+        else
+            if pos.x + pos.ship.length >= this.mapSize
+                return false
+            end
+        end
+
+        indices = this.shipIndices(ship)
+        for idx in indices
+            if map[idx] is not null
+                return false
+            end
+        end
+    end
+
+    method shipIndices(pos)
+        out = []
+        if pos.vertical
+            for i in pos.ship.length
+                out.add((pos.y + i) * this.mapSize + pos.x)
+            end
+        else
+            for i in pos.ship.length
+                out.add(pos.y * this.mapSize + pos.x + i)
+            end
+        end
+        return out
+    end
+end

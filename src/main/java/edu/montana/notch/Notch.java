@@ -61,16 +61,6 @@ public class Notch {
         return (T) result;
     }
 
-    public static final NotchTemplates TEMPLATES = new NotchTemplates();
-
-    public static String render(String path, Object... kv) {
-        return TEMPLATES.renderTemplate(path, toMap(kv));
-    }
-
-    public static void render(String path, Appendable out, Object... kv) {
-        TEMPLATES.renderTemplate(path, toMap(kv), new Drain(out));
-    }
-
     public static void run(String program) {
         run(new Source("<u-shouldnt-run-programs-this-way.notch>", program));
     }

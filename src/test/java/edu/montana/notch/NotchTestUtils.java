@@ -136,6 +136,9 @@ public class NotchTestUtils {
     }
 
     public static Map<String, Object> map(Object[] vars) {
+        if ((vars.length & 1) != 0) {
+            throw new IllegalArgumentException("render() requires an even number of key/value arguments");
+        }
         Map<String, Object> map = new BetterMap<>();
         map.putAll(Notch.builtins());
         for (int i = 0; i < vars.length; i++) {
